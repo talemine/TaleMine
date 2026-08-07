@@ -1,25 +1,41 @@
+import Logo from "../ui/Logo";
+import Button from "../ui/Button";
+import Container from "../ui/Container";
+
+const navLinks = [
+  { name: "About", href: "#about" },
+  { name: "Readers", href: "#readers" },
+  { name: "Writers", href: "#writers" },
+  { name: "Vision", href: "#vision" },
+  { name: "Roadmap", href: "#roadmap" },
+];
+
 export default function Navbar() {
   return (
-    <header className="fixed top-0 w-full backdrop-blur-md bg-slate-950/70 border-b border-slate-800 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-800/50 bg-slate-950/70 backdrop-blur-lg">
+      <Container>
+        <div className="flex h-20 items-center justify-between">
 
-        <h1 className="text-2xl font-bold">
-          Tale<span className="text-cyan-400">Mine</span>
-        </h1>
+          <Logo />
 
-        <nav className="hidden md:flex gap-8">
-          <a href="#about">About</a>
-          <a href="#readers">Readers</a>
-          <a href="#writers">Writers</a>
-          <a href="#vision">Vision</a>
-          <a href="#roadmap">Roadmap</a>
-        </nav>
+          <nav className="hidden items-center gap-8 md:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="text-sm text-slate-300 transition hover:text-cyan-400"
+              >
+                {link.name}
+              </a>
+            ))}
+          </nav>
 
-        <button className="bg-cyan-500 hover:bg-cyan-400 text-slate-900 px-5 py-2 rounded-full font-semibold transition">
-          Join Waitlist
-        </button>
+          <Button href="#waitlist">
+            Join Waitlist
+          </Button>
 
-      </div>
+        </div>
+      </Container>
     </header>
   );
 }

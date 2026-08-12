@@ -12,7 +12,7 @@ export default function Section({
   return (
     <section
       id={id}
-      className="py-24 md:py-32"
+      className="min-h-screen flex items-center py-20 md:py-24"
     >
       {children}
     </section>

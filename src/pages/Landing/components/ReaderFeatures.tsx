@@ -13,19 +13,19 @@ export default function ReaderFeatures() {
     <Section id="readers">
       <Container>
         {/* Section Heading */}
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-6xl font-bold text-white">
             Reader Features
           </h2>
 
-          <p className="mt-6 text-lg leading-8 text-gray-300">
+          <p className="mt-5 md:mt-6 text-base md:text-lg leading-7 md:leading-8 text-gray-300">
             Discover stories that matter, organize your reading journey,
             and enjoy an experience designed for readers—not algorithms.
           </p>
         </div>
 
         {/* Feature Cards */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8">
           <FeatureCard
             icon={<HiOutlineBookOpen />}
             title="Discover Hidden Gems"

@@ -62,18 +62,48 @@ export default function Hero() {
 
         {/* Hero Illustration */}
         <motion.div
-          className="mt-20 flex justify-center"
+          className="mt-16 md:mt-20 flex justify-center"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
         >
-          <div className="w-80 h-80 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/20 flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-7xl">⛏️</div>
+          <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-cyan-500/20 via-slate-900 to-blue-500/10 border border-cyan-500/30 flex items-center justify-center overflow-hidden">
 
-              <p className="mt-4 text-cyan-300 font-semibold">
+            {/* Outer Glow */}
+            <div className="absolute inset-4 rounded-full border border-cyan-400/10" />
+            <div className="absolute inset-10 rounded-full border border-cyan-400/10" />
+
+            {/* Floating Story Particles */}
+            <div className="absolute top-16 left-20 w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <div className="absolute top-28 right-16 w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+            <div className="absolute bottom-20 left-16 w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            <div className="absolute bottom-16 right-20 w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+
+            {/* Story Core */}
+            <div className="relative z-10 text-center">
+
+              <div className="mx-auto w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-slate-950/80 border border-cyan-400/30 shadow-[0_0_35px_rgba(34,211,238,0.15)] flex items-center justify-center">
+
+                <svg
+                  viewBox="0 0 64 64"
+                  className="w-14 h-14 md:w-16 md:h-16 text-cyan-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10 14h16c5 0 8 3 11 6v32c-3-3-6-6-11-6H10V14Z" />
+                  <path d="M54 14H38c-5 0-8 3-11 6v32c3-3 6-6 11-6h16V14Z" />
+                  <path d="M32 20v32" />
+                </svg>
+
+              </div>
+
+              <p className="mt-5 text-sm md:text-base text-cyan-300 font-semibold">
                 Unearthing Great Stories
               </p>
+
             </div>
           </div>
         </motion.div>

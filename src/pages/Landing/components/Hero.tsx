@@ -55,9 +55,11 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.45 }}
         >
-          <Button>Join Waitlist</Button>
+          <Button href="#waitlist">
+            Join Waitlist
+          </Button>
 
-          <Button variant="outline">
+          <Button variant="outline" href="#vision">
             Explore Our Vision
           </Button>
         </motion.div>

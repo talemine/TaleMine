@@ -3,13 +3,16 @@ import type { ReactNode } from "react";
 interface ButtonProps {
   children: ReactNode;
   variant?: "primary" | "secondary" | "outline";
+  href?: string;
+  type?: "button" | "submit" | "reset";
 }
 
 export default function Button({
   children,
   variant = "primary",
+  href,
+  type = "button",
 }: ButtonProps) {
-
   const styles = {
     primary:
       "bg-cyan-500 text-black hover:bg-cyan-400",
@@ -21,9 +24,31 @@ export default function Button({
       "border border-white text-white hover:bg-white hover:text-black",
   };
 
+  const className = `
+    inline-flex
+    items-center
+    justify-center
+    px-8
+    py-4
+    rounded-full
+    font-semibold
+    transition-all
+    duration-300
+    ${styles[variant]}
+  `;
+
+  if (href) {
+    return (
+      <a href={href} className={className}>
+        {children}
+      </a>
+    );
+  }
+
   return (
     <button
-      className={`px-8 py-4 rounded-full font-semibold transition-all duration-300 ${styles[variant]}`}
+      type={type}
+      className={className}
     >
       {children}
     </button>

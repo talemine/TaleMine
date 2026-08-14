@@ -5,6 +5,7 @@ interface ButtonProps {
   variant?: "primary" | "secondary" | "outline";
   href?: string;
   type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
 export default function Button({
@@ -12,6 +13,7 @@ export default function Button({
   variant = "primary",
   href,
   type = "button",
+  disabled,
 }: ButtonProps) {
   const styles = {
     primary:
@@ -34,6 +36,7 @@ export default function Button({
     font-semibold
     transition-all
     duration-300
+    disabled:opacity-50 disabled:cursor-not-allowed
     ${styles[variant]}
   `;
 
@@ -49,6 +52,7 @@ export default function Button({
     <button
       type={type}
       className={className}
+      disabled={disabled}
     >
       {children}
     </button>

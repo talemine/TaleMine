@@ -1,19 +1,46 @@
-import { motion } from "framer-motion";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import Section from "../../../components/ui/Section";
 import Container from "../../../components/ui/Container";
 import Button from "../../../components/ui/Button";
+import { supabase } from "../../../services/supabase";
 
 export default function Waitlist() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    if (!email.trim()) return;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) return;
+
+    setLoading(true);
+    setErrorMessage("");
+
+    const { error } = await supabase
+      .from("waitlist")
+      .insert({
+        email: normalizedEmail,
+      });
+
+    if (error) {
+      if (error.code === "23505") {
+        setErrorMessage("You're already on the list.");
+      } else {
+        console.error("Waitlist signup error:", error);
+        setErrorMessage("Something went wrong. Please try again.");
+      }
+
+      setLoading(false);
+      return;
+    }
 
     setSubmitted(true);
+    setLoading(false);
   }
 
   return (
@@ -26,7 +53,6 @@ export default function Waitlist() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7 }}
         >
-          {/* Heading */}
           <h2 className="text-4xl md:text-6xl font-bold text-white">
             Join the Waitlist
           </h2>
@@ -37,7 +63,6 @@ export default function Waitlist() {
           </p>
         </motion.div>
 
-        {/* Form / Success Message */}
         <motion.div
           className="
             mt-10
@@ -66,6 +91,7 @@ export default function Waitlist() {
                 required
                 pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
                 title="Please enter a valid email address, such as you@example.com"
+                disabled={loading}
                 className="
                   flex-1
                   rounded-xl
@@ -79,11 +105,12 @@ export default function Waitlist() {
                   focus:border-cyan-400
                   focus:ring-1
                   focus:ring-cyan-400
+                  disabled:opacity-60
                 "
               />
 
-              <Button type="submit">
-                Join Waitlist
+              <Button type="submit" disabled={loading}>
+                {loading ? "Joining..." : "Join Waitlist"}
               </Button>
             </form>
           ) : (
@@ -102,9 +129,14 @@ export default function Waitlist() {
               </p>
             </motion.div>
           )}
+
+          {errorMessage && (
+            <p className="mt-4 text-sm text-red-400 text-center">
+              {errorMessage}
+            </p>
+          )}
         </motion.div>
 
-        {/* Closing Statement */}
         <motion.p
           className="mt-10 text-sm md:text-base text-cyan-300 text-center"
           initial={{ opacity: 0 }}

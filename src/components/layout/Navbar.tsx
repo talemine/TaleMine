@@ -76,7 +76,7 @@ export default function Navbar() {
                 </a>
               ))}
 
-              <div className="mt-3">
+              <div className="mt-3" onClick={closeMenu}>
                 <Button href="#waitlist">
                   Join Waitlist
                 </Button>

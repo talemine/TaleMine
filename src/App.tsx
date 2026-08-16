@@ -1,10 +1,10 @@
 import BackToTop from "./components/ui/BackToTop";
-import LandingPage from "./pages/Landing/LandingPage";
+import AppRouter from "./routes/AppRouter";
 
 export default function App() {
   return (
     <>
-      <LandingPage />
+      <AppRouter />
       <BackToTop />
     </>
   );

@@ -6,6 +6,7 @@ interface ButtonProps {
   href?: string;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export default function Button({
@@ -14,6 +15,7 @@ export default function Button({
   href,
   type = "button",
   disabled,
+  onClick,
 }: ButtonProps) {
   const styles = {
     primary:
@@ -53,6 +55,7 @@ export default function Button({
       type={type}
       className={className}
       disabled={disabled}
+      onClick={onClick}
     >
       {children}
     </button>

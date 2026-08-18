@@ -1,8 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { HiOutlineBars3, HiOutlineXMark } from "react-icons/hi2";
+
 import Logo from "../ui/Logo";
 import Button from "../ui/Button";
 import Container from "../ui/Container";
-import { HiOutlineBars3, HiOutlineXMark } from "react-icons/hi2";
+import { useAuth } from "../auth/AuthProvider";
+import { supabase } from "../../services/supabase";
 
 const navLinks = [
   { name: "About", href: "#about" },
@@ -15,8 +19,23 @@ const navLinks = [
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const { session } = useAuth();
+  const navigate = useNavigate();
+
   function closeMenu() {
     setMenuOpen(false);
+  }
+
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error("Logout error:", error);
+      return;
+    }
+
+    closeMenu();
+    navigate("/login");
   }
 
   return (
@@ -38,18 +57,32 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:block">
-            <Button href="#waitlist">
-              Join Waitlist
-            </Button>
+          {/* Desktop Authentication Actions */}
+          <div className="hidden items-center gap-3 md:flex">
+            {session ? (
+              <>
+                <Button href="/account">
+                  Account
+                </Button>
+
+                <Button variant="outline" onClick={handleLogout}>
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <Button href="#waitlist">
+                Join Waitlist
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
-            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              menuOpen ? "Close navigation menu" : "Open navigation menu"
+            }
             aria-expanded={menuOpen}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-cyan-400 hover:text-cyan-400 md:hidden"
           >
@@ -76,11 +109,27 @@ export default function Navbar() {
                 </a>
               ))}
 
-              <div className="mt-3" onClick={closeMenu}>
-                <Button href="#waitlist">
-                  Join Waitlist
-                </Button>
-              </div>
+              {session ? (
+                <>
+                  <div className="mt-3" onClick={closeMenu}>
+                    <Button href="/account">
+                      Account
+                    </Button>
+                  </div>
+
+                  <div className="mt-2">
+                    <Button variant="outline" onClick={handleLogout}>
+                      Log Out
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-3" onClick={closeMenu}>
+                  <Button href="#waitlist">
+                    Join Waitlist
+                  </Button>
+                </div>
+              )}
             </nav>
           </div>
         )}

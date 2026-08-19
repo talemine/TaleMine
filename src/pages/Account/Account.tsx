@@ -1,8 +1,9 @@
-import AvatarUpload from "../../components/profile/AvatarUpload";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import AvatarUpload from "../../components/profile/AvatarUpload";
 import ProfileForm from "../../components/profile/ProfileForm";
+import WriterProfileForm from "../../components/profile/WriterProfileForm";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
@@ -17,12 +18,24 @@ interface Profile {
   updated_at: string;
 }
 
+interface WriterProfile {
+  profile_id: string;
+  pen_name: string | null;
+  author_bio: string | null;
+  website_url: string | null;
+}
+
 export default function Account() {
   const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  const userId = session?.user.id;
+
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
+  const [writerProfile, setWriterProfile] =
+    useState<WriterProfile | null>(null);
+
+  const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleLogout() {
@@ -30,6 +43,7 @@ export default function Account() {
 
     if (error) {
       console.error("Logout error:", error);
+      setErrorMessage("Unable to log out. Please try again.");
       return;
     }
 
@@ -37,41 +51,101 @@ export default function Account() {
   }
 
   useEffect(() => {
-    if (!session?.user.id) {
-      setProfileLoading(false);
-      return;
-    }
+    let cancelled = false;
 
-    async function loadProfile() {
-      setProfileLoading(true);
-      setErrorMessage("");
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select(
-          "id, username, display_name, bio, avatar_url, created_at, updated_at"
-        )
-        .eq("id", session.user.id)
-        .single();
-
-      if (error) {
-        console.error("Profile loading error:", error);
-        setErrorMessage("Unable to load your profile.");
-        setProfileLoading(false);
+    async function loadAccount() {
+      if (!userId) {
+        setProfile(null);
+        setWriterProfile(null);
+        setLoading(false);
         return;
       }
 
-      setProfile(data);
-      setProfileLoading(false);
+      setLoading(true);
+      setErrorMessage("");
+
+      try {
+        const [profileResult, writerResult] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select(
+              "id, username, display_name, bio, avatar_url, created_at, updated_at"
+            )
+            .eq("id", userId)
+            .single(),
+
+          supabase
+            .from("writer_profiles")
+            .select(
+              "profile_id, pen_name, author_bio, website_url"
+            )
+            .eq("profile_id", userId)
+            .maybeSingle(),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (profileResult.error) {
+          console.error(
+            "Profile loading error:",
+            profileResult.error
+          );
+
+          setProfile(null);
+          setWriterProfile(null);
+          setErrorMessage("Unable to load your profile.");
+          return;
+        }
+
+        if (writerResult.error) {
+          console.error(
+            "Writer profile loading error:",
+            writerResult.error
+          );
+
+          setWriterProfile(null);
+          setErrorMessage(
+            "Your profile loaded, but your writer profile could not be loaded."
+          );
+        } else {
+          setWriterProfile(writerResult.data ?? null);
+        }
+
+        setProfile(profileResult.data);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error("Account loading error:", error);
+
+        setProfile(null);
+        setWriterProfile(null);
+        setErrorMessage(
+          "Unable to load your account. Please try again."
+        );
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
 
-    loadProfile();
-  }, [session]);
+    loadAccount();
 
-  if (authLoading || profileLoading) {
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <p className="text-gray-300">Loading your account...</p>
+        <p className="text-gray-300">
+          Loading your account...
+        </p>
       </main>
     );
   }
@@ -110,19 +184,20 @@ export default function Account() {
             You are signed in as:
           </p>
 
-          <p className="mt-2 text-cyan-400 break-all">
+          <p className="mt-2 break-all text-cyan-400">
             {session.user.email}
           </p>
 
           {errorMessage && (
-            <p className="mt-6 text-red-400">
+            <p className="mt-6 text-sm text-red-400">
               {errorMessage}
             </p>
           )}
 
           {profile && (
             <>
-              <div className="mt-8 space-y-6 border-t border-slate-800 pt-6">
+              {/* Profile summary */}
+              <section className="mt-8 space-y-6 border-t border-slate-800 pt-6">
                 <div>
                   <p className="text-sm text-gray-400">
                     Display Name
@@ -152,8 +227,9 @@ export default function Account() {
                     {profile.bio || "No bio added yet."}
                   </p>
                 </div>
-              </div>
+              </section>
 
+              {/* Avatar */}
               <AvatarUpload
                 userId={profile.id}
                 currentAvatarUrl={profile.avatar_url}
@@ -169,6 +245,7 @@ export default function Account() {
                 }}
               />
 
+              {/* Profile editing */}
               <ProfileForm
                 profileId={profile.id}
                 initialUsername={profile.username}
@@ -185,10 +262,48 @@ export default function Account() {
                   );
                 }}
               />
+
+              {/* Writer profile */}
+              {writerProfile ? (
+                <section className="mt-8 border-t border-slate-800 pt-8">
+                  <p className="text-sm text-gray-400">
+                    Writer Profile
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-bold text-white">
+                    {writerProfile.pen_name ||
+                      profile.display_name}
+                  </h2>
+
+                  <p className="mt-2 text-gray-300">
+                    {writerProfile.author_bio ||
+                      "No author bio added yet."}
+                  </p>
+
+                  {writerProfile.website_url && (
+                    <a
+                      href={writerProfile.website_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-block text-cyan-400 transition hover:text-cyan-300"
+                    >
+                      Visit Website
+                    </a>
+                  )}
+                </section>
+              ) : (
+                <WriterProfileForm
+                  profileId={profile.id}
+                  onCreated={(createdWriterProfile) => {
+                    setWriterProfile(createdWriterProfile);
+                  }}
+                />
+              )}
             </>
           )}
 
-          <div className="mt-8 flex gap-4 flex-wrap">
+          {/* Actions */}
+          <div className="mt-8 flex flex-wrap gap-4">
             <Button onClick={() => navigate("/")}>
               Back to TaleMine
             </Button>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import ChapterDeleteButton from "../../components/story/ChapterDeleteButton";
 import ChapterEditForm from "../../components/story/ChapterEditForm";
 import ChapterForm from "../../components/story/ChapterForm";
 import StoryEditForm from "../../components/story/StoryEditForm";
@@ -90,12 +91,17 @@ export default function StoryEditor() {
         }
 
         if (storyError) {
-          console.error("Story loading error:", storyError);
+          console.error(
+            "Story loading error:",
+            storyError
+          );
 
           setStory(null);
           setCategory(null);
           setChapters([]);
-          setErrorMessage("Unable to load this story.");
+          setErrorMessage(
+            "Unable to load this story."
+          );
           setLoading(false);
           return;
         }
@@ -144,7 +150,9 @@ export default function StoryEditor() {
             "Story loaded, but the category could not be loaded."
           );
         } else {
-          setCategory(categoryResult.data ?? null);
+          setCategory(
+            categoryResult.data ?? null
+          );
         }
 
         if (chaptersResult.error) {
@@ -158,7 +166,9 @@ export default function StoryEditor() {
             "Story loaded, but the chapters could not be loaded."
           );
         } else {
-          setChapters(chaptersResult.data ?? []);
+          setChapters(
+            chaptersResult.data ?? []
+          );
         }
       } catch (error) {
         if (cancelled) {
@@ -224,7 +234,9 @@ export default function StoryEditor() {
       return;
     }
 
-    navigate("/writer", { replace: true });
+    navigate("/writer", {
+      replace: true,
+    });
   }
 
   if (authLoading || loading) {
@@ -250,7 +262,9 @@ export default function StoryEditor() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button onClick={() => navigate("/login")}>
+            <Button
+              onClick={() => navigate("/login")}
+            >
               Go to Login
             </Button>
           </div>
@@ -273,7 +287,9 @@ export default function StoryEditor() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button onClick={() => navigate("/writer")}>
+            <Button
+              onClick={() => navigate("/writer")}
+            >
               Back to Writer Dashboard
             </Button>
           </div>
@@ -374,7 +390,9 @@ export default function StoryEditor() {
                   storyId={story.id}
                   initialTitle={story.title}
                   initialSlug={story.slug}
-                  initialCategoryId={story.category_id}
+                  initialCategoryId={
+                    story.category_id
+                  }
                   initialExcerpt={story.excerpt}
                   onSaved={(updatedStory) => {
                     setStory((currentStory) =>
@@ -432,10 +450,12 @@ export default function StoryEditor() {
                 <ChapterForm
                   storyId={story.id}
                   onCreated={(createdChapter) => {
-                    setChapters((currentChapters) => [
-                      ...currentChapters,
-                      createdChapter,
-                    ]);
+                    setChapters(
+                      (currentChapters) => [
+                        ...currentChapters,
+                        createdChapter,
+                      ]
+                    );
 
                     setShowChapterForm(false);
                   }}
@@ -484,21 +504,41 @@ export default function StoryEditor() {
                         </p>
                       </div>
 
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          setEditingChapterId(
-                            (currentId) =>
-                              currentId === chapter.id
-                                ? null
-                                : chapter.id
-                          )
-                        }
-                      >
-                        {editingChapterId === chapter.id
-                          ? "Cancel"
-                          : "Edit"}
-                      </Button>
+                      <div className="flex flex-wrap items-start gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            setEditingChapterId(
+                              (currentId) =>
+                                currentId === chapter.id
+                                  ? null
+                                  : chapter.id
+                            )
+                          }
+                        >
+                          {editingChapterId ===
+                          chapter.id
+                            ? "Cancel"
+                            : "Edit"}
+                        </Button>
+
+                        <ChapterDeleteButton
+                          chapterId={chapter.id}
+                          chapterTitle={chapter.title}
+                          onDeleted={() => {
+                            setChapters(
+                              (currentChapters) =>
+                                currentChapters.filter(
+                                  (currentChapter) =>
+                                    currentChapter.id !==
+                                    chapter.id
+                                )
+                            );
+
+                            setEditingChapterId(null);
+                          }}
+                        />
+                      </div>
                     </div>
 
                     {editingChapterId === chapter.id && (

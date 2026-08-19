@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import ChapterForm from "../../components/story/ChapterForm";
+import StoryEditForm from "../../components/story/StoryEditForm";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
@@ -48,8 +49,8 @@ export default function StoryEditor() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [showChapterForm, setShowChapterForm] =
-    useState(false);
+  const [showStoryEditForm, setShowStoryEditForm] = useState(false);
+  const [showChapterForm, setShowChapterForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -211,9 +212,7 @@ export default function StoryEditor() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button
-              onClick={() => navigate("/login")}
-            >
+            <Button onClick={() => navigate("/login")}>
               Go to Login
             </Button>
           </div>
@@ -235,9 +234,7 @@ export default function StoryEditor() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button
-              onClick={() => navigate("/writer")}
-            >
+            <Button onClick={() => navigate("/writer")}>
               Back to Writer Dashboard
             </Button>
           </div>
@@ -250,6 +247,7 @@ export default function StoryEditor() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
+
           {/* Story Header */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
@@ -266,9 +264,7 @@ export default function StoryEditor() {
               </p>
             </div>
 
-            <Button
-              onClick={() => navigate("/writer")}
-            >
+            <Button onClick={() => navigate("/writer")}>
               Back to Writer Dashboard
             </Button>
           </div>
@@ -303,6 +299,55 @@ export default function StoryEditor() {
                   "No excerpt has been added yet."}
               </p>
             </div>
+
+            {/* Edit Story */}
+            <div className="mt-6">
+              <Button
+                onClick={() =>
+                  setShowStoryEditForm(
+                    (current) => !current
+                  )
+                }
+              >
+                {showStoryEditForm
+                  ? "Cancel"
+                  : "Edit Story"}
+              </Button>
+
+              {showStoryEditForm && (
+                <StoryEditForm
+                  storyId={story.id}
+                  initialTitle={story.title}
+                  initialSlug={story.slug}
+                  initialCategoryId={story.category_id}
+                  initialExcerpt={story.excerpt}
+                  onSaved={(updatedStory) => {
+                    setStory((currentStory) =>
+                      currentStory
+                        ? {
+                            ...currentStory,
+                            ...updatedStory,
+                          }
+                        : currentStory
+                    );
+
+                    if (
+                      updatedStory.category_id !==
+                      story.category_id
+                    ) {
+                      const selectedCategory =
+                        updatedStory.category_id
+                          ? null
+                          : null;
+
+                      setCategory(selectedCategory);
+                    }
+
+                    setShowStoryEditForm(false);
+                  }}
+                />
+              )}
+            </div>
           </section>
 
           {/* Chapters */}
@@ -326,6 +371,7 @@ export default function StoryEditor() {
               </span>
             </div>
 
+            {/* Chapter Creation */}
             <div className="mt-6">
               <Button
                 onClick={() =>
@@ -354,6 +400,7 @@ export default function StoryEditor() {
               )}
             </div>
 
+            {/* Chapter List */}
             {chapters.length === 0 ? (
               <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
                 <h3 className="text-xl font-semibold">

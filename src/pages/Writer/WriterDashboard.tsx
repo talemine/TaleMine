@@ -38,8 +38,11 @@ export default function WriterDashboard() {
 
   const [stories, setStories] = useState<Story[]>([]);
   const [showStoryForm, setShowStoryForm] = useState(false);
+  const [deletingStoryId, setDeletingStoryId] =
+    useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -54,27 +57,29 @@ export default function WriterDashboard() {
 
       setLoading(true);
       setErrorMessage("");
+      setMessage("");
 
       try {
-        const [writerResult, storiesResult] = await Promise.all([
-          supabase
-            .from("writer_profiles")
-            .select(
-              "profile_id, pen_name, author_bio, website_url"
-            )
-            .eq("profile_id", userId)
-            .maybeSingle(),
+        const [writerResult, storiesResult] =
+          await Promise.all([
+            supabase
+              .from("writer_profiles")
+              .select(
+                "profile_id, pen_name, author_bio, website_url"
+              )
+              .eq("profile_id", userId)
+              .maybeSingle(),
 
-          supabase
-            .from("stories")
-            .select(
-              "id, writer_profile_id, category_id, title, slug, excerpt, cover_image_url, status, published_at, created_at, updated_at"
-            )
-            .eq("writer_profile_id", userId)
-            .order("created_at", {
-              ascending: false,
-            }),
-        ]);
+            supabase
+              .from("stories")
+              .select(
+                "id, writer_profile_id, category_id, title, slug, excerpt, cover_image_url, status, published_at, created_at, updated_at"
+              )
+              .eq("writer_profile_id", userId)
+              .order("created_at", {
+                ascending: false,
+              }),
+          ]);
 
         if (cancelled) {
           return;
@@ -136,6 +141,51 @@ export default function WriterDashboard() {
     };
   }, [userId]);
 
+  async function handleDeleteStory(story: Story) {
+    const confirmed = window.confirm(
+      `Delete "${story.title}"?\n\nThis will also permanently delete all chapters belonging to this story.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingStoryId(story.id);
+    setErrorMessage("");
+    setMessage("");
+
+    const { error } = await supabase
+      .from("stories")
+      .delete()
+      .eq("id", story.id);
+
+    if (error) {
+      console.error(
+        "Story deletion error:",
+        error
+      );
+
+      setErrorMessage(
+        "Unable to delete the story."
+      );
+      setDeletingStoryId(null);
+      return;
+    }
+
+    setStories((currentStories) =>
+      currentStories.filter(
+        (currentStory) =>
+          currentStory.id !== story.id
+      )
+    );
+
+    setMessage(
+      `"${story.title}" was deleted successfully.`
+    );
+
+    setDeletingStoryId(null);
+  }
+
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
@@ -194,6 +244,7 @@ export default function WriterDashboard() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
+
           {/* Dashboard Header */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
@@ -234,11 +285,19 @@ export default function WriterDashboard() {
             </p>
           )}
 
+          {message && (
+            <p className="mt-6 text-sm text-cyan-300">
+              {message}
+            </p>
+          )}
+
           {/* Create Story */}
           <div className="mt-8">
             <Button
               onClick={() =>
-                setShowStoryForm((current) => !current)
+                setShowStoryForm(
+                  (current) => !current
+                )
               }
             >
               {showStoryForm
@@ -248,7 +307,9 @@ export default function WriterDashboard() {
 
             {showStoryForm && (
               <StoryForm
-                writerProfileId={writerProfile.profile_id}
+                writerProfileId={
+                  writerProfile.profile_id
+                }
                 onCreated={(createdStory) => {
                   setStories((currentStories) => [
                     createdStory,
@@ -297,11 +358,7 @@ export default function WriterDashboard() {
                 {stories.map((story) => (
                   <article
                     key={story.id}
-                    onClick={() =>
-                      navigate(`/writer/stories/${story.id}`)
-                    }
                     className="
-                      cursor-pointer
                       rounded-2xl
                       border
                       border-slate-800
@@ -309,11 +366,17 @@ export default function WriterDashboard() {
                       p-6
                       transition
                       hover:border-cyan-500/40
-                      hover:bg-slate-900
                     "
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div>
+                      <div
+                        className="min-w-0 flex-1 cursor-pointer"
+                        onClick={() =>
+                          navigate(
+                            `/writer/stories/${story.id}`
+                          )
+                        }
+                      >
                         <h3 className="text-xl font-semibold">
                           {story.title}
                         </h3>
@@ -329,9 +392,25 @@ export default function WriterDashboard() {
                         </p>
                       </div>
 
-                      <span className="w-fit rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
-                        {story.status}
-                      </span>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="w-fit rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
+                          {story.status}
+                        </span>
+
+                        <Button
+                          variant="outline"
+                          disabled={
+                            deletingStoryId === story.id
+                          }
+                          onClick={() =>
+                            handleDeleteStory(story)
+                          }
+                        >
+                          {deletingStoryId === story.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </Button>
+                      </div>
                     </div>
                   </article>
                 ))}

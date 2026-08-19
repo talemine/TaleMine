@@ -50,8 +50,11 @@ export default function StoryEditor() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [showStoryEditForm, setShowStoryEditForm] = useState(false);
-  const [showChapterForm, setShowChapterForm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showStoryEditForm, setShowStoryEditForm] =
+    useState(false);
+  const [showChapterForm, setShowChapterForm] =
+    useState(false);
   const [editingChapterId, setEditingChapterId] =
     useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -162,12 +165,17 @@ export default function StoryEditor() {
           return;
         }
 
-        console.error("Story editor loading error:", error);
+        console.error(
+          "Story editor loading error:",
+          error
+        );
 
         setStory(null);
         setCategory(null);
         setChapters([]);
-        setErrorMessage("Unable to load the story editor.");
+        setErrorMessage(
+          "Unable to load the story editor."
+        );
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -182,10 +190,49 @@ export default function StoryEditor() {
     };
   }, [userId, storyId]);
 
+  async function handleDeleteStory() {
+    if (!story) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete "${story.title}"?\n\nThis will also permanently delete all chapters belonging to this story.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setDeleting(true);
+    setErrorMessage("");
+
+    const { error } = await supabase
+      .from("stories")
+      .delete()
+      .eq("id", story.id);
+
+    if (error) {
+      console.error(
+        "Story deletion error:",
+        error
+      );
+
+      setErrorMessage(
+        "Unable to delete this story."
+      );
+      setDeleting(false);
+      return;
+    }
+
+    navigate("/writer", { replace: true });
+  }
+
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <p className="text-gray-300">Loading story...</p>
+        <p className="text-gray-300">
+          Loading story...
+        </p>
       </main>
     );
   }
@@ -239,6 +286,7 @@ export default function StoryEditor() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
+
           {/* Story Header */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
@@ -255,9 +303,25 @@ export default function StoryEditor() {
               </p>
             </div>
 
-            <Button onClick={() => navigate("/writer")}>
-              Back to Writer Dashboard
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/writer")}
+                disabled={deleting}
+              >
+                Back to Writer Dashboard
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={handleDeleteStory}
+                disabled={deleting}
+              >
+                {deleting
+                  ? "Deleting..."
+                  : "Delete Story"}
+              </Button>
+            </div>
           </div>
 
           {errorMessage && (

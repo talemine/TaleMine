@@ -8,6 +8,7 @@ import StoryEditForm from "../../components/story/StoryEditForm";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
+import StoryPublishControls from "../../components/story/StoryPublishControls";
 
 interface Story {
   id: string;
@@ -408,6 +409,25 @@ export default function StoryEditor() {
                   }}
                 />
               )}
+              <StoryPublishControls
+                storyId={story.id}
+                status={story.status as
+                    | "draft"
+                    | "review"
+                    | "published"
+                    | "archived"}
+                publishedAt={story.published_at}
+                onStatusChanged={(updatedStory) => {
+                    setStory((currentStory) =>
+                    currentStory
+                        ? {
+                            ...currentStory,
+                            ...updatedStory,
+                        }
+                        : currentStory
+                    );
+                  }}
+                />
             </div>
           </section>
 

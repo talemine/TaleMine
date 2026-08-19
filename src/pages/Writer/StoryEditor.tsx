@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import ChapterEditForm from "../../components/story/ChapterEditForm";
 import ChapterForm from "../../components/story/ChapterForm";
 import StoryEditForm from "../../components/story/StoryEditForm";
 import { useAuth } from "../../components/auth/AuthProvider";
@@ -51,6 +52,8 @@ export default function StoryEditor() {
   const [loading, setLoading] = useState(true);
   const [showStoryEditForm, setShowStoryEditForm] = useState(false);
   const [showChapterForm, setShowChapterForm] = useState(false);
+  const [editingChapterId, setEditingChapterId] =
+    useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -84,17 +87,12 @@ export default function StoryEditor() {
         }
 
         if (storyError) {
-          console.error(
-            "Story loading error:",
-            storyError
-          );
+          console.error("Story loading error:", storyError);
 
           setStory(null);
           setCategory(null);
           setChapters([]);
-          setErrorMessage(
-            "Unable to load this story."
-          );
+          setErrorMessage("Unable to load this story.");
           setLoading(false);
           return;
         }
@@ -164,17 +162,12 @@ export default function StoryEditor() {
           return;
         }
 
-        console.error(
-          "Story editor loading error:",
-          error
-        );
+        console.error("Story editor loading error:", error);
 
         setStory(null);
         setCategory(null);
         setChapters([]);
-        setErrorMessage(
-          "Unable to load the story editor."
-        );
+        setErrorMessage("Unable to load the story editor.");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -192,9 +185,7 @@ export default function StoryEditor() {
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <p className="text-gray-300">
-          Loading story...
-        </p>
+        <p className="text-gray-300">Loading story...</p>
       </main>
     );
   }
@@ -230,7 +221,8 @@ export default function StoryEditor() {
           </h1>
 
           <p className="mt-4 text-gray-300">
-            This story does not exist or does not belong to your writer account.
+            This story does not exist or does not belong to
+            your writer account.
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -247,7 +239,6 @@ export default function StoryEditor() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
-
           {/* Story Header */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
@@ -330,18 +321,6 @@ export default function StoryEditor() {
                           }
                         : currentStory
                     );
-
-                    if (
-                      updatedStory.category_id !==
-                      story.category_id
-                    ) {
-                      const selectedCategory =
-                        updatedStory.category_id
-                          ? null
-                          : null;
-
-                      setCategory(selectedCategory);
-                    }
 
                     setShowStoryEditForm(false);
                   }}
@@ -440,7 +419,48 @@ export default function StoryEditor() {
                           {chapter.content}
                         </p>
                       </div>
+
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setEditingChapterId(
+                            (currentId) =>
+                              currentId === chapter.id
+                                ? null
+                                : chapter.id
+                          )
+                        }
+                      >
+                        {editingChapterId === chapter.id
+                          ? "Cancel"
+                          : "Edit"}
+                      </Button>
                     </div>
+
+                    {editingChapterId === chapter.id && (
+                      <ChapterEditForm
+                        chapterId={chapter.id}
+                        initialTitle={chapter.title}
+                        initialContent={chapter.content}
+                        onSaved={(updatedChapter) => {
+                          setChapters(
+                            (currentChapters) =>
+                              currentChapters.map(
+                                (currentChapter) =>
+                                  currentChapter.id ===
+                                  chapter.id
+                                    ? {
+                                        ...currentChapter,
+                                        ...updatedChapter,
+                                      }
+                                    : currentChapter
+                              )
+                          );
+
+                          setEditingChapterId(null);
+                        }}
+                      />
+                    )}
                   </article>
                 ))}
               </div>

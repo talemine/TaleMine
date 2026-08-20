@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { supabase } from "../../services/supabase";
 import StoryCategoryFilter from "./StoryCategoryFilter";
+import StorySearch from "./StorySearch";
 
 interface PublicStory {
   id: string;
@@ -25,8 +26,11 @@ export default function PublicStoryList() {
   const [categories, setCategories] = useState<Category[]>(
     []
   );
+
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<string | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] =
@@ -140,15 +144,31 @@ export default function PublicStoryList() {
   }, []);
 
   const filteredStories = useMemo(() => {
-    if (selectedCategoryId === null) {
-      return stories;
-    }
+    const normalizedSearch = searchQuery
+      .trim()
+      .toLowerCase();
 
-    return stories.filter(
-      (story) =>
-        story.category_id === selectedCategoryId
-    );
-  }, [stories, selectedCategoryId]);
+    return stories.filter((story) => {
+      const matchesCategory =
+        selectedCategoryId === null ||
+        story.category_id === selectedCategoryId;
+
+      const matchesSearch =
+        normalizedSearch === "" ||
+        story.title
+          .toLowerCase()
+          .includes(normalizedSearch) ||
+        (story.excerpt ?? "")
+          .toLowerCase()
+          .includes(normalizedSearch);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [
+    stories,
+    selectedCategoryId,
+    searchQuery,
+  ]);
 
   function getCategoryName(
     categoryId: string | null
@@ -211,6 +231,12 @@ export default function PublicStoryList() {
           </p>
         </div>
 
+        {/* Search */}
+        <StorySearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+        />
+
         {/* Category Filter */}
         <StoryCategoryFilter
           selectedCategoryId={selectedCategoryId}
@@ -220,14 +246,16 @@ export default function PublicStoryList() {
         {filteredStories.length === 0 ? (
           <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
             <h3 className="text-xl font-semibold">
-              {selectedCategoryId
-                ? "No stories in this category"
+              {searchQuery.trim() ||
+              selectedCategoryId
+                ? "No matching stories"
                 : "No published stories yet"}
             </h3>
 
             <p className="mt-3 text-gray-400">
-              {selectedCategoryId
-                ? "Try another category or select All."
+              {searchQuery.trim() ||
+              selectedCategoryId
+                ? "Try a different search or category."
                 : "Check back soon for new stories."}
             </p>
           </div>

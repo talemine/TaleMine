@@ -20,6 +20,7 @@ interface CommenterProfile {
   id: string;
   display_name: string;
   username: string;
+  avatar_url: string | null;
 }
 
 interface CommentWithProfile extends Comment {
@@ -110,7 +111,9 @@ export default function ChapterComments({
         error: profileError,
       } = await supabase
         .from("profiles")
-        .select("id, display_name, username")
+        .select(
+          "id, display_name, username, avatar_url"
+        )
         .in("id", userIds);
 
       if (cancelled) {
@@ -217,7 +220,9 @@ export default function ChapterComments({
       error: profileError,
     } = await supabase
       .from("profiles")
-      .select("id, display_name, username")
+      .select(
+        "id, display_name, username, avatar_url"
+      )
       .eq("id", userId)
       .maybeSingle();
 
@@ -383,19 +388,57 @@ export default function ChapterComments({
               key={comment.id}
               className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6"
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="font-semibold text-white">
-                    {comment.profile?.display_name ||
-                      comment.profile?.username ||
-                      "TaleMine Reader"}
-                  </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
+                    {comment.profile?.avatar_url ? (
+                      <img
+                        src={
+                          comment.profile.avatar_url
+                        }
+                        alt={
+                          comment.profile.display_name ||
+                          "Reader avatar"
+                        }
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-cyan-400">
+                        {(
+                          comment.profile
+                            ?.display_name ||
+                          comment.profile
+                            ?.username ||
+                          "R"
+                        )
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                    )}
+                  </div>
 
-                  <p className="mt-1 text-xs text-gray-500">
-                    {new Date(
-                      comment.created_at
-                    ).toLocaleString()}
-                  </p>
+                  <div>
+                    <p className="font-semibold text-white">
+                      {comment.profile
+                        ?.display_name ||
+                        comment.profile
+                          ?.username ||
+                        "TaleMine Reader"}
+                    </p>
+
+                    {comment.profile
+                      ?.username && (
+                      <p className="text-xs text-cyan-400">
+                        @{comment.profile.username}
+                      </p>
+                    )}
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      {new Date(
+                        comment.created_at
+                      ).toLocaleString()}
+                    </p>
+                  </div>
                 </div>
 
                 {userId === comment.user_id && (

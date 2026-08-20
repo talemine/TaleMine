@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { supabase } from "../../services/supabase";
 import PublicStoryCard from "./PublicStoryCard";
@@ -14,6 +13,7 @@ interface PublicStory {
   category_id: string | null;
   writer_profile_id: string;
   published_at: string | null;
+  cover_image_url: string | null;
 }
 
 interface Category {
@@ -32,16 +32,21 @@ interface Profile {
 }
 
 export default function PublicStoryList() {
-  const navigate = useNavigate();
+  const [stories, setStories] = useState<PublicStory[]>(
+    []
+  );
 
-  const [stories, setStories] = useState<PublicStory[]>([]);
   const [categories, setCategories] = useState<Category[]>(
     []
   );
+
   const [writerProfiles, setWriterProfiles] = useState<
     WriterProfile[]
   >([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+
+  const [profiles, setProfiles] = useState<Profile[]>(
+    []
+  );
 
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<string | null>(null);
@@ -49,7 +54,8 @@ export default function PublicStoryList() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -59,16 +65,18 @@ export default function PublicStoryList() {
       setErrorMessage("");
 
       try {
-        const { data: storyData, error: storyError } =
-          await supabase
-            .from("stories")
-            .select(
-              "id, title, slug, excerpt, category_id, writer_profile_id, published_at"
-            )
-            .eq("status", "published")
-            .order("published_at", {
-              ascending: false,
-            });
+        const {
+          data: storyData,
+          error: storyError,
+        } = await supabase
+          .from("stories")
+          .select(
+            "id, title, slug, excerpt, category_id, writer_profile_id, cover_image_url, published_at"
+          )
+          .eq("status", "published")
+          .order("published_at", {
+            ascending: false,
+          });
 
         if (cancelled) {
           return;
@@ -87,6 +95,7 @@ export default function PublicStoryList() {
           setErrorMessage(
             "Unable to load published stories."
           );
+
           return;
         }
 
@@ -107,7 +116,9 @@ export default function PublicStoryList() {
         const writerProfileIds = Array.from(
           new Set(
             loadedStories
-              .map((story) => story.writer_profile_id)
+              .map(
+                (story) => story.writer_profile_id
+              )
               .filter(
                 (id): id is string => Boolean(id)
               )
@@ -133,7 +144,10 @@ export default function PublicStoryList() {
             ? supabase
                 .from("writer_profiles")
                 .select("profile_id, pen_name")
-                .in("profile_id", writerProfileIds)
+                .in(
+                  "profile_id",
+                  writerProfileIds
+                )
             : Promise.resolve({
                 data: [],
                 error: null,
@@ -159,9 +173,12 @@ export default function PublicStoryList() {
             "Story categories loading error:",
             categoryResult.error
           );
+
           setCategories([]);
         } else {
-          setCategories(categoryResult.data ?? []);
+          setCategories(
+            categoryResult.data ?? []
+          );
         }
 
         if (writerProfileResult.error) {
@@ -169,6 +186,7 @@ export default function PublicStoryList() {
             "Writer profiles loading error:",
             writerProfileResult.error
           );
+
           setWriterProfiles([]);
         } else {
           setWriterProfiles(
@@ -181,6 +199,7 @@ export default function PublicStoryList() {
             "Profiles loading error:",
             profileResult.error
           );
+
           setProfiles([]);
         } else {
           setProfiles(profileResult.data ?? []);
@@ -308,6 +327,7 @@ export default function PublicStoryList() {
   return (
     <section className="px-6 py-20">
       <div className="mx-auto max-w-5xl">
+        {/* Section Header */}
         <div className="text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-cyan-400">
             Discover
@@ -323,16 +343,19 @@ export default function PublicStoryList() {
           </p>
         </div>
 
+        {/* Search */}
         <StorySearch
           value={searchQuery}
           onChange={setSearchQuery}
         />
 
+        {/* Category Filter */}
         <StoryCategoryFilter
           selectedCategoryId={selectedCategoryId}
           onCategoryChange={setSelectedCategoryId}
         />
 
+        {/* Story Results */}
         {filteredStories.length === 0 ? (
           <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
             <h3 className="text-xl font-semibold">
@@ -364,6 +387,7 @@ export default function PublicStoryList() {
                   story.writer_profile_id
                 )}
                 publishedAt={story.published_at}
+                coverImageUrl={story.cover_image_url}
               />
             ))}
           </div>

@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { useAuth } from "../../components/auth/AuthProvider";
+import Button from "../../components/ui/Button";
 import ChapterDeleteButton from "../../components/story/ChapterDeleteButton";
 import ChapterEditForm from "../../components/story/ChapterEditForm";
 import ChapterForm from "../../components/story/ChapterForm";
 import ChapterPublishControls from "../../components/story/ChapterPublishControls";
+import StoryCoverUpload from "../../components/story/StoryCoverUpload";
 import StoryEditForm from "../../components/story/StoryEditForm";
 import StoryPublishControls from "../../components/story/StoryPublishControls";
-
-import { useAuth } from "../../components/auth/AuthProvider";
-import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
-
 
 interface Story {
   id: string;
@@ -46,23 +45,35 @@ interface Chapter {
 export default function StoryEditor() {
   const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { storyId } = useParams<{ storyId: string }>();
+  const { storyId } = useParams<{
+    storyId: string;
+  }>();
 
   const userId = session?.user.id;
 
-  const [story, setStory] = useState<Story | null>(null);
-  const [category, setCategory] = useState<Category | null>(null);
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [story, setStory] = useState<Story | null>(
+    null
+  );
+  const [category, setCategory] =
+    useState<Category | null>(null);
+  const [chapters, setChapters] = useState<Chapter[]>(
+    []
+  );
 
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+
   const [showStoryEditForm, setShowStoryEditForm] =
     useState(false);
+
   const [showChapterForm, setShowChapterForm] =
     useState(false);
+
   const [editingChapterId, setEditingChapterId] =
     useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState("");
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -80,15 +91,17 @@ export default function StoryEditor() {
       setErrorMessage("");
 
       try {
-        const { data: storyData, error: storyError } =
-          await supabase
-            .from("stories")
-            .select(
-              "id, writer_profile_id, category_id, title, slug, excerpt, cover_image_url, status, published_at, created_at, updated_at"
-            )
-            .eq("id", storyId)
-            .eq("writer_profile_id", userId)
-            .single();
+        const {
+          data: storyData,
+          error: storyError,
+        } = await supabase
+          .from("stories")
+          .select(
+            "id, writer_profile_id, category_id, title, slug, excerpt, cover_image_url, status, published_at, created_at, updated_at"
+          )
+          .eq("id", storyId)
+          .eq("writer_profile_id", userId)
+          .single();
 
         if (cancelled) {
           return;
@@ -133,11 +146,13 @@ export default function StoryEditor() {
             ascending: true,
           });
 
-        const [categoryResult, chaptersResult] =
-          await Promise.all([
-            categoryPromise,
-            chaptersPromise,
-          ]);
+        const [
+          categoryResult,
+          chaptersResult,
+        ] = await Promise.all([
+          categoryPromise,
+          chaptersPromise,
+        ]);
 
         if (cancelled) {
           return;
@@ -286,8 +301,8 @@ export default function StoryEditor() {
           </h1>
 
           <p className="mt-4 text-gray-300">
-            This story does not exist or does not belong to
-            your writer account.
+            This story does not exist or does not belong
+            to your writer account.
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -306,7 +321,6 @@ export default function StoryEditor() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
-
           {/* Story Header */}
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
@@ -375,6 +389,28 @@ export default function StoryEditor() {
               </p>
             </div>
 
+            {/* Story Cover Upload */}
+            <StoryCoverUpload
+              storyId={story.id}
+              writerProfileId={
+                story.writer_profile_id
+              }
+              currentCoverUrl={
+                story.cover_image_url
+              }
+              onUploaded={(coverUrl) => {
+                setStory((currentStory) =>
+                  currentStory
+                    ? {
+                        ...currentStory,
+                        cover_image_url:
+                          coverUrl,
+                      }
+                    : currentStory
+                );
+              }}
+            />
+
             {/* Edit Story */}
             <div className="mt-6">
               <Button
@@ -412,25 +448,30 @@ export default function StoryEditor() {
                   }}
                 />
               )}
+
               <StoryPublishControls
                 storyId={story.id}
-                status={story.status as
+                status={
+                  story.status as
                     | "draft"
                     | "review"
                     | "published"
-                    | "archived"}
-                publishedAt={story.published_at}
+                    | "archived"
+                }
+                publishedAt={
+                  story.published_at
+                }
                 onStatusChanged={(updatedStory) => {
-                    setStory((currentStory) =>
+                  setStory((currentStory) =>
                     currentStory
-                        ? {
-                            ...currentStory,
-                            ...updatedStory,
+                      ? {
+                          ...currentStory,
+                          ...updatedStory,
                         }
-                        : currentStory
-                    );
-                  }}
-                />
+                      : currentStory
+                  );
+                }}
+              />
             </div>
           </section>
 
@@ -494,7 +535,8 @@ export default function StoryEditor() {
                 </h3>
 
                 <p className="mt-3 text-gray-400">
-                  Create the first chapter for this story.
+                  Create the first chapter for this
+                  story.
                 </p>
               </div>
             ) : (
@@ -568,7 +610,9 @@ export default function StoryEditor() {
                       <ChapterEditForm
                         chapterId={chapter.id}
                         initialTitle={chapter.title}
-                        initialContent={chapter.content}
+                        initialContent={
+                          chapter.content
+                        }
                         onSaved={(updatedChapter) => {
                           setChapters(
                             (currentChapters) =>
@@ -588,22 +632,33 @@ export default function StoryEditor() {
                         }}
                       />
                     )}
-                  <ChapterPublishControls
-                    chapterId={chapter.id}
-                    status={chapter.status as "draft" | "published"}
-                    onStatusChanged={(updatedStatus) => {
-                      setChapters((currentChapters) =>
-                        currentChapters.map((currentChapter) =>
-                          currentChapter.id === chapter.id
-                            ? {
-                                ...currentChapter,
-                                status: updatedStatus,
-                              }
-                            : currentChapter
-                        )
-                      );
-                    }}
-                  />
+
+                    <ChapterPublishControls
+                      chapterId={chapter.id}
+                      status={
+                        chapter.status as
+                          | "draft"
+                          | "published"
+                      }
+                      onStatusChanged={(
+                        updatedStatus
+                      ) => {
+                        setChapters(
+                          (currentChapters) =>
+                            currentChapters.map(
+                              (currentChapter) =>
+                                currentChapter.id ===
+                                chapter.id
+                                  ? {
+                                      ...currentChapter,
+                                      status:
+                                        updatedStatus,
+                                    }
+                                  : currentChapter
+                            )
+                        );
+                      }}
+                    />
                   </article>
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import ChapterBookmarkButton from "../../components/story/ChapterBookmarkButton";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
 
@@ -33,10 +34,12 @@ export default function StoryChapterPage() {
     chapterNumber: string;
   }>();
 
-  const [story, setStory] = useState<Story | null>(null);
-  const [chapter, setChapter] = useState<Chapter | null>(
+  const [story, setStory] = useState<Story | null>(
     null
   );
+
+  const [chapter, setChapter] =
+    useState<Chapter | null>(null);
 
   const [navigation, setNavigation] =
     useState<ChapterNavigation>({
@@ -58,7 +61,8 @@ export default function StoryChapterPage() {
         return;
       }
 
-      const parsedChapterNumber = Number(chapterNumber);
+      const parsedChapterNumber =
+        Number(chapterNumber);
 
       if (
         !Number.isInteger(parsedChapterNumber) ||
@@ -74,13 +78,15 @@ export default function StoryChapterPage() {
 
       try {
         // Load only a published story.
-        const { data: storyData, error: storyError } =
-          await supabase
-            .from("stories")
-            .select("id, title, slug, status")
-            .eq("slug", slug)
-            .eq("status", "published")
-            .single();
+        const {
+          data: storyData,
+          error: storyError,
+        } = await supabase
+          .from("stories")
+          .select("id, title, slug, status")
+          .eq("slug", slug)
+          .eq("status", "published")
+          .single();
 
         if (cancelled) {
           return;
@@ -119,7 +125,10 @@ export default function StoryChapterPage() {
             "id, story_id, chapter_number, title, content, status"
           )
           .eq("story_id", storyData.id)
-          .eq("chapter_number", parsedChapterNumber)
+          .eq(
+            "chapter_number",
+            parsedChapterNumber
+          )
           .eq("status", "published")
           .single();
 
@@ -314,8 +323,18 @@ export default function StoryChapterPage() {
             </div>
           </div>
 
+          {/* Bookmark */}
+          <div className="mt-10 border-t border-slate-800 pt-8">
+            <div className="flex justify-center">
+              <ChapterBookmarkButton
+                storyId={story.id}
+                chapterId={chapter.id}
+              />
+            </div>
+          </div>
+
           {/* Navigation */}
-          <div className="mt-12 border-t border-slate-800 pt-8">
+          <div className="mt-10 border-t border-slate-800 pt-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 {navigation.previous !== null ? (

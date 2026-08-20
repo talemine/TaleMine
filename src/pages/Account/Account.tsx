@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AvatarUpload from "../../components/profile/AvatarUpload";
 import ProfileForm from "../../components/profile/ProfileForm";
 import WriterProfileForm from "../../components/profile/WriterProfileForm";
+import MyBookmarks from "../../components/story/MyBookmarks";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
@@ -31,19 +32,24 @@ export default function Account() {
 
   const userId = session?.user.id;
 
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] =
+    useState<Profile | null>(null);
+
   const [writerProfile, setWriterProfile] =
     useState<WriterProfile | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   async function handleLogout() {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error("Logout error:", error);
-      setErrorMessage("Unable to log out. Please try again.");
+      setErrorMessage(
+        "Unable to log out. Please try again."
+      );
       return;
     }
 
@@ -65,7 +71,10 @@ export default function Account() {
       setErrorMessage("");
 
       try {
-        const [profileResult, writerResult] = await Promise.all([
+        const [
+          profileResult,
+          writerResult,
+        ] = await Promise.all([
           supabase
             .from("profiles")
             .select(
@@ -95,7 +104,9 @@ export default function Account() {
 
           setProfile(null);
           setWriterProfile(null);
-          setErrorMessage("Unable to load your profile.");
+          setErrorMessage(
+            "Unable to load your profile."
+          );
           return;
         }
 
@@ -110,7 +121,9 @@ export default function Account() {
             "Your profile loaded, but your writer profile could not be loaded."
           );
         } else {
-          setWriterProfile(writerResult.data ?? null);
+          setWriterProfile(
+            writerResult.data ?? null
+          );
         }
 
         setProfile(profileResult.data);
@@ -119,7 +132,10 @@ export default function Account() {
           return;
         }
 
-        console.error("Account loading error:", error);
+        console.error(
+          "Account loading error:",
+          error
+        );
 
         setProfile(null);
         setWriterProfile(null);
@@ -163,7 +179,9 @@ export default function Account() {
           </p>
 
           <div className="mt-8 flex justify-center">
-            <Button onClick={() => navigate("/login")}>
+            <Button
+              onClick={() => navigate("/login")}
+            >
               Go to Login
             </Button>
           </div>
@@ -224,7 +242,8 @@ export default function Account() {
                   </p>
 
                   <p className="mt-1 text-gray-300">
-                    {profile.bio || "No bio added yet."}
+                    {profile.bio ||
+                      "No bio added yet."}
                   </p>
                 </div>
               </section>
@@ -232,15 +251,18 @@ export default function Account() {
               {/* Avatar */}
               <AvatarUpload
                 userId={profile.id}
-                currentAvatarUrl={profile.avatar_url}
+                currentAvatarUrl={
+                  profile.avatar_url
+                }
                 onUploaded={(avatarUrl) => {
-                  setProfile((currentProfile) =>
-                    currentProfile
-                      ? {
-                          ...currentProfile,
-                          avatar_url: avatarUrl,
-                        }
-                      : currentProfile
+                  setProfile(
+                    (currentProfile) =>
+                      currentProfile
+                        ? {
+                            ...currentProfile,
+                            avatar_url: avatarUrl,
+                          }
+                        : currentProfile
                   );
                 }}
               />
@@ -248,17 +270,22 @@ export default function Account() {
               {/* Profile editing */}
               <ProfileForm
                 profileId={profile.id}
-                initialUsername={profile.username}
-                initialDisplayName={profile.display_name}
+                initialUsername={
+                  profile.username
+                }
+                initialDisplayName={
+                  profile.display_name
+                }
                 initialBio={profile.bio}
                 onSaved={(updatedProfile) => {
-                  setProfile((currentProfile) =>
-                    currentProfile
-                      ? {
-                          ...currentProfile,
-                          ...updatedProfile,
-                        }
-                      : currentProfile
+                  setProfile(
+                    (currentProfile) =>
+                      currentProfile
+                        ? {
+                            ...currentProfile,
+                            ...updatedProfile,
+                          }
+                        : currentProfile
                   );
                 }}
               />
@@ -282,7 +309,9 @@ export default function Account() {
 
                   {writerProfile.website_url && (
                     <a
-                      href={writerProfile.website_url}
+                      href={
+                        writerProfile.website_url
+                      }
                       target="_blank"
                       rel="noreferrer"
                       className="mt-3 inline-block text-cyan-400 transition hover:text-cyan-300"
@@ -294,11 +323,18 @@ export default function Account() {
               ) : (
                 <WriterProfileForm
                   profileId={profile.id}
-                  onCreated={(createdWriterProfile) => {
-                    setWriterProfile(createdWriterProfile);
+                  onCreated={(
+                    createdWriterProfile
+                  ) => {
+                    setWriterProfile(
+                      createdWriterProfile
+                    );
                   }}
                 />
               )}
+
+              {/* My Bookmarks */}
+              <MyBookmarks />
             </>
           )}
 

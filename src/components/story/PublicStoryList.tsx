@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { supabase } from "../../services/supabase";
+import PublicStoryCard from "./PublicStoryCard";
 import StoryCategoryFilter from "./StoryCategoryFilter";
 import StorySearch from "./StorySearch";
 
@@ -11,12 +12,23 @@ interface PublicStory {
   slug: string;
   excerpt: string | null;
   category_id: string | null;
+  writer_profile_id: string;
   published_at: string | null;
 }
 
 interface Category {
   id: string;
   name: string;
+}
+
+interface WriterProfile {
+  profile_id: string;
+  pen_name: string | null;
+}
+
+interface Profile {
+  id: string;
+  display_name: string;
 }
 
 export default function PublicStoryList() {
@@ -26,6 +38,10 @@ export default function PublicStoryList() {
   const [categories, setCategories] = useState<Category[]>(
     []
   );
+  const [writerProfiles, setWriterProfiles] = useState<
+    WriterProfile[]
+  >([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const [selectedCategoryId, setSelectedCategoryId] =
     useState<string | null>(null);
@@ -33,8 +49,7 @@ export default function PublicStoryList() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -48,7 +63,7 @@ export default function PublicStoryList() {
           await supabase
             .from("stories")
             .select(
-              "id, title, slug, excerpt, category_id, published_at"
+              "id, title, slug, excerpt, category_id, writer_profile_id, published_at"
             )
             .eq("status", "published")
             .order("published_at", {
@@ -67,6 +82,8 @@ export default function PublicStoryList() {
 
           setStories([]);
           setCategories([]);
+          setWriterProfiles([]);
+          setProfiles([]);
           setErrorMessage(
             "Unable to load published stories."
           );
@@ -87,32 +104,86 @@ export default function PublicStoryList() {
           )
         );
 
-        if (categoryIds.length === 0) {
-          setCategories([]);
-          return;
-        }
+        const writerProfileIds = Array.from(
+          new Set(
+            loadedStories
+              .map((story) => story.writer_profile_id)
+              .filter(
+                (id): id is string => Boolean(id)
+              )
+          )
+        );
 
-        const {
-          data: categoryData,
-          error: categoryError,
-        } = await supabase
-          .from("categories")
-          .select("id, name")
-          .in("id", categoryIds);
+        const [
+          categoryResult,
+          writerProfileResult,
+          profileResult,
+        ] = await Promise.all([
+          categoryIds.length > 0
+            ? supabase
+                .from("categories")
+                .select("id, name")
+                .in("id", categoryIds)
+            : Promise.resolve({
+                data: [],
+                error: null,
+              }),
+
+          writerProfileIds.length > 0
+            ? supabase
+                .from("writer_profiles")
+                .select("profile_id, pen_name")
+                .in("profile_id", writerProfileIds)
+            : Promise.resolve({
+                data: [],
+                error: null,
+              }),
+
+          writerProfileIds.length > 0
+            ? supabase
+                .from("profiles")
+                .select("id, display_name")
+                .in("id", writerProfileIds)
+            : Promise.resolve({
+                data: [],
+                error: null,
+              }),
+        ]);
 
         if (cancelled) {
           return;
         }
 
-        if (categoryError) {
+        if (categoryResult.error) {
           console.error(
             "Story categories loading error:",
-            categoryError
+            categoryResult.error
           );
-
           setCategories([]);
         } else {
-          setCategories(categoryData ?? []);
+          setCategories(categoryResult.data ?? []);
+        }
+
+        if (writerProfileResult.error) {
+          console.error(
+            "Writer profiles loading error:",
+            writerProfileResult.error
+          );
+          setWriterProfiles([]);
+        } else {
+          setWriterProfiles(
+            writerProfileResult.data ?? []
+          );
+        }
+
+        if (profileResult.error) {
+          console.error(
+            "Profiles loading error:",
+            profileResult.error
+          );
+          setProfiles([]);
+        } else {
+          setProfiles(profileResult.data ?? []);
         }
       } catch (error) {
         if (cancelled) {
@@ -126,6 +197,8 @@ export default function PublicStoryList() {
 
         setStories([]);
         setCategories([]);
+        setWriterProfiles([]);
+        setProfiles([]);
         setErrorMessage(
           "Unable to load published stories."
         );
@@ -184,6 +257,26 @@ export default function PublicStoryList() {
     );
   }
 
+  function getAuthorName(
+    writerProfileId: string
+  ) {
+    const writerProfile = writerProfiles.find(
+      (profile) =>
+        profile.profile_id === writerProfileId
+    );
+
+    const profile = profiles.find(
+      (profile) =>
+        profile.id === writerProfileId
+    );
+
+    return (
+      writerProfile?.pen_name?.trim() ||
+      profile?.display_name?.trim() ||
+      null
+    );
+  }
+
   if (loading) {
     return (
       <section className="px-6 py-20">
@@ -215,7 +308,6 @@ export default function PublicStoryList() {
   return (
     <section className="px-6 py-20">
       <div className="mx-auto max-w-5xl">
-        {/* Section Header */}
         <div className="text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-cyan-400">
             Discover
@@ -231,13 +323,11 @@ export default function PublicStoryList() {
           </p>
         </div>
 
-        {/* Search */}
         <StorySearch
           value={searchQuery}
           onChange={setSearchQuery}
         />
 
-        {/* Category Filter */}
         <StoryCategoryFilter
           selectedCategoryId={selectedCategoryId}
           onCategoryChange={setSelectedCategoryId}
@@ -261,80 +351,21 @@ export default function PublicStoryList() {
           </div>
         ) : (
           <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {filteredStories.map((story) => {
-              const categoryName =
-                getCategoryName(story.category_id);
-
-              return (
-                <article
-                  key={story.id}
-                  className="
-                    rounded-2xl
-                    border
-                    border-slate-800
-                    bg-slate-950/50
-                    p-6
-                    transition
-                    duration-200
-                    hover:border-cyan-500/40
-                  "
-                >
-                  <div className="flex flex-wrap gap-3">
-                    {categoryName && (
-                      <span className="rounded-full border border-cyan-500/20 px-3 py-1 text-xs uppercase tracking-wide text-cyan-300">
-                        {categoryName}
-                      </span>
-                    )}
-
-                    <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
-                      Published
-                    </span>
-                  </div>
-
-                  <h3 className="mt-5 text-2xl font-semibold text-white">
-                    {story.title}
-                  </h3>
-
-                  {story.excerpt && (
-                    <p className="mt-3 leading-7 text-gray-400">
-                      {story.excerpt}
-                    </p>
-                  )}
-
-                  {story.published_at && (
-                    <p className="mt-4 text-sm text-gray-500">
-                      Published{" "}
-                      {new Date(
-                        story.published_at
-                      ).toLocaleDateString()}
-                    </p>
-                  )}
-
-                  <div className="mt-6">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          `/story/${story.slug}`
-                        )
-                      }
-                      className="
-                        rounded-full
-                        bg-cyan-500
-                        px-5
-                        py-3
-                        font-medium
-                        text-slate-950
-                        transition
-                        hover:bg-cyan-400
-                      "
-                    >
-                      Read Story
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+            {filteredStories.map((story) => (
+              <PublicStoryCard
+                key={story.id}
+                title={story.title}
+                slug={story.slug}
+                excerpt={story.excerpt}
+                categoryName={getCategoryName(
+                  story.category_id
+                )}
+                penName={getAuthorName(
+                  story.writer_profile_id
+                )}
+                publishedAt={story.published_at}
+              />
+            ))}
           </div>
         )}
       </div>

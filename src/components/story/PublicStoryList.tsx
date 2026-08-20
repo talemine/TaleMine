@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { supabase } from "../../services/supabase";
+import StoryCategoryFilter from "./StoryCategoryFilter";
 
 interface PublicStory {
   id: string;
@@ -20,12 +21,12 @@ interface Category {
 export default function PublicStoryList() {
   const navigate = useNavigate();
 
-  const [stories, setStories] = useState<PublicStory[]>(
-    []
-  );
+  const [stories, setStories] = useState<PublicStory[]>([]);
   const [categories, setCategories] = useState<Category[]>(
     []
   );
+  const [selectedCategoryId, setSelectedCategoryId] =
+    useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] =
@@ -138,6 +139,17 @@ export default function PublicStoryList() {
     };
   }, []);
 
+  const filteredStories = useMemo(() => {
+    if (selectedCategoryId === null) {
+      return stories;
+    }
+
+    return stories.filter(
+      (story) =>
+        story.category_id === selectedCategoryId
+    );
+  }, [stories, selectedCategoryId]);
+
   function getCategoryName(
     categoryId: string | null
   ) {
@@ -199,23 +211,31 @@ export default function PublicStoryList() {
           </p>
         </div>
 
-        {stories.length === 0 ? (
+        {/* Category Filter */}
+        <StoryCategoryFilter
+          selectedCategoryId={selectedCategoryId}
+          onCategoryChange={setSelectedCategoryId}
+        />
+
+        {filteredStories.length === 0 ? (
           <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
             <h3 className="text-xl font-semibold">
-              No published stories yet
+              {selectedCategoryId
+                ? "No stories in this category"
+                : "No published stories yet"}
             </h3>
 
             <p className="mt-3 text-gray-400">
-              Check back soon for new stories.
+              {selectedCategoryId
+                ? "Try another category or select All."
+                : "Check back soon for new stories."}
             </p>
           </div>
         ) : (
           <div className="mt-10 grid gap-6 md:grid-cols-2">
-            {stories.map((story) => {
+            {filteredStories.map((story) => {
               const categoryName =
-                getCategoryName(
-                  story.category_id
-                );
+                getCategoryName(story.category_id);
 
               return (
                 <article

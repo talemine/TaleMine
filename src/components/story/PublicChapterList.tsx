@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import ChapterLikeCount from "./ChapterLikeCount";
 import { supabase } from "../../services/supabase";
 
 interface PublicChapter {
@@ -25,6 +26,7 @@ export default function PublicChapterList({
   const [chapters, setChapters] = useState<
     PublicChapter[]
   >([]);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] =
     useState("");
@@ -148,6 +150,12 @@ export default function PublicChapterList({
             {chapter.title ||
               `Chapter ${chapter.chapter_number}`}
           </h3>
+
+          <div className="mt-3">
+            <ChapterLikeCount
+              chapterId={chapter.id}
+            />
+          </div>
 
           <p className="mt-3 text-sm text-gray-400">
             Read chapter →

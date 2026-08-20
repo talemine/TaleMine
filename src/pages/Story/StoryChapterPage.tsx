@@ -333,6 +333,7 @@ export default function StoryChapterPage() {
                 />
 
                 <ChapterBookmarkButton
+                    storyId={story.id}
                     chapterId={chapter.id}
                 />
             </div>

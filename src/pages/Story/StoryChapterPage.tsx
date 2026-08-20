@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import ChapterBookmarkButton from "../../components/story/ChapterBookmarkButton";
 import ChapterLikeButton from "../../components/story/ChapterLikeButton";
+import ChapterComments from "../../components/story/ChapterComments";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
 
@@ -338,6 +339,12 @@ export default function StoryChapterPage() {
                 />
             </div>
           </div>
+
+          {/* Comments */}
+          <ChapterComments
+            storyId={story.id}
+            chapterId={chapter.id}
+          />
 
           {/* Navigation */}
           <div className="mt-10 border-t border-slate-800 pt-8">

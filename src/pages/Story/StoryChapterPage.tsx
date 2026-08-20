@@ -20,20 +20,33 @@ interface Chapter {
   status: string;
 }
 
+interface ChapterNavigation {
+  previous: number | null;
+  next: number | null;
+}
+
 export default function StoryChapterPage() {
   const navigate = useNavigate();
-  const { slug, chapterNumber } =
-    useParams<{
-      slug: string;
-      chapterNumber: string;
-    }>();
+
+  const { slug, chapterNumber } = useParams<{
+    slug: string;
+    chapterNumber: string;
+  }>();
 
   const [story, setStory] = useState<Story | null>(null);
-  const [chapter, setChapter] =
-    useState<Chapter | null>(null);
+  const [chapter, setChapter] = useState<Chapter | null>(
+    null
+  );
+
+  const [navigation, setNavigation] =
+    useState<ChapterNavigation>({
+      previous: null,
+      next: null,
+    });
 
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -45,8 +58,7 @@ export default function StoryChapterPage() {
         return;
       }
 
-      const parsedChapterNumber =
-        Number(chapterNumber);
+      const parsedChapterNumber = Number(chapterNumber);
 
       if (
         !Number.isInteger(parsedChapterNumber) ||
@@ -61,6 +73,7 @@ export default function StoryChapterPage() {
       setErrorMessage("");
 
       try {
+        // Load only a published story.
         const { data: storyData, error: storyError } =
           await supabase
             .from("stories")
@@ -81,15 +94,22 @@ export default function StoryChapterPage() {
 
           setStory(null);
           setChapter(null);
+          setNavigation({
+            previous: null,
+            next: null,
+          });
+
           setErrorMessage(
             "This story could not be found."
           );
+
           setLoading(false);
           return;
         }
 
         setStory(storyData);
 
+        // Load only the requested published chapter.
         const {
           data: chapterData,
           error: chapterError,
@@ -114,14 +134,74 @@ export default function StoryChapterPage() {
           );
 
           setChapter(null);
+          setNavigation({
+            previous: null,
+            next: null,
+          });
+
           setErrorMessage(
             "This chapter is not available."
           );
+
           setLoading(false);
           return;
         }
 
         setChapter(chapterData);
+
+        // Load published chapter numbers for navigation.
+        const {
+          data: chapterNumbers,
+          error: navigationError,
+        } = await supabase
+          .from("chapters")
+          .select("chapter_number")
+          .eq("story_id", storyData.id)
+          .eq("status", "published")
+          .order("chapter_number", {
+            ascending: true,
+          });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (navigationError) {
+          console.error(
+            "Chapter navigation loading error:",
+            navigationError
+          );
+
+          setNavigation({
+            previous: null,
+            next: null,
+          });
+        } else {
+          const numbers = (chapterNumbers ?? [])
+            .map((item) => item.chapter_number)
+            .filter(
+              (number) =>
+                Number.isInteger(number) &&
+                number > 0
+            );
+
+          const currentIndex = numbers.indexOf(
+            parsedChapterNumber
+          );
+
+          setNavigation({
+            previous:
+              currentIndex > 0
+                ? numbers[currentIndex - 1]
+                : null,
+
+            next:
+              currentIndex >= 0 &&
+              currentIndex < numbers.length - 1
+                ? numbers[currentIndex + 1]
+                : null,
+          });
+        }
       } catch (error) {
         if (cancelled) {
           return;
@@ -134,6 +214,11 @@ export default function StoryChapterPage() {
 
         setStory(null);
         setChapter(null);
+        setNavigation({
+          previous: null,
+          next: null,
+        });
+
         setErrorMessage(
           "Unable to load this chapter."
         );
@@ -150,6 +235,16 @@ export default function StoryChapterPage() {
       cancelled = true;
     };
   }, [slug, chapterNumber]);
+
+  function goToChapter(number: number) {
+    if (!story) {
+      return;
+    }
+
+    navigate(
+      `/story/${story.slug}/chapter/${number}`
+    );
+  }
 
   if (loading) {
     return (
@@ -192,6 +287,7 @@ export default function StoryChapterPage() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <article className="mx-auto max-w-3xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8 md:p-12">
+          {/* Chapter Header */}
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-cyan-400">
               Chapter {chapter.chapter_number}
@@ -211,20 +307,59 @@ export default function StoryChapterPage() {
             {story.title}
           </p>
 
+          {/* Chapter Content */}
           <div className="mt-10 border-t border-slate-800 pt-10">
             <div className="whitespace-pre-wrap text-lg leading-9 text-gray-200">
               {chapter.content}
             </div>
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-3">
-            <Button
-              onClick={() =>
-                navigate(`/story/${story.slug}`)
-              }
-            >
-              Back to Story
-            </Button>
+          {/* Navigation */}
+          <div className="mt-12 border-t border-slate-800 pt-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                {navigation.previous !== null ? (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      goToChapter(
+                        navigation.previous as number
+                      )
+                    }
+                  >
+                    ← Previous Chapter
+                  </Button>
+                ) : (
+                  <div />
+                )}
+              </div>
+
+              <Button
+                onClick={() =>
+                  navigate(
+                    `/story/${story.slug}`
+                  )
+                }
+              >
+                Back to Story
+              </Button>
+
+              <div>
+                {navigation.next !== null ? (
+                  <Button
+                    onClick={() =>
+                      goToChapter(
+                        navigation.next as number
+                      )
+                    }
+                  >
+                    Next Chapter →
+                  </Button>
+                ) : (
+                  <div />
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </article>

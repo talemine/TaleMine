@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { supabase } from "../../services/supabase";
 
 interface PublicChapter {
@@ -11,14 +13,21 @@ interface PublicChapter {
 
 interface PublicChapterListProps {
   storyId: string;
+  storySlug: string;
 }
 
 export default function PublicChapterList({
   storyId,
+  storySlug,
 }: PublicChapterListProps) {
-  const [chapters, setChapters] = useState<PublicChapter[]>([]);
+  const navigate = useNavigate();
+
+  const [chapters, setChapters] = useState<
+    PublicChapter[]
+  >([]);
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -103,9 +112,27 @@ export default function PublicChapterList({
   return (
     <div className="mt-6 space-y-6">
       {chapters.map((chapter) => (
-        <article
+        <button
           key={chapter.id}
-          className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6"
+          type="button"
+          onClick={() =>
+            navigate(
+              `/story/${storySlug}/chapter/${chapter.chapter_number}`
+            )
+          }
+          className="
+            block
+            w-full
+            rounded-2xl
+            border
+            border-slate-800
+            bg-slate-950/50
+            p-6
+            text-left
+            transition
+            hover:border-cyan-500/40
+            hover:bg-slate-900
+          "
         >
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-cyan-400">
@@ -122,10 +149,10 @@ export default function PublicChapterList({
               `Chapter ${chapter.chapter_number}`}
           </h3>
 
-          <div className="mt-5 whitespace-pre-wrap text-base leading-8 text-gray-300">
-            {chapter.content}
-          </div>
-        </article>
+          <p className="mt-3 text-sm text-gray-400">
+            Read chapter →
+          </p>
+        </button>
       ))}
     </div>
   );

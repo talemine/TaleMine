@@ -7,6 +7,7 @@ import Account from "../pages/Account/Account";
 import WriterDashboard from "../pages/Writer/WriterDashboard";
 import StoryEditor from "../pages/Writer/StoryEditor";
 import StoryPage from "../pages/Story/StoryPage";
+import StoryChapterPage from "../pages/Story/StoryChapterPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -21,6 +22,11 @@ export default function AppRouter() {
         <Route
           path="/story/:slug"
           element={<StoryPage />}
+        />
+
+        <Route
+          path="/story/:slug/chapter/:chapterNumber"
+          element={<StoryChapterPage />}
         />
 
         {/* Public-only routes */}

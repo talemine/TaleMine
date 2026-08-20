@@ -274,7 +274,10 @@ export default function StoryPage() {
               Chapters
             </h2>
 
-            <PublicChapterList storyId={story.id} />
+            <PublicChapterList
+              storyId={story.id}
+              storySlug={story.slug}
+            />
           </section>
 
           <div className="mt-10">

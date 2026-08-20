@@ -8,6 +8,8 @@ import Roadmap from "./components/Roadmap";
 import Waitlist from "./components/Waitlist";
 import Footer from "../../components/layout/Footer";
 
+import PublicStoryList from "../../components/story/PublicStoryList";
+
 export default function LandingPage() {
   return (
     <>
@@ -17,6 +19,9 @@ export default function LandingPage() {
         <Hero />
         <About />
         <ReaderFeatures />
+
+        <PublicStoryList />
+
         <WriterFeatures />
         <Vision />
         <Roadmap />

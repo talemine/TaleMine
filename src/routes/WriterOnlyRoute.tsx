@@ -7,7 +7,9 @@ import { supabase } from "../services/supabase";
 export default function WriterOnlyRoute() {
   const { session, loading: authLoading } = useAuth();
 
-  const [isWriter, setIsWriter] = useState<boolean | null>(null);
+  const [isWriter, setIsWriter] = useState<boolean | null>(
+    null
+  );
 
   const userId = session?.user.id;
 
@@ -16,7 +18,7 @@ export default function WriterOnlyRoute() {
 
     async function checkWriterProfile() {
       if (!userId) {
-        setIsWriter(null);
+        setIsWriter(false);
         return;
       }
 
@@ -33,7 +35,11 @@ export default function WriterOnlyRoute() {
       }
 
       if (error) {
-        console.error("Writer access check error:", error);
+        console.error(
+          "Writer access check error:",
+          error
+        );
+
         setIsWriter(false);
         return;
       }
@@ -41,14 +47,36 @@ export default function WriterOnlyRoute() {
       setIsWriter(Boolean(data));
     }
 
-    checkWriterProfile();
+    if (!authLoading && session) {
+      checkWriterProfile();
+    } else if (!authLoading && !session) {
+      setIsWriter(false);
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [authLoading, session, userId]);
 
-  if (authLoading || isWriter === null) {
+  // Authentication is still being resolved.
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <p className="text-gray-300">
+          Checking authentication...
+        </p>
+      </main>
+    );
+  }
+
+  // User is not authenticated.
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Authentication is complete, but writer access
+  // is still being checked.
+  if (isWriter === null) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
@@ -58,13 +86,11 @@ export default function WriterOnlyRoute() {
     );
   }
 
-  if (!session) {
-    return <Navigate to="/login" replace />;
-  }
-
+  // Authenticated user is not a writer.
   if (!isWriter) {
     return <Navigate to="/account" replace />;
   }
 
+  // Authenticated writer.
   return <Outlet />;
 }

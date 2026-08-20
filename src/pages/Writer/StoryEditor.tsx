@@ -4,11 +4,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import ChapterDeleteButton from "../../components/story/ChapterDeleteButton";
 import ChapterEditForm from "../../components/story/ChapterEditForm";
 import ChapterForm from "../../components/story/ChapterForm";
+import ChapterPublishControls from "../../components/story/ChapterPublishControls";
 import StoryEditForm from "../../components/story/StoryEditForm";
+import StoryPublishControls from "../../components/story/StoryPublishControls";
+
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
-import StoryPublishControls from "../../components/story/StoryPublishControls";
+
 
 interface Story {
   id: string;
@@ -585,6 +588,22 @@ export default function StoryEditor() {
                         }}
                       />
                     )}
+                  <ChapterPublishControls
+                    chapterId={chapter.id}
+                    status={chapter.status as "draft" | "published"}
+                    onStatusChanged={(updatedStatus) => {
+                      setChapters((currentChapters) =>
+                        currentChapters.map((currentChapter) =>
+                          currentChapter.id === chapter.id
+                            ? {
+                                ...currentChapter,
+                                status: updatedStatus,
+                              }
+                            : currentChapter
+                        )
+                      );
+                    }}
+                  />
                   </article>
                 ))}
               </div>

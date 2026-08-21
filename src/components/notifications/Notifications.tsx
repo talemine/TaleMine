@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../auth/AuthProvider";
 import Button from "../ui/Button";
@@ -11,6 +12,8 @@ interface Notification {
   type: string;
   story_id: string | null;
   chapter_id: string | null;
+  story_slug: string | null;
+  chapter_number: number | null;
   comment_id: string | null;
   message: string;
   read_at: string | null;
@@ -31,6 +34,7 @@ interface NotificationWithActor
 
 export default function Notifications() {
   const { session } = useAuth();
+  const navigate = useNavigate();
 
   const [notifications, setNotifications] =
     useState<NotificationWithActor[]>([]);
@@ -105,6 +109,38 @@ export default function Notifications() {
         return;
       }
 
+      const storyIds = Array.from(
+        new Set(
+          loadedNotifications
+            .map(
+              (notification) =>
+                notification.story_id
+            )
+            .filter(
+              (
+                storyId
+              ): storyId is string =>
+                Boolean(storyId)
+            )
+        )
+      );
+
+      const chapterIds = Array.from(
+        new Set(
+          loadedNotifications
+            .map(
+              (notification) =>
+                notification.chapter_id
+            )
+            .filter(
+              (
+                chapterId
+              ): chapterId is string =>
+                Boolean(chapterId)
+            )
+        )
+      );
+
       const actorIds = Array.from(
         new Set(
           loadedNotifications
@@ -121,32 +157,68 @@ export default function Notifications() {
         )
       );
 
-      if (actorIds.length === 0) {
-        setNotifications(
-          loadedNotifications.map(
-            (notification) => ({
-              ...notification,
-              actor: null,
-            })
-          )
-        );
+      const [
+        { data: storyData, error: storyError },
+        {
+          data: chapterData,
+          error: chapterError,
+        },
+        {
+          data: actorData,
+          error: actorError,
+        },
+      ] = await Promise.all([
+        storyIds.length > 0
+          ? supabase
+              .from("stories")
+              .select("id, slug")
+              .in("id", storyIds)
+          : Promise.resolve({
+              data: [],
+              error: null,
+            }),
 
-        setLoading(false);
-        return;
-      }
+        chapterIds.length > 0
+          ? supabase
+              .from("chapters")
+              .select(
+                "id, chapter_number"
+              )
+              .in("id", chapterIds)
+          : Promise.resolve({
+              data: [],
+              error: null,
+            }),
 
-      const {
-        data: actorData,
-        error: actorError,
-      } = await supabase
-        .from("profiles")
-        .select(
-          "id, display_name, username, avatar_url"
-        )
-        .in("id", actorIds);
+        actorIds.length > 0
+          ? supabase
+              .from("profiles")
+              .select(
+                "id, display_name, username, avatar_url"
+              )
+              .in("id", actorIds)
+          : Promise.resolve({
+              data: [],
+              error: null,
+            }),
+      ]);
 
       if (cancelled) {
         return;
+      }
+
+      if (storyError) {
+        console.error(
+          "Notification story loading error:",
+          storyError
+        );
+      }
+
+      if (chapterError) {
+        console.error(
+          "Notification chapter loading error:",
+          chapterError
+        );
       }
 
       if (actorError) {
@@ -160,6 +232,21 @@ export default function Notifications() {
         loadedNotifications.map(
           (notification) => ({
             ...notification,
+
+            story_slug:
+              storyData?.find(
+                (story) =>
+                  story.id ===
+                  notification.story_id
+              )?.slug ?? null,
+
+            chapter_number:
+              chapterData?.find(
+                (chapter) =>
+                  chapter.id ===
+                  notification.chapter_id
+              )?.chapter_number ?? null,
+
             actor:
               actorData?.find(
                 (actor) =>
@@ -189,10 +276,12 @@ export default function Notifications() {
       return;
     }
 
+    const readAt = new Date().toISOString();
+
     const { error } = await supabase
       .from("notifications")
       .update({
-        read_at: new Date().toISOString(),
+        read_at: readAt,
       })
       .eq("id", notificationId)
       .eq("user_id", userId);
@@ -214,12 +303,29 @@ export default function Notifications() {
             notificationId
               ? {
                   ...notification,
-                  read_at:
-                    new Date().toISOString(),
+                  read_at: readAt,
                 }
               : notification
         )
     );
+  }
+
+  async function openNotification(
+    notification: NotificationWithActor
+  ) {
+    if (notification.read_at === null) {
+      await markAsRead(notification.id);
+    }
+
+    if (
+      notification.type === "comment" &&
+      notification.story_slug &&
+      notification.chapter_number !== null
+    ) {
+      navigate(
+        `/story/${notification.story_slug}/chapter/${notification.chapter_number}`
+      );
+    }
   }
 
   if (!session) {
@@ -278,7 +384,12 @@ export default function Notifications() {
             (notification) => (
               <article
                 key={notification.id}
-                className={`rounded-2xl border p-5 ${
+                onClick={() =>
+                  openNotification(
+                    notification
+                  )
+                }
+                className={`cursor-pointer rounded-2xl border p-5 ${
                   notification.read_at
                     ? "border-slate-800 bg-slate-950/30"
                     : "border-cyan-500/30 bg-cyan-500/5"
@@ -353,11 +464,13 @@ export default function Notifications() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() =>
+                      onClick={(event) => {
+                        event.stopPropagation();
+
                         markAsRead(
                           notification.id
-                        )
-                      }
+                        );
+                      }}
                     >
                       Mark as Read
                     </Button>

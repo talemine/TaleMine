@@ -263,6 +263,7 @@ export default function Library() {
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-4xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
+          {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm text-gray-400">
@@ -353,33 +354,35 @@ export default function Library() {
                 </p>
               </div>
             ) : (
-              <div className="mt-6 space-y-4">
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
                 {recentlyRead.map(
                   (progress) => (
                     <article
                       key={progress.id}
-                      className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
+                      className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
                     >
-                      <p className="text-sm text-cyan-400">
-                        Chapter{" "}
-                        {progress.chapter_number}
-                      </p>
+                      <div className="flex-1">
+                        <p className="text-sm text-cyan-400">
+                          Chapter{" "}
+                          {progress.chapter_number}
+                        </p>
 
-                      <h3 className="mt-2 text-xl font-semibold">
-                        {progress.story_title}
-                      </h3>
+                        <h3 className="mt-2 text-xl font-semibold">
+                          {progress.story_title}
+                        </h3>
 
-                      <p className="mt-2 text-gray-300">
-                        {progress.chapter_title ||
-                          `Chapter ${progress.chapter_number}`}
-                      </p>
+                        <p className="mt-2 text-gray-300">
+                          {progress.chapter_title ||
+                            `Chapter ${progress.chapter_number}`}
+                        </p>
 
-                      <p className="mt-3 text-sm text-gray-500">
-                        Last read{" "}
-                        {new Date(
-                          progress.last_read_at
-                        ).toLocaleDateString()}
-                      </p>
+                        <p className="mt-3 text-sm text-gray-500">
+                          Last read{" "}
+                          {new Date(
+                            progress.last_read_at
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
 
                       <div className="mt-5">
                         <Button

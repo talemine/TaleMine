@@ -8,6 +8,7 @@ import WriterDashboard from "../pages/Writer/WriterDashboard";
 import StoryEditor from "../pages/Writer/StoryEditor";
 import StoryPage from "../pages/Story/StoryPage";
 import StoryChapterPage from "../pages/Story/StoryChapterPage";
+import Library from "../pages/Library/Library";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -38,6 +39,10 @@ export default function AppRouter() {
         {/* Authenticated user routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/account" element={<Account />} />
+          <Route
+            path="/library"
+            element={<Library />}
+          />
         </Route>
 
         {/* Writer-only routes */}

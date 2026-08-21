@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../../components/ui/Button";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 
 interface Story {
@@ -12,6 +17,7 @@ interface Story {
   excerpt: string | null;
   cover_image_url: string | null;
   published_at: string | null;
+  writer_profile_id: string;
 }
 
 interface Category {
@@ -19,14 +25,22 @@ interface Category {
   name: string;
 }
 
+interface StoryProgress {
+  chapter_id: string;
+  chapter_number: number;
+  chapter_title: string | null;
+}
+
 interface StoryCard {
   story: Story;
   category: Category | null;
   authorName: string;
+  progress: StoryProgress | null;
 }
 
 export default function Stories() {
   const navigate = useNavigate();
+  const { session } = useAuth();
 
   const [stories, setStories] =
     useState<StoryCard[]>([]);
@@ -90,6 +104,125 @@ export default function Stories() {
           return;
         }
 
+        /*
+         * Load the current user's reading progress.
+         *
+         * Reading progress is optional, so a signed-out
+         * visitor can still browse all published stories.
+         */
+        const progressByStory = new Map<
+          string,
+          StoryProgress
+        >();
+
+        if (session?.user.id) {
+          const {
+            data: progressData,
+            error: progressError,
+          } = await supabase
+            .from("reading_progress")
+            .select(
+              "story_id, chapter_id, last_read_at, updated_at"
+            )
+            .eq(
+              "user_id",
+              session.user.id
+            )
+            .order("updated_at", {
+              ascending: false,
+            });
+
+          if (cancelled) {
+            return;
+          }
+
+          if (progressError) {
+            console.error(
+              "Stories reading progress loading error:",
+              progressError
+            );
+          } else if (
+            progressData &&
+            progressData.length > 0
+          ) {
+            const chapterIds = Array.from(
+              new Set(
+                progressData.map(
+                  (progress) =>
+                    progress.chapter_id
+                )
+              )
+            );
+
+            const {
+              data: chapterData,
+              error: chapterError,
+            } = await supabase
+              .from("chapters")
+              .select(
+                "id, chapter_number, title"
+              )
+              .in("id", chapterIds)
+              .eq(
+                "status",
+                "published"
+              );
+
+            if (cancelled) {
+              return;
+            }
+
+            if (chapterError) {
+              console.error(
+                "Stories progress chapters loading error:",
+                chapterError
+              );
+            } else {
+              const chapters =
+                chapterData ?? [];
+
+              for (const progress of progressData) {
+                const chapter =
+                  chapters.find(
+                    (item) =>
+                      item.id ===
+                      progress.chapter_id
+                  );
+
+                if (!chapter) {
+                  continue;
+                }
+
+                /*
+                 * Because progressData is ordered by
+                 * updated_at descending, the first
+                 * progress row for a story is the
+                 * latest one.
+                 */
+                if (
+                  progressByStory.has(
+                    progress.story_id
+                  )
+                ) {
+                  continue;
+                }
+
+                progressByStory.set(
+                  progress.story_id,
+                  {
+                    chapter_id:
+                      progress.chapter_id,
+                    chapter_number:
+                      chapter.chapter_number,
+                    chapter_title:
+                      chapter.title,
+                  }
+                );
+              }
+            }
+          }
+        }
+
         const categoryIds = Array.from(
           new Set(
             rawStories
@@ -133,7 +266,9 @@ export default function Stories() {
 
           supabase
             .from("writer_profiles")
-            .select("profile_id, pen_name")
+            .select(
+              "profile_id, pen_name"
+            )
             .in(
               "profile_id",
               writerProfileIds
@@ -141,7 +276,9 @@ export default function Stories() {
 
           supabase
             .from("profiles")
-            .select("id, display_name")
+            .select(
+              "id, display_name"
+            )
             .in(
               "id",
               writerProfileIds
@@ -214,6 +351,10 @@ export default function Stories() {
               story,
               category,
               authorName,
+              progress:
+                progressByStory.get(
+                  story.id
+                ) ?? null,
             };
           });
 
@@ -244,7 +385,7 @@ export default function Stories() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [session?.user.id]);
 
   const categories = useMemo(() => {
     const uniqueCategories =
@@ -435,6 +576,7 @@ export default function Stories() {
                   story,
                   category,
                   authorName,
+                  progress,
                 }) => (
                   <article
                     key={story.id}
@@ -499,16 +641,42 @@ export default function Stories() {
                         </p>
                       )}
 
+                      {/* Reading State */}
                       <div className="mt-auto pt-6">
-                        <Button
-                          onClick={() =>
-                            navigate(
-                              `/story/${story.slug}`
-                            )
-                          }
-                        >
-                          Read Story
-                        </Button>
+                        {progress ? (
+                          <>
+                            <p className="mb-3 text-sm text-gray-400">
+                              Last read: Chapter{" "}
+                              {
+                                progress.chapter_number
+                              }
+
+                              {progress.chapter_title
+                                ? ` — ${progress.chapter_title}`
+                                : ""}
+                            </p>
+
+                            <Button
+                              onClick={() =>
+                                navigate(
+                                  `/story/${story.slug}/chapter/${progress.chapter_number}`
+                                )
+                              }
+                            >
+                              Continue Reading
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            onClick={() =>
+                              navigate(
+                                `/story/${story.slug}`
+                              )
+                            }
+                          >
+                            Start Reading
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </article>

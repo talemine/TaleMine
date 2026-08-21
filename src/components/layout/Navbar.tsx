@@ -125,6 +125,11 @@ export default function Navbar() {
     navigate("/account");
   }
 
+  function openLibrary() {
+    closeMenu();
+    navigate("/library");
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-800/50 bg-slate-950/70 backdrop-blur-lg">
       <Container>
@@ -148,6 +153,14 @@ export default function Navbar() {
           <div className="hidden items-center gap-3 md:flex">
             {session ? (
               <>
+                {/* Library */}
+                <Button
+                  variant="outline"
+                  onClick={openLibrary}
+                >
+                  Library
+                </Button>
+
                 {/* Notifications */}
                 <button
                   type="button"
@@ -227,11 +240,20 @@ export default function Navbar() {
 
               {session ? (
                 <>
+                  {/* Mobile Library */}
+                  <button
+                    type="button"
+                    onClick={openLibrary}
+                    className="mt-3 w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
+                  >
+                    Library
+                  </button>
+
                   {/* Mobile Notifications */}
                   <button
                     type="button"
                     onClick={openNotifications}
-                    className="mt-3 flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
+                    className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
                   >
                     <span className="flex items-center gap-3">
                       <HiOutlineBell className="text-xl" />

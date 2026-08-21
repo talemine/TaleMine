@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
 import Button from "../ui/Button";
+import ChapterCommentEdit from "./ChapterCommentEdit";
 import ChapterCommentModeration from "./ChapterCommentModeration";
 import { supabase } from "../../services/supabase";
 
@@ -44,6 +45,8 @@ export default function ChapterComments({
   const [submitting, setSubmitting] =
     useState(false);
   const [deletingId, setDeletingId] =
+    useState<string | null>(null);
+  const [editingId, setEditingId] =
     useState<string | null>(null);
 
   const [isStoryWriter, setIsStoryWriter] =
@@ -346,6 +349,31 @@ export default function ChapterComments({
     setMessage("Comment removed by story writer.");
   }
 
+  function handleCommentSaved(
+    commentId: string,
+    content: string
+  ) {
+    setComments((currentComments) =>
+      currentComments.map((comment) =>
+        comment.id === commentId
+          ? {
+              ...comment,
+              content,
+            }
+          : comment
+      )
+    );
+
+    setEditingId(null);
+    setMessage("Comment updated.");
+    setErrorMessage("");
+  }
+
+  function handleEditCancel() {
+    setEditingId(null);
+    setErrorMessage("");
+  }
+
   return (
     <section className="mt-12 border-t border-slate-800 pt-10">
       <div>
@@ -499,41 +527,66 @@ export default function ChapterComments({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-3">
-                  {userId === comment.user_id && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        handleDeleteComment(
-                          comment.id
-                        )
-                      }
-                      disabled={
-                        deletingId === comment.id
-                      }
-                    >
-                      {deletingId === comment.id
-                        ? "Deleting..."
-                        : "Delete"}
-                    </Button>
-                  )}
+                {editingId !== comment.id && (
+                  <div className="flex flex-wrap gap-3">
+                    {userId === comment.user_id && (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingId(comment.id);
+                            setErrorMessage("");
+                            setMessage("");
+                          }}
+                        >
+                          Edit
+                        </Button>
 
-                  {isStoryWriter &&
-                    userId !== comment.user_id && (
-                      <ChapterCommentModeration
-                        commentId={comment.id}
-                        onDeleted={
-                          handleModeratedDelete
-                        }
-                      />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            handleDeleteComment(
+                              comment.id
+                            )
+                          }
+                          disabled={
+                            deletingId === comment.id
+                          }
+                        >
+                          {deletingId === comment.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </Button>
+                      </>
                     )}
-                </div>
+
+                    {isStoryWriter &&
+                      userId !== comment.user_id && (
+                        <ChapterCommentModeration
+                          commentId={comment.id}
+                          onDeleted={
+                            handleModeratedDelete
+                          }
+                        />
+                      )}
+                  </div>
+                )}
               </div>
 
-              <p className="mt-4 whitespace-pre-wrap leading-7 text-gray-300">
-                {comment.content}
-              </p>
+              {editingId === comment.id ? (
+                <ChapterCommentEdit
+                  commentId={comment.id}
+                  initialContent={comment.content}
+                  onSaved={handleCommentSaved}
+                  onCancel={handleEditCancel}
+                />
+              ) : (
+                <p className="mt-4 whitespace-pre-wrap leading-7 text-gray-300">
+                  {comment.content}
+                </p>
+              )}
             </article>
           ))}
         </div>

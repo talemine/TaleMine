@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
 import Button from "../ui/Button";
+import ChapterCommentModeration from "./ChapterCommentModeration";
 import { supabase } from "../../services/supabase";
 
 interface ChapterCommentsProps {
@@ -45,11 +46,58 @@ export default function ChapterComments({
   const [deletingId, setDeletingId] =
     useState<string | null>(null);
 
+  const [isStoryWriter, setIsStoryWriter] =
+    useState(false);
+
   const [errorMessage, setErrorMessage] =
     useState("");
   const [message, setMessage] = useState("");
 
   const userId = session?.user.id;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkStoryWriter() {
+      if (!userId) {
+        setIsStoryWriter(false);
+        return;
+      }
+
+      const {
+        data: storyData,
+        error: storyError,
+      } = await supabase
+        .from("stories")
+        .select("writer_profile_id")
+        .eq("id", storyId)
+        .maybeSingle();
+
+      if (cancelled) {
+        return;
+      }
+
+      if (storyError) {
+        console.error(
+          "Story writer loading error:",
+          storyError
+        );
+
+        setIsStoryWriter(false);
+        return;
+      }
+
+      setIsStoryWriter(
+        storyData?.writer_profile_id === userId
+      );
+    }
+
+    checkStoryWriter();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [storyId, userId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -286,6 +334,18 @@ export default function ChapterComments({
     setDeletingId(null);
   }
 
+  function handleModeratedDelete(
+    commentId: string
+  ) {
+    setComments((currentComments) =>
+      currentComments.filter(
+        (comment) => comment.id !== commentId
+      )
+    );
+
+    setMessage("Comment removed by story writer.");
+  }
+
   return (
     <section className="mt-12 border-t border-slate-800 pt-10">
       <div>
@@ -393,11 +453,10 @@ export default function ChapterComments({
                   <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
                     {comment.profile?.avatar_url ? (
                       <img
-                        src={
-                          comment.profile.avatar_url
-                        }
+                        src={comment.profile.avatar_url}
                         alt={
-                          comment.profile.display_name ||
+                          comment.profile
+                            .display_name ||
                           "Reader avatar"
                         }
                         className="h-full w-full object-cover"
@@ -426,8 +485,7 @@ export default function ChapterComments({
                         "TaleMine Reader"}
                     </p>
 
-                    {comment.profile
-                      ?.username && (
+                    {comment.profile?.username && (
                       <p className="text-xs text-cyan-400">
                         @{comment.profile.username}
                       </p>
@@ -441,24 +499,36 @@ export default function ChapterComments({
                   </div>
                 </div>
 
-                {userId === comment.user_id && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleDeleteComment(
-                        comment.id
-                      )
-                    }
-                    disabled={
-                      deletingId === comment.id
-                    }
-                  >
-                    {deletingId === comment.id
-                      ? "Deleting..."
-                      : "Delete"}
-                  </Button>
-                )}
+                <div className="flex flex-wrap gap-3">
+                  {userId === comment.user_id && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        handleDeleteComment(
+                          comment.id
+                        )
+                      }
+                      disabled={
+                        deletingId === comment.id
+                      }
+                    >
+                      {deletingId === comment.id
+                        ? "Deleting..."
+                        : "Delete"}
+                    </Button>
+                  )}
+
+                  {isStoryWriter &&
+                    userId !== comment.user_id && (
+                      <ChapterCommentModeration
+                        commentId={comment.id}
+                        onDeleted={
+                          handleModeratedDelete
+                        }
+                      />
+                    )}
+                </div>
               </div>
 
               <p className="mt-4 whitespace-pre-wrap leading-7 text-gray-300">

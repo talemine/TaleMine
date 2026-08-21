@@ -645,16 +645,25 @@ export default function Stories() {
                       <div className="mt-auto pt-6">
                         {progress ? (
                           <>
-                            <p className="mb-3 text-sm text-gray-400">
-                              Last read: Chapter{" "}
-                              {
-                                progress.chapter_number
-                              }
+                            <div className="mb-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+                              <div className="flex items-center justify-between gap-3">
+                                <span className="text-xs font-semibold uppercase tracking-wide text-cyan-400">
+                                  Currently Reading
+                                </span>
 
-                              {progress.chapter_title
-                                ? ` — ${progress.chapter_title}`
-                                : ""}
-                            </p>
+                                <span className="text-xs text-gray-500">
+                                  Chapter{" "}
+                                  {
+                                    progress.chapter_number
+                                  }
+                                </span>
+                              </div>
+
+                              <p className="mt-2 text-sm text-gray-300">
+                                {progress.chapter_title ||
+                                  `Chapter ${progress.chapter_number}`}
+                              </p>
+                            </div>
 
                             <Button
                               onClick={() =>

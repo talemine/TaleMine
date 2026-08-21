@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HiOutlineBars3, HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineBars3,
+  HiOutlineXMark,
+  HiOutlineBell,
+} from "react-icons/hi2";
 
 import Logo from "../ui/Logo";
 import Button from "../ui/Button";
@@ -18,6 +22,7 @@ const navLinks = [
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -26,16 +31,56 @@ export default function Navbar() {
     setMenuOpen(false);
   }
 
-  async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      console.error("Logout error:", error);
+  async function loadUnreadCount() {
+    if (!session?.user.id) {
+      setUnreadCount(0);
       return;
     }
 
+    const { count, error } = await supabase
+      .from("notifications")
+      .select("id", {
+        count: "exact",
+        head: true,
+      })
+      .eq("user_id", session.user.id)
+      .is("read_at", null);
+
+    if (error) {
+      console.error(
+        "Unread notification count error:",
+        error
+      );
+      return;
+    }
+
+    setUnreadCount(count ?? 0);
+  }
+
+  useEffect(() => {
+    loadUnreadCount();
+  }, [session?.user.id]);
+
+  async function handleLogout() {
+    const { error } =
+      await supabase.auth.signOut();
+
+    if (error) {
+      console.error(
+        "Logout error:",
+        error
+      );
+      return;
+    }
+
+    setUnreadCount(0);
     closeMenu();
     navigate("/login");
+  }
+
+  function openNotifications() {
+    closeMenu();
+    navigate("/account");
   }
 
   return (
@@ -61,11 +106,36 @@ export default function Navbar() {
           <div className="hidden items-center gap-3 md:flex">
             {session ? (
               <>
+                {/* Notifications */}
+                <button
+                  type="button"
+                  onClick={openNotifications}
+                  aria-label={
+                    unreadCount > 0
+                      ? `${unreadCount} unread notifications`
+                      : "Notifications"
+                  }
+                  className="relative flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-cyan-400 hover:text-cyan-400"
+                >
+                  <HiOutlineBell className="text-xl" />
+
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-cyan-400 px-1 text-xs font-bold text-slate-950">
+                      {unreadCount > 99
+                        ? "99+"
+                        : unreadCount}
+                    </span>
+                  )}
+                </button>
+
                 <Button href="/account">
                   Account
                 </Button>
 
-                <Button variant="outline" onClick={handleLogout}>
+                <Button
+                  variant="outline"
+                  onClick={handleLogout}
+                >
                   Log Out
                 </Button>
               </>
@@ -79,9 +149,13 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() =>
+              setMenuOpen((open) => !open)
+            }
             aria-label={
-              menuOpen ? "Close navigation menu" : "Open navigation menu"
+              menuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
             }
             aria-expanded={menuOpen}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-cyan-400 hover:text-cyan-400 md:hidden"
@@ -111,20 +185,49 @@ export default function Navbar() {
 
               {session ? (
                 <>
-                  <div className="mt-3" onClick={closeMenu}>
+                  {/* Mobile Notifications */}
+                  <button
+                    type="button"
+                    onClick={openNotifications}
+                    className="mt-3 flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
+                  >
+                    <span className="flex items-center gap-3">
+                      <HiOutlineBell className="text-xl" />
+                      Notifications
+                    </span>
+
+                    {unreadCount > 0 && (
+                      <span className="flex min-h-6 min-w-6 items-center justify-center rounded-full bg-cyan-400 px-1.5 text-xs font-bold text-slate-950">
+                        {unreadCount > 99
+                          ? "99+"
+                          : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  <div
+                    className="mt-2"
+                    onClick={closeMenu}
+                  >
                     <Button href="/account">
                       Account
                     </Button>
                   </div>
 
                   <div className="mt-2">
-                    <Button variant="outline" onClick={handleLogout}>
+                    <Button
+                      variant="outline"
+                      onClick={handleLogout}
+                    >
                       Log Out
                     </Button>
                   </div>
                 </>
               ) : (
-                <div className="mt-3" onClick={closeMenu}>
+                <div
+                  className="mt-3"
+                  onClick={closeMenu}
+                >
                   <Button href="#waitlist">
                     Join Waitlist
                   </Button>

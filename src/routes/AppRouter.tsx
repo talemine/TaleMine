@@ -9,6 +9,7 @@ import StoryEditor from "../pages/Writer/StoryEditor";
 import StoryPage from "../pages/Story/StoryPage";
 import StoryChapterPage from "../pages/Story/StoryChapterPage";
 import Library from "../pages/Library/Library";
+import Stories from "../pages/Stories/Stories";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -20,6 +21,12 @@ export default function AppRouter() {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
+        
+        <Route
+          path="/stories"
+          element={<Stories />}
+        />
+        
         <Route
           path="/story/:slug"
           element={<StoryPage />}

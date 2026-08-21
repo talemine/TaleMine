@@ -61,6 +61,48 @@ export default function Navbar() {
     loadUnreadCount();
   }, [session?.user.id]);
 
+  useEffect(() => {
+    if (!session?.user.id) {
+      return;
+    }
+
+    const userId = session.user.id;
+
+    const channel = supabase
+      .channel(`notifications-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          setUnreadCount(
+            (currentCount) => currentCount + 1
+          );
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          loadUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user.id]);
+
   async function handleLogout() {
     const { error } =
       await supabase.auth.signOut();

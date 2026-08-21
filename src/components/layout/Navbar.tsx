@@ -157,7 +157,7 @@ export default function Navbar() {
           {/* Desktop Authentication Actions */}
           <div className="hidden items-center gap-3 md:flex">
             {session ? (
-              <>                
+              <>
                 {/* Stories */}
                 <Button
                   variant="outline"
@@ -208,9 +208,28 @@ export default function Navbar() {
                 </Button>
               </>
             ) : (
-              <Button href="#waitlist">
-                Join Waitlist
-              </Button>
+              <>
+                {/* Public Stories */}
+                <Button
+                  variant="outline"
+                  onClick={openStories}
+                >
+                  Stories
+                </Button>
+
+                {/* Log In */}
+                <Button
+                  variant="outline"
+                  href="/login"
+                >
+                  Log In
+                </Button>
+
+                {/* Join Waitlist */}
+                <Button href="#waitlist">
+                  Join Waitlist
+                </Button>
+              </>
             )}
           </div>
 
@@ -261,12 +280,12 @@ export default function Navbar() {
                   >
                     Stories
                   </button>
-                  
+
                   {/* Mobile Library */}
                   <button
                     type="button"
                     onClick={openLibrary}
-                    className="mt-3 w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
+                    className="w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
                   >
                     Library
                   </button>
@@ -310,14 +329,39 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                <div
-                  className="mt-3"
-                  onClick={closeMenu}
-                >
-                  <Button href="#waitlist">
-                    Join Waitlist
-                  </Button>
-                </div>
+                <>
+                  {/* Mobile Stories */}
+                  <button
+                    type="button"
+                    onClick={openStories}
+                    className="mt-3 w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
+                  >
+                    Stories
+                  </button>
+
+                  {/* Mobile Log In */}
+                  <div
+                    className="mt-2"
+                    onClick={closeMenu}
+                  >
+                    <Button
+                      variant="outline"
+                      href="/login"
+                    >
+                      Log In
+                    </Button>
+                  </div>
+
+                  {/* Mobile Join Waitlist */}
+                  <div
+                    className="mt-2"
+                    onClick={closeMenu}
+                  >
+                    <Button href="#waitlist">
+                      Join Waitlist
+                    </Button>
+                  </div>
+                </>
               )}
             </nav>
           </div>

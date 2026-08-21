@@ -5,6 +5,7 @@ import ChapterBookmarkButton from "../../components/story/ChapterBookmarkButton"
 import ChapterLikeButton from "../../components/story/ChapterLikeButton";
 import ChapterComments from "../../components/story/ChapterComments";
 import Button from "../../components/ui/Button";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 
 interface Story {
@@ -30,18 +31,15 @@ interface ChapterNavigation {
 
 export default function StoryChapterPage() {
   const navigate = useNavigate();
+  const { session } = useAuth();
 
   const { slug, chapterNumber } = useParams<{
     slug: string;
     chapterNumber: string;
   }>();
 
-  const [story, setStory] = useState<Story | null>(
-    null
-  );
-
-  const [chapter, setChapter] =
-    useState<Chapter | null>(null);
+  const [story, setStory] = useState<Story | null>(null);
+  const [chapter, setChapter] = useState<Chapter | null>(null);
 
   const [navigation, setNavigation] =
     useState<ChapterNavigation>({
@@ -50,8 +48,7 @@ export default function StoryChapterPage() {
     });
 
   const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -63,8 +60,7 @@ export default function StoryChapterPage() {
         return;
       }
 
-      const parsedChapterNumber =
-        Number(chapterNumber);
+      const parsedChapterNumber = Number(chapterNumber);
 
       if (
         !Number.isInteger(parsedChapterNumber) ||
@@ -79,7 +75,9 @@ export default function StoryChapterPage() {
       setErrorMessage("");
 
       try {
-        // Load only a published story.
+        /*
+         * Load published story
+         */
         const {
           data: storyData,
           error: storyError,
@@ -106,18 +104,18 @@ export default function StoryChapterPage() {
             previous: null,
             next: null,
           });
-
           setErrorMessage(
             "This story could not be found."
           );
-
           setLoading(false);
           return;
         }
 
         setStory(storyData);
 
-        // Load only the requested published chapter.
+        /*
+         * Load published chapter
+         */
         const {
           data: chapterData,
           error: chapterError,
@@ -149,18 +147,86 @@ export default function StoryChapterPage() {
             previous: null,
             next: null,
           });
-
           setErrorMessage(
             "This chapter is not available."
           );
-
           setLoading(false);
           return;
         }
 
         setChapter(chapterData);
 
-        // Load published chapter numbers for navigation.
+        /*
+         * Save reading progress
+         *
+         * For authenticated readers:
+         * 1. Find existing progress for this story.
+         * 2. Update it if it exists.
+         * 3. Insert it if it does not exist.
+         */
+        if (session?.user.id) {
+          const now = new Date().toISOString();
+
+          const {
+            data: existingProgress,
+            error: progressLookupError,
+          } = await supabase
+            .from("reading_progress")
+            .select("id")
+            .eq("user_id", session.user.id)
+            .eq("story_id", storyData.id)
+            .maybeSingle();
+
+          if (progressLookupError) {
+            console.error(
+              "Reading progress lookup error:",
+              progressLookupError
+            );
+          } else if (existingProgress) {
+            const { error: progressUpdateError } =
+              await supabase
+                .from("reading_progress")
+                .update({
+                  chapter_id: chapterData.id,
+                  last_read_at: now,
+                  updated_at: now,
+                })
+                .eq(
+                  "id",
+                  existingProgress.id
+                );
+
+            if (progressUpdateError) {
+              console.error(
+                "Reading progress update error:",
+                progressUpdateError
+              );
+            }
+          } else {
+            const { error: progressInsertError } =
+              await supabase
+                .from("reading_progress")
+                .insert({
+                  user_id: session.user.id,
+                  story_id: storyData.id,
+                  chapter_id: chapterData.id,
+                  last_read_at: now,
+                  updated_at: now,
+                });
+
+            if (progressInsertError) {
+              console.error(
+                "Reading progress insert error:",
+                progressInsertError
+              );
+            }
+          }
+        }
+
+        /*
+         * Load published chapter numbers
+         * for Previous / Next navigation.
+         */
         const {
           data: chapterNumbers,
           error: navigationError,
@@ -245,7 +311,7 @@ export default function StoryChapterPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, chapterNumber]);
+  }, [slug, chapterNumber, session?.user.id]);
 
   function goToChapter(number: number) {
     if (!story) {
@@ -294,6 +360,12 @@ export default function StoryChapterPage() {
     );
   }
 
+  const hasPreviousChapter =
+    navigation.previous !== null;
+
+  const hasNextChapter =
+    navigation.next !== null;
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <article className="mx-auto max-w-3xl">
@@ -328,15 +400,15 @@ export default function StoryChapterPage() {
           {/* Reader Engagement */}
           <div className="mt-10 border-t border-slate-800 pt-8">
             <div className="flex flex-wrap justify-center gap-3">
-                <ChapterLikeButton
-                    storyId={story.id}
-                    chapterId={chapter.id}
-                />
+              <ChapterLikeButton
+                storyId={story.id}
+                chapterId={chapter.id}
+              />
 
-                <ChapterBookmarkButton
-                    storyId={story.id}
-                    chapterId={chapter.id}
-                />
+              <ChapterBookmarkButton
+                storyId={story.id}
+                chapterId={chapter.id}
+              />
             </div>
           </div>
 
@@ -350,12 +422,12 @@ export default function StoryChapterPage() {
           <div className="mt-10 border-t border-slate-800 pt-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                {navigation.previous !== null ? (
+                {hasPreviousChapter ? (
                   <Button
                     variant="outline"
                     onClick={() =>
                       goToChapter(
-                        navigation.previous as number
+                        navigation.previous!
                       )
                     }
                   >
@@ -377,11 +449,11 @@ export default function StoryChapterPage() {
               </Button>
 
               <div>
-                {navigation.next !== null ? (
+                {hasNextChapter ? (
                   <Button
                     onClick={() =>
                       goToChapter(
-                        navigation.next as number
+                        navigation.next!
                       )
                     }
                   >

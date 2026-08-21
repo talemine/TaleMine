@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AvatarUpload from "../../components/profile/AvatarUpload";
 import ProfileForm from "../../components/profile/ProfileForm";
 import WriterProfileForm from "../../components/profile/WriterProfileForm";
+import Notifications from "../../components/notifications/Notifications";
 import MyBookmarks from "../../components/story/MyBookmarks";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
@@ -337,6 +338,11 @@ export default function Account() {
               <MyBookmarks />
             </>
           )}
+         
+          {/* Notifications */}
+          <div className="mt-8">
+            <Notifications />
+          </div>
 
           {/* Actions */}
           <div className="mt-8 flex flex-wrap gap-4">

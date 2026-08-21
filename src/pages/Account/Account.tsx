@@ -27,6 +27,17 @@ interface WriterProfile {
   website_url: string | null;
 }
 
+interface ReadingProgress {
+  id: string;
+  story_id: string;
+  chapter_id: string;
+  last_read_at: string;
+  story_title: string;
+  story_slug: string;
+  chapter_number: number;
+  chapter_title: string | null;
+}
+
 export default function Account() {
   const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -39,12 +50,16 @@ export default function Account() {
   const [writerProfile, setWriterProfile] =
     useState<WriterProfile | null>(null);
 
+  const [readingProgress, setReadingProgress] =
+    useState<ReadingProgress | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] =
     useState("");
 
   async function handleLogout() {
-    const { error } = await supabase.auth.signOut();
+    const { error } =
+      await supabase.auth.signOut();
 
     if (error) {
       console.error("Logout error:", error);
@@ -64,6 +79,7 @@ export default function Account() {
       if (!userId) {
         setProfile(null);
         setWriterProfile(null);
+        setReadingProgress(null);
         setLoading(false);
         return;
       }
@@ -72,6 +88,9 @@ export default function Account() {
       setErrorMessage("");
 
       try {
+        /*
+         * Load profile and writer profile.
+         */
         const [
           profileResult,
           writerResult,
@@ -105,11 +124,15 @@ export default function Account() {
 
           setProfile(null);
           setWriterProfile(null);
+          setReadingProgress(null);
           setErrorMessage(
             "Unable to load your profile."
           );
+          setLoading(false);
           return;
         }
+
+        setProfile(profileResult.data);
 
         if (writerResult.error) {
           console.error(
@@ -118,16 +141,111 @@ export default function Account() {
           );
 
           setWriterProfile(null);
-          setErrorMessage(
-            "Your profile loaded, but your writer profile could not be loaded."
-          );
         } else {
           setWriterProfile(
             writerResult.data ?? null
           );
         }
 
-        setProfile(profileResult.data);
+        /*
+         * Load the user's latest reading progress.
+         *
+         * There is one reading_progress row per
+         * user/story, so ordering by updated_at
+         * gives us the most recently updated story.
+         */
+        const {
+          data: progressData,
+          error: progressError,
+        } = await supabase
+          .from("reading_progress")
+          .select(
+            "id, story_id, chapter_id, last_read_at, updated_at"
+          )
+          .eq("user_id", userId)
+          .order("updated_at", {
+            ascending: false,
+          })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled) {
+          return;
+        }
+
+        if (progressError) {
+          console.error(
+            "Reading progress loading error:",
+            progressError
+          );
+
+          setReadingProgress(null);
+        } else if (progressData) {
+          /*
+           * Fetch the story and chapter separately.
+           * This avoids relying on Supabase relationship
+           * names and keeps the query easy to debug.
+           */
+          const [
+            storyResult,
+            chapterResult,
+          ] = await Promise.all([
+            supabase
+              .from("stories")
+              .select("id, title, slug")
+              .eq("id", progressData.story_id)
+              .eq("status", "published")
+              .single(),
+
+            supabase
+              .from("chapters")
+              .select(
+                "id, chapter_number, title"
+              )
+              .eq(
+                "id",
+                progressData.chapter_id
+              )
+              .eq("status", "published")
+              .single(),
+          ]);
+
+          if (cancelled) {
+            return;
+          }
+
+          if (storyResult.error) {
+            console.error(
+              "Reading progress story loading error:",
+              storyResult.error
+            );
+
+            setReadingProgress(null);
+          } else if (chapterResult.error) {
+            console.error(
+              "Reading progress chapter loading error:",
+              chapterResult.error
+            );
+
+            setReadingProgress(null);
+          } else {
+            setReadingProgress({
+              id: progressData.id,
+              story_id: progressData.story_id,
+              chapter_id: progressData.chapter_id,
+              last_read_at:
+                progressData.last_read_at,
+              story_title: storyResult.data.title,
+              story_slug: storyResult.data.slug,
+              chapter_number:
+                chapterResult.data.chapter_number,
+              chapter_title:
+                chapterResult.data.title,
+            });
+          }
+        } else {
+          setReadingProgress(null);
+        }
       } catch (error) {
         if (cancelled) {
           return;
@@ -140,6 +258,7 @@ export default function Account() {
 
         setProfile(null);
         setWriterProfile(null);
+        setReadingProgress(null);
         setErrorMessage(
           "Unable to load your account. Please try again."
         );
@@ -181,7 +300,9 @@ export default function Account() {
 
           <div className="mt-8 flex justify-center">
             <Button
-              onClick={() => navigate("/login")}
+              onClick={() =>
+                navigate("/login")
+              }
             >
               Go to Login
             </Button>
@@ -213,9 +334,46 @@ export default function Account() {
             </p>
           )}
 
+          {/* Continue Reading */}
+          {readingProgress && (
+            <section className="mt-8 border-t border-slate-800 pt-8">
+              <p className="text-sm text-gray-400">
+                Continue Reading
+              </p>
+
+              <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-5">
+                <p className="text-sm text-cyan-400">
+                  Chapter{" "}
+                  {readingProgress.chapter_number}
+                </p>
+
+                <h2 className="mt-2 text-2xl font-bold text-white">
+                  {readingProgress.story_title}
+                </h2>
+
+                <p className="mt-2 text-gray-300">
+                  {readingProgress.chapter_title ||
+                    `Chapter ${readingProgress.chapter_number}`}
+                </p>
+
+                <div className="mt-5">
+                  <Button
+                    onClick={() =>
+                      navigate(
+                        `/story/${readingProgress.story_slug}/chapter/${readingProgress.chapter_number}`
+                      )
+                    }
+                  >
+                    Continue Reading
+                  </Button>
+                </div>
+              </div>
+            </section>
+          )}
+
           {profile && (
             <>
-              {/* Profile summary */}
+              {/* Profile Summary */}
               <section className="mt-8 space-y-6 border-t border-slate-800 pt-6">
                 <div>
                   <p className="text-sm text-gray-400">
@@ -268,7 +426,7 @@ export default function Account() {
                 }}
               />
 
-              {/* Profile editing */}
+              {/* Profile Editing */}
               <ProfileForm
                 profileId={profile.id}
                 initialUsername={
@@ -291,7 +449,7 @@ export default function Account() {
                 }}
               />
 
-              {/* Writer profile */}
+              {/* Writer Profile */}
               {writerProfile ? (
                 <section className="mt-8 border-t border-slate-800 pt-8">
                   <p className="text-sm text-gray-400">
@@ -338,7 +496,7 @@ export default function Account() {
               <MyBookmarks />
             </>
           )}
-         
+
           {/* Notifications */}
           <div className="mt-8">
             <Notifications />
@@ -346,7 +504,9 @@ export default function Account() {
 
           {/* Actions */}
           <div className="mt-8 flex flex-wrap gap-4">
-            <Button onClick={() => navigate("/")}>
+            <Button
+              onClick={() => navigate("/")}
+            >
               Back to TaleMine
             </Button>
 

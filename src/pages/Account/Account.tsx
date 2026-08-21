@@ -53,6 +53,9 @@ export default function Account() {
   const [readingProgress, setReadingProgress] =
     useState<ReadingProgress | null>(null);
 
+  const [recentlyRead, setRecentlyRead] =
+    useState<ReadingProgress[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] =
     useState("");
@@ -80,6 +83,7 @@ export default function Account() {
         setProfile(null);
         setWriterProfile(null);
         setReadingProgress(null);
+        setRecentlyRead([]);
         setLoading(false);
         return;
       }
@@ -125,6 +129,7 @@ export default function Account() {
           setProfile(null);
           setWriterProfile(null);
           setReadingProgress(null);
+          setRecentlyRead([]);
           setErrorMessage(
             "Unable to load your profile."
           );
@@ -148,11 +153,11 @@ export default function Account() {
         }
 
         /*
-         * Load the user's latest reading progress.
+         * Load the five most recently read stories.
          *
          * There is one reading_progress row per
-         * user/story, so ordering by updated_at
-         * gives us the most recently updated story.
+         * user/story, so updated_at determines
+         * the reading order.
          */
         const {
           data: progressData,
@@ -166,8 +171,7 @@ export default function Account() {
           .order("updated_at", {
             ascending: false,
           })
-          .limit(1)
-          .maybeSingle();
+          .limit(5);
 
         if (cancelled) {
           return;
@@ -180,71 +184,120 @@ export default function Account() {
           );
 
           setReadingProgress(null);
-        } else if (progressData) {
+          setRecentlyRead([]);
+        } else if (
+          progressData &&
+          progressData.length > 0
+        ) {
           /*
-           * Fetch the story and chapter separately.
-           * This avoids relying on Supabase relationship
-           * names and keeps the query easy to debug.
+           * Fetch story and chapter information
+           * for each reading-progress record.
            */
+          const storyIds = Array.from(
+            new Set(
+              progressData.map(
+                (progress) => progress.story_id
+              )
+            )
+          );
+
+          const chapterIds = Array.from(
+            new Set(
+              progressData.map(
+                (progress) => progress.chapter_id
+              )
+            )
+          );
+
           const [
-            storyResult,
-            chapterResult,
+            storiesResult,
+            chaptersResult,
           ] = await Promise.all([
             supabase
               .from("stories")
-              .select("id, title, slug")
-              .eq("id", progressData.story_id)
-              .eq("status", "published")
-              .single(),
+              .select(
+                "id, title, slug"
+              )
+              .in("id", storyIds)
+              .eq("status", "published"),
 
             supabase
               .from("chapters")
               .select(
                 "id, chapter_number, title"
               )
-              .eq(
-                "id",
-                progressData.chapter_id
-              )
-              .eq("status", "published")
-              .single(),
+              .in("id", chapterIds)
+              .eq("status", "published"),
           ]);
 
           if (cancelled) {
             return;
           }
 
-          if (storyResult.error) {
+          if (storiesResult.error) {
             console.error(
-              "Reading progress story loading error:",
-              storyResult.error
+              "Recently read stories loading error:",
+              storiesResult.error
             );
 
             setReadingProgress(null);
-          } else if (chapterResult.error) {
+            setRecentlyRead([]);
+          } else if (chaptersResult.error) {
             console.error(
-              "Reading progress chapter loading error:",
-              chapterResult.error
+              "Recently read chapters loading error:",
+              chaptersResult.error
             );
 
             setReadingProgress(null);
+            setRecentlyRead([]);
           } else {
-            setReadingProgress({
-              id: progressData.id,
-              story_id: progressData.story_id,
-              chapter_id: progressData.chapter_id,
-              last_read_at:
-                progressData.last_read_at,
-              story_title: storyResult.data.title,
-              story_slug: storyResult.data.slug,
-              chapter_number:
-                chapterResult.data.chapter_number,
-              chapter_title:
-                chapterResult.data.title,
-            });
+            const stories =
+              storiesResult.data ?? [];
+
+            const chapters =
+              chaptersResult.data ?? [];
+
+            const loadedProgress: ReadingProgress[] =
+              [];
+
+            for (const progress of progressData) {
+              const story = stories.find(
+                (item) =>
+                  item.id === progress.story_id
+              );
+
+              const chapter = chapters.find(
+                (item) =>
+                  item.id === progress.chapter_id
+              );
+
+              if (!story || !chapter) {
+                continue;
+              }
+
+              loadedProgress.push({
+                id: progress.id,
+                story_id: progress.story_id,
+                chapter_id: progress.chapter_id,
+                last_read_at:
+                  progress.last_read_at,
+                story_title: story.title,
+                story_slug: story.slug,
+                chapter_number:
+                  chapter.chapter_number,
+                chapter_title:
+                  chapter.title,
+              });
+            }
+
+            setRecentlyRead(loadedProgress);
+            setReadingProgress(
+              loadedProgress[0] ?? null
+            );
           }
         } else {
           setReadingProgress(null);
+          setRecentlyRead([]);
         }
       } catch (error) {
         if (cancelled) {
@@ -259,6 +312,7 @@ export default function Account() {
         setProfile(null);
         setWriterProfile(null);
         setReadingProgress(null);
+        setRecentlyRead([]);
         setErrorMessage(
           "Unable to load your account. Please try again."
         );
@@ -367,6 +421,64 @@ export default function Account() {
                     Continue Reading
                   </Button>
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* Recently Read */}
+          {recentlyRead.length > 0 && (
+            <section className="mt-8 border-t border-slate-800 pt-8">
+              <p className="text-sm text-gray-400">
+                Reading History
+              </p>
+
+              <h2 className="mt-1 text-3xl font-bold">
+                Recently Read
+              </h2>
+
+              <div className="mt-6 space-y-4">
+                {recentlyRead.map(
+                  (progress) => (
+                    <article
+                      key={progress.id}
+                      className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
+                    >
+                      <p className="text-sm text-cyan-400">
+                        Chapter{" "}
+                        {progress.chapter_number}
+                      </p>
+
+                      <h3 className="mt-2 text-xl font-semibold">
+                        {progress.story_title}
+                      </h3>
+
+                      <p className="mt-2 text-gray-300">
+                        {progress.chapter_title ||
+                          `Chapter ${progress.chapter_number}`}
+                      </p>
+
+                      <p className="mt-3 text-sm text-gray-500">
+                        Last read{" "}
+                        {new Date(
+                          progress.last_read_at
+                        ).toLocaleDateString()}
+                      </p>
+
+                      <div className="mt-5">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            navigate(
+                              `/story/${progress.story_slug}/chapter/${progress.chapter_number}`
+                            )
+                          }
+                        >
+                          Read Again
+                        </Button>
+                      </div>
+                    </article>
+                  )
+                )}
               </div>
             </section>
           )}

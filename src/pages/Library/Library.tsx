@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import MyBookmarks from "../../components/story/MyBookmarks";
@@ -17,6 +17,11 @@ interface ReadingProgress {
   chapter_title: string | null;
 }
 
+type LibraryFilter =
+  | "all"
+  | "recent"
+  | "bookmarks";
+
 export default function Library() {
   const { session, loading: authLoading } =
     useAuth();
@@ -24,6 +29,12 @@ export default function Library() {
 
   const [recentlyRead, setRecentlyRead] =
     useState<ReadingProgress[]>([]);
+
+  const [filter, setFilter] =
+    useState<LibraryFilter>("all");
+
+  const [searchQuery, setSearchQuery] =
+    useState("");
 
   const [loading, setLoading] =
     useState(true);
@@ -222,6 +233,33 @@ export default function Library() {
     };
   }, [session?.user.id]);
 
+  const filteredRecentlyRead =
+    useMemo(() => {
+      const query =
+        searchQuery.trim().toLowerCase();
+
+      if (!query) {
+        return recentlyRead;
+      }
+
+      return recentlyRead.filter(
+        (progress) =>
+          progress.story_title
+            .toLowerCase()
+            .includes(query)
+      );
+    }, [recentlyRead, searchQuery]);
+
+  const showContinueReading =
+    filter !== "bookmarks" &&
+    filteredRecentlyRead.length > 0;
+
+  const showRecentlyRead =
+    filter !== "bookmarks";
+
+  const showBookmarks =
+    filter !== "recent";
+
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
@@ -290,6 +328,63 @@ export default function Library() {
             </Button>
           </div>
 
+          {/* Library Controls */}
+          <section className="mt-8 border-t border-slate-800 pt-8">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    ["all", "All"],
+                    ["recent", "Recently Read"],
+                    ["bookmarks", "Bookmarks"],
+                  ] as const
+                ).map(([value, label]) => {
+                  const active =
+                    filter === value;
+
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() =>
+                        setFilter(value)
+                      }
+                      className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+                        active
+                          ? "bg-cyan-500 text-slate-950"
+                          : "border border-slate-700 text-slate-300 hover:border-cyan-400 hover:text-cyan-400"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="library-search"
+                  className="sr-only"
+                >
+                  Search your library
+                </label>
+
+                <input
+                  id="library-search"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) =>
+                    setSearchQuery(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Search stories..."
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
+                />
+              </div>
+            </div>
+          </section>
+
           {errorMessage && (
             <p className="mt-8 text-sm text-red-400">
               {errorMessage}
@@ -297,7 +392,7 @@ export default function Library() {
           )}
 
           {/* Continue Reading */}
-          {recentlyRead.length > 0 && (
+          {showContinueReading && (
             <section className="mt-10 border-t border-slate-800 pt-8">
               <p className="text-sm text-gray-400">
                 Continue Reading
@@ -306,26 +401,29 @@ export default function Library() {
               <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-6">
                 <p className="text-sm text-cyan-400">
                   Chapter{" "}
-                  {recentlyRead[0]
+                  {filteredRecentlyRead[0]
                     .chapter_number}
                 </p>
 
                 <h2 className="mt-2 text-2xl font-bold">
-                  {recentlyRead[0]
-                    .story_title}
+                  {
+                    filteredRecentlyRead[0]
+                      .story_title
+                  }
                 </h2>
 
                 <p className="mt-2 text-gray-300">
-                  {recentlyRead[0]
-                    .chapter_title ||
-                    `Chapter ${recentlyRead[0].chapter_number}`}
+                  {
+                    filteredRecentlyRead[0]
+                      .chapter_title
+                  }
                 </p>
 
                 <div className="mt-5">
                   <Button
                     onClick={() =>
                       navigate(
-                        `/story/${recentlyRead[0].story_slug}/chapter/${recentlyRead[0].chapter_number}`
+                        `/story/${filteredRecentlyRead[0].story_slug}/chapter/${filteredRecentlyRead[0].chapter_number}`
                       )
                     }
                   >
@@ -337,76 +435,86 @@ export default function Library() {
           )}
 
           {/* Recently Read */}
-          <section className="mt-10 border-t border-slate-800 pt-8">
-            <p className="text-sm text-gray-400">
-              Reading Activity
-            </p>
+          {showRecentlyRead && (
+            <section className="mt-10 border-t border-slate-800 pt-8">
+              <p className="text-sm text-gray-400">
+                Reading Activity
+              </p>
 
-            <h2 className="mt-1 text-3xl font-bold">
-              Recently Read
-            </h2>
+              <h2 className="mt-1 text-3xl font-bold">
+                Recently Read
+              </h2>
 
-            {recentlyRead.length === 0 ? (
-              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
-                <p className="text-gray-400">
-                  You haven't started reading
-                  anything yet.
-                </p>
-              </div>
-            ) : (
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {recentlyRead.map(
-                  (progress) => (
-                    <article
-                      key={progress.id}
-                      className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm text-cyan-400">
-                          Chapter{" "}
-                          {progress.chapter_number}
-                        </p>
+              {filteredRecentlyRead.length ===
+              0 ? (
+                <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
+                  <p className="text-gray-400">
+                    {searchQuery.trim()
+                      ? "No recently read stories match your search."
+                      : "You haven't started reading anything yet."}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  {filteredRecentlyRead.map(
+                    (progress) => (
+                      <article
+                        key={progress.id}
+                        className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm text-cyan-400">
+                            Chapter{" "}
+                            {
+                              progress.chapter_number
+                            }
+                          </p>
 
-                        <h3 className="mt-2 text-xl font-semibold">
-                          {progress.story_title}
-                        </h3>
+                          <h3 className="mt-2 text-xl font-semibold">
+                            {
+                              progress.story_title
+                            }
+                          </h3>
 
-                        <p className="mt-2 text-gray-300">
-                          {progress.chapter_title ||
-                            `Chapter ${progress.chapter_number}`}
-                        </p>
+                          <p className="mt-2 text-gray-300">
+                            {progress.chapter_title ||
+                              `Chapter ${progress.chapter_number}`}
+                          </p>
 
-                        <p className="mt-3 text-sm text-gray-500">
-                          Last read{" "}
-                          {new Date(
-                            progress.last_read_at
-                          ).toLocaleDateString()}
-                        </p>
-                      </div>
+                          <p className="mt-3 text-sm text-gray-500">
+                            Last read{" "}
+                            {new Date(
+                              progress.last_read_at
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
 
-                      <div className="mt-5">
-                        <Button
-                          variant="outline"
-                          onClick={() =>
-                            navigate(
-                              `/story/${progress.story_slug}/chapter/${progress.chapter_number}`
-                            )
-                          }
-                        >
-                          Read Again
-                        </Button>
-                      </div>
-                    </article>
-                  )
-                )}
-              </div>
-            )}
-          </section>
+                        <div className="mt-5">
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              navigate(
+                                `/story/${progress.story_slug}/chapter/${progress.chapter_number}`
+                              )
+                            }
+                          >
+                            Read Again
+                          </Button>
+                        </div>
+                      </article>
+                    )
+                  )}
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Bookmarks */}
-          <section className="mt-10 border-t border-slate-800 pt-8">
-            <MyBookmarks />
-          </section>
+          {showBookmarks && (
+            <section className="mt-10 border-t border-slate-800 pt-8">
+              <MyBookmarks />
+            </section>
+          )}
         </div>
       </div>
     </main>

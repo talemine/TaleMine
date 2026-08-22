@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import Button from "../../components/ui/Button";
 import PublicChapterList from "../../components/story/PublicChapterList";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 
 interface Story {
@@ -32,19 +33,36 @@ interface Category {
   name: string;
 }
 
+interface ReadingProgress {
+  chapter_id: string;
+  chapter_number: number;
+  chapter_title: string | null;
+}
+
 export default function StoryPage() {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const { slug } = useParams<{ slug: string }>();
 
   const [story, setStory] = useState<Story | null>(null);
+
   const [writerProfile, setWriterProfile] =
     useState<WriterProfile | null>(null);
+
   const [profile, setProfile] =
     useState<Profile | null>(null);
+
   const [category, setCategory] =
     useState<Category | null>(null);
 
+  const [readingProgress, setReadingProgress] =
+    useState<ReadingProgress | null>(null);
+
+  const [chapterCount, setChapterCount] =
+    useState(0);
+
   const [loading, setLoading] = useState(true);
+
   const [errorMessage, setErrorMessage] =
     useState("");
 
@@ -57,6 +75,8 @@ export default function StoryPage() {
         setWriterProfile(null);
         setProfile(null);
         setCategory(null);
+        setReadingProgress(null);
+        setChapterCount(0);
         setLoading(false);
         setErrorMessage("Story not found.");
         return;
@@ -92,6 +112,8 @@ export default function StoryPage() {
           setWriterProfile(null);
           setProfile(null);
           setCategory(null);
+          setReadingProgress(null);
+          setChapterCount(0);
           setErrorMessage(
             "This story could not be found."
           );
@@ -101,6 +123,10 @@ export default function StoryPage() {
 
         setStory(storyData);
 
+        /*
+         * Load story metadata and reading information
+         * in parallel.
+         */
         const writerPromise = supabase
           .from("writer_profiles")
           .select("profile_id, pen_name")
@@ -134,14 +160,52 @@ export default function StoryPage() {
                 error: null,
               });
 
+        const chapterCountPromise =
+          supabase
+            .from("chapters")
+            .select("id", {
+              count: "exact",
+              head: true,
+            })
+            .eq(
+              "story_id",
+              storyData.id
+            )
+            .eq("status", "published");
+
+        const progressPromise =
+          session?.user.id
+            ? supabase
+                .from("reading_progress")
+                .select(
+                  "chapter_id"
+                )
+                .eq(
+                  "user_id",
+                  session.user.id
+                )
+                .eq(
+                  "story_id",
+                  storyData.id
+                )
+                .maybeSingle()
+            : Promise.resolve({
+                data: null,
+                error: null,
+              });
+
         const [
           writerResult,
           profileResult,
           categoryResult,
+          chapterCountResult,
+          progressResult,
         ] = await Promise.all([
           writerPromise,
           profilePromise,
           categoryPromise,
+          chapterCountPromise,
+          progressPromise,
         ]);
 
         if (cancelled) {
@@ -186,6 +250,71 @@ export default function StoryPage() {
             categoryResult.data ?? null
           );
         }
+
+        if (chapterCountResult.error) {
+          console.error(
+            "Chapter count loading error:",
+            chapterCountResult.error
+          );
+
+          setChapterCount(0);
+        } else {
+          setChapterCount(
+            chapterCountResult.count ?? 0
+          );
+        }
+
+        if (progressResult.error) {
+          console.error(
+            "Reading progress loading error:",
+            progressResult.error
+          );
+
+          setReadingProgress(null);
+        } else if (
+          progressResult.data?.chapter_id
+        ) {
+          const {
+            data: chapterData,
+            error: chapterError,
+          } = await supabase
+            .from("chapters")
+            .select(
+              "id, chapter_number, title"
+            )
+            .eq(
+              "id",
+              progressResult.data.chapter_id
+            )
+            .eq("status", "published")
+            .maybeSingle();
+
+          if (cancelled) {
+            return;
+          }
+
+          if (chapterError) {
+            console.error(
+              "Reading progress chapter loading error:",
+              chapterError
+            );
+
+            setReadingProgress(null);
+          } else if (chapterData) {
+            setReadingProgress({
+              chapter_id:
+                chapterData.id,
+              chapter_number:
+                chapterData.chapter_number,
+              chapter_title:
+                chapterData.title,
+            });
+          } else {
+            setReadingProgress(null);
+          }
+        } else {
+          setReadingProgress(null);
+        }
       } catch (error) {
         if (cancelled) {
           return;
@@ -200,6 +329,8 @@ export default function StoryPage() {
         setWriterProfile(null);
         setProfile(null);
         setCategory(null);
+        setReadingProgress(null);
+        setChapterCount(0);
         setErrorMessage(
           "Unable to load this story."
         );
@@ -215,13 +346,26 @@ export default function StoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, session?.user.id]);
 
   function getAuthorName() {
     return (
       writerProfile?.pen_name?.trim() ||
       profile?.display_name?.trim() ||
       "TaleMine Writer"
+    );
+  }
+
+  function continueReading() {
+    if (
+      !story ||
+      !readingProgress
+    ) {
+      return;
+    }
+
+    navigate(
+      `/story/${story.slug}/chapter/${readingProgress.chapter_number}`
     );
   }
 
@@ -259,6 +403,22 @@ export default function StoryPage() {
       </main>
     );
   }
+
+  const progressPercentage =
+    readingProgress &&
+    chapterCount > 0
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            Math.round(
+              (readingProgress.chapter_number /
+                chapterCount) *
+                100
+            )
+          )
+        )
+      : 0;
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
@@ -322,6 +482,55 @@ export default function StoryPage() {
                 )}
               </div>
             </div>
+
+            {/* Reading Progress */}
+            {readingProgress && (
+              <section className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
+                      Continue Reading
+                    </p>
+
+                    <h2 className="mt-1 text-xl font-bold">
+                      {readingProgress.chapter_title ||
+                        `Chapter ${readingProgress.chapter_number}`}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-400">
+                      Chapter{" "}
+                      {readingProgress.chapter_number}{" "}
+                      of{" "}
+                      {chapterCount}
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={continueReading}
+                  >
+                    Continue Reading
+                  </Button>
+                </div>
+
+                {chapterCount > 0 && (
+                  <div className="mt-5">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-cyan-400 transition-all"
+                        style={{
+                          width: `${progressPercentage}%`,
+                        }}
+                      />
+                    </div>
+
+                    <p className="mt-2 text-xs text-gray-500">
+                      {progressPercentage}% through
+                      published chapters
+                    </p>
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* Chapters */}
             <section className="mt-12 border-t border-slate-800 pt-10">

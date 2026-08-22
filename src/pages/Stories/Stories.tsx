@@ -36,6 +36,7 @@ interface StoryCard {
   category: Category | null;
   authorName: string;
   progress: StoryProgress | null;
+  chapterCount: number;
 }
 
 export default function Stories() {
@@ -223,6 +224,49 @@ export default function Stories() {
           }
         }
 
+        /*
+         * Load published chapter counts.
+         */
+        const {
+          data: chapterRows,
+          error: chapterCountError,
+        } = await supabase
+          .from("chapters")
+          .select(
+            "story_id, chapter_number"
+          )
+          .in(
+            "story_id",
+            rawStories.map(
+              (story) => story.id
+            )
+          )
+          .eq("status", "published");
+
+        if (cancelled) {
+          return;
+        }
+
+        if (chapterCountError) {
+          console.error(
+            "Published chapter counts loading error:",
+            chapterCountError
+          );
+        }
+
+        const chapterCounts =
+          new Map<string, number>();
+
+        for (const chapter of
+          chapterRows ?? []) {
+          chapterCounts.set(
+            chapter.story_id,
+            (chapterCounts.get(
+              chapter.story_id
+            ) ?? 0) + 1
+          );
+        }
+
         const categoryIds = Array.from(
           new Set(
             rawStories
@@ -258,7 +302,10 @@ export default function Stories() {
             ? supabase
                 .from("categories")
                 .select("id, name")
-                .in("id", categoryIds)
+                .in(
+                  "id",
+                  categoryIds
+                )
             : Promise.resolve({
                 data: [],
                 error: null,
@@ -355,6 +402,10 @@ export default function Stories() {
                 progressByStory.get(
                   story.id
                 ) ?? null,
+              chapterCount:
+                chapterCounts.get(
+                  story.id
+                ) ?? 0,
             };
           });
 
@@ -577,6 +628,7 @@ export default function Stories() {
                   category,
                   authorName,
                   progress,
+                  chapterCount,
                 }) => (
                   <article
                     key={story.id}
@@ -632,14 +684,27 @@ export default function Stories() {
                         </span>
                       </div>
 
-                      {story.published_at && (
-                        <p className="mt-2 text-xs text-gray-500">
-                          Published{" "}
-                          {new Date(
-                            story.published_at
-                          ).toLocaleDateString()}
-                        </p>
-                      )}
+                      <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+                        <span>
+                          {chapterCount}{" "}
+                          {chapterCount === 1
+                            ? "chapter"
+                            : "chapters"}
+                        </span>
+
+                        {story.published_at && (
+                          <>
+                            <span>•</span>
+
+                            <span>
+                              Published{" "}
+                              {new Date(
+                                story.published_at
+                              ).toLocaleDateString()}
+                            </span>
+                          </>
+                        )}
+                      </div>
 
                       {/* Reading State */}
                       <div className="mt-auto pt-6">

@@ -27,6 +27,8 @@ interface Chapter {
 interface ChapterNavigation {
   previous: number | null;
   next: number | null;
+  currentIndex: number;
+  totalChapters: number;
 }
 
 export default function StoryChapterPage() {
@@ -43,8 +45,10 @@ export default function StoryChapterPage() {
 
   const [navigation, setNavigation] =
     useState<ChapterNavigation>({
-      previous: null,
-      next: null,
+        previous: null,
+        next: null,
+        currentIndex: 0,
+        totalChapters: 0,
     });
 
   const [loading, setLoading] = useState(true);
@@ -103,6 +107,8 @@ export default function StoryChapterPage() {
           setNavigation({
             previous: null,
             next: null,
+            currentIndex: 0,
+            totalChapters: 0,
           });
           setErrorMessage(
             "This story could not be found."
@@ -146,6 +152,8 @@ export default function StoryChapterPage() {
           setNavigation({
             previous: null,
             next: null,
+            currentIndex: 0,
+            totalChapters: 0,
           });
           setErrorMessage(
             "This chapter is not available."
@@ -252,6 +260,8 @@ export default function StoryChapterPage() {
           setNavigation({
             previous: null,
             next: null,
+            currentIndex: 0,
+            totalChapters: 0,
           });
         } else {
           const numbers = (chapterNumbers ?? [])
@@ -268,16 +278,19 @@ export default function StoryChapterPage() {
 
           setNavigation({
             previous:
-              currentIndex > 0
-                ? numbers[currentIndex - 1]
-                : null,
+                currentIndex > 0
+                    ? numbers[currentIndex - 1]
+                    : null,
 
             next:
-              currentIndex >= 0 &&
-              currentIndex < numbers.length - 1
-                ? numbers[currentIndex + 1]
-                : null,
-          });
+                currentIndex >= 0 &&
+                currentIndex < numbers.length - 1
+                    ? numbers[currentIndex + 1]
+                    : null,
+
+            currentIndex,
+            totalChapters: numbers.length,
+      });
         }
       } catch (error) {
         if (cancelled) {
@@ -292,9 +305,11 @@ export default function StoryChapterPage() {
         setStory(null);
         setChapter(null);
         setNavigation({
-          previous: null,
-          next: null,
-        });
+            previous: null,
+            next: null,
+            currentIndex: 0,
+            totalChapters: 0,
+          });
 
         setErrorMessage(
           "Unable to load this chapter."
@@ -436,9 +451,35 @@ export default function StoryChapterPage() {
                 ) : (
                   <div />
                 )}
-              </div>
+                </div>
 
+                <div className="order-first text-center sm:order-none">
+                  <p className="text-sm font-medium text-gray-400">
+                    Chapter {navigation.currentIndex + 1} of{" "}
+                    {navigation.totalChapters}
+                  </p>
+                </div>
+
+                <div>
+                  {hasNextChapter ? (
+                    <Button
+                      onClick={() =>
+                        goToChapter(
+                          navigation.next!
+                        )
+                      }
+                    >
+                      Next Chapter →
+                    </Button>
+                ) : (
+                    <div />
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-center">
               <Button
+                variant="outline"
                 onClick={() =>
                   navigate(
                     `/story/${story.slug}`
@@ -447,22 +488,6 @@ export default function StoryChapterPage() {
               >
                 Back to Story
               </Button>
-
-              <div>
-                {hasNextChapter ? (
-                  <Button
-                    onClick={() =>
-                      goToChapter(
-                        navigation.next!
-                      )
-                    }
-                  >
-                    Next Chapter →
-                  </Button>
-                ) : (
-                  <div />
-                )}
-              </div>
             </div>
           </div>
         </div>

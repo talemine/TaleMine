@@ -243,16 +243,29 @@ export default function Library() {
       }
 
       return recentlyRead.filter(
-        (progress) =>
-          progress.story_title
-            .toLowerCase()
-            .includes(query)
+        (progress) => {
+          const storyTitle =
+            progress.story_title.toLowerCase();
+
+          const chapterTitle =
+            progress.chapter_title
+              ?.toLowerCase() ?? "";
+
+          return (
+            storyTitle.includes(query) ||
+            chapterTitle.includes(query)
+          );
+        }
       );
     }, [recentlyRead, searchQuery]);
 
+  const latestReading =
+    recentlyRead[0] ?? null;
+
   const showContinueReading =
     filter !== "bookmarks" &&
-    filteredRecentlyRead.length > 0;
+    latestReading !== null &&
+    !searchQuery.trim();
 
   const showRecentlyRead =
     filter !== "bookmarks";
@@ -378,7 +391,7 @@ export default function Library() {
                       event.target.value
                     )
                   }
-                  placeholder="Search stories..."
+                  placeholder="Search stories or chapters..."
                   className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
                 />
               </div>
@@ -401,29 +414,30 @@ export default function Library() {
               <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-6">
                 <p className="text-sm text-cyan-400">
                   Chapter{" "}
-                  {filteredRecentlyRead[0]
-                    .chapter_number}
+                  {latestReading.chapter_number}
                 </p>
 
                 <h2 className="mt-2 text-2xl font-bold">
-                  {
-                    filteredRecentlyRead[0]
-                      .story_title
-                  }
+                  {latestReading.story_title}
                 </h2>
 
                 <p className="mt-2 text-gray-300">
-                  {
-                    filteredRecentlyRead[0]
-                      .chapter_title
-                  }
+                  {latestReading.chapter_title ||
+                    `Chapter ${latestReading.chapter_number}`}
+                </p>
+
+                <p className="mt-3 text-sm text-gray-500">
+                  Last read{" "}
+                  {new Date(
+                    latestReading.last_read_at
+                  ).toLocaleDateString()}
                 </p>
 
                 <div className="mt-5">
                   <Button
                     onClick={() =>
                       navigate(
-                        `/story/${filteredRecentlyRead[0].story_slug}/chapter/${filteredRecentlyRead[0].chapter_number}`
+                        `/story/${latestReading.story_slug}/chapter/${latestReading.chapter_number}`
                       )
                     }
                   >
@@ -450,7 +464,7 @@ export default function Library() {
                 <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
                   <p className="text-gray-400">
                     {searchQuery.trim()
-                      ? "No recently read stories match your search."
+                      ? "No recently read stories or chapters match your search."
                       : "You haven't started reading anything yet."}
                   </p>
                 </div>
@@ -465,15 +479,11 @@ export default function Library() {
                         <div className="flex-1">
                           <p className="text-sm text-cyan-400">
                             Chapter{" "}
-                            {
-                              progress.chapter_number
-                            }
+                            {progress.chapter_number}
                           </p>
 
                           <h3 className="mt-2 text-xl font-semibold">
-                            {
-                              progress.story_title
-                            }
+                            {progress.story_title}
                           </h3>
 
                           <p className="mt-2 text-gray-300">

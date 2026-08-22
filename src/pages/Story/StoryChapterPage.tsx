@@ -35,10 +35,11 @@ export default function StoryChapterPage() {
   const navigate = useNavigate();
   const { session } = useAuth();
 
-  const { slug, chapterNumber } = useParams<{
-    slug: string;
-    chapterNumber: string;
-  }>();
+  const { slug, chapterNumber } =
+    useParams<{
+      slug: string;
+      chapterNumber: string;
+    }>();
 
   const [story, setStory] =
     useState<Story | null>(null);
@@ -439,6 +440,11 @@ export default function StoryChapterPage() {
     !hasNextChapter &&
     navigation.totalChapters > 0;
 
+  const currentChapterPosition =
+    navigation.currentIndex >= 0
+      ? navigation.currentIndex + 1
+      : chapter.chapter_number;
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <article className="mx-auto max-w-3xl">
@@ -492,7 +498,7 @@ export default function StoryChapterPage() {
             chapterId={chapter.id}
           />
 
-          {/* Navigation */}
+          {/* Story Complete */}
           {isLastChapter && (
             <div className="mb-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6 text-center">
               <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
@@ -510,53 +516,85 @@ export default function StoryChapterPage() {
             </div>
           )}
 
+          {/* Chapter Navigation */}
           <div className="mt-10 border-t border-slate-800 pt-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                {hasPreviousChapter ? (
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      goToChapter(
-                        navigation.previous!
-                      )
-                    }
-                  >
-                    ← Previous Chapter
-                  </Button>
-                ) : (
-                  <div />
-                )}
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                {/* Previous */}
+                <div className="w-full sm:w-auto">
+                  {hasPreviousChapter ? (
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        goToChapter(
+                          navigation.previous!
+                        )
+                      }
+                    >
+                      ← Previous Chapter
+                    </Button>
+                  ) : (
+                    <div className="hidden sm:block" />
+                  )}
+                </div>
+
+                {/* Position */}
+                <div className="order-first text-center sm:order-none">
+                  <p className="text-xs uppercase tracking-wide text-gray-500">
+                    Reading Progress
+                  </p>
+
+                  <p className="mt-1 text-base font-semibold text-gray-200">
+                    Chapter{" "}
+                    {currentChapterPosition}{" "}
+                    of{" "}
+                    {navigation.totalChapters}
+                  </p>
+                </div>
+
+                {/* Next */}
+                <div className="w-full sm:w-auto">
+                  {hasNextChapter ? (
+                    <Button
+                      onClick={() =>
+                        goToChapter(
+                          navigation.next!
+                        )
+                      }
+                    >
+                      Next Chapter →
+                    </Button>
+                  ) : (
+                    <div className="hidden sm:block" />
+                  )}
+                </div>
               </div>
 
-              <div className="order-first text-center sm:order-none">
-                <p className="text-sm font-medium text-gray-400">
-                  Chapter{" "}
-                  {navigation.currentIndex +
-                    1}{" "}
-                  of{" "}
-                  {navigation.totalChapters}
-                </p>
-              </div>
-
-              <div>
-                {hasNextChapter ? (
-                  <Button
-                    onClick={() =>
-                      goToChapter(
-                        navigation.next!
-                      )
-                    }
-                  >
-                    Next Chapter →
-                  </Button>
-                ) : (
-                  <div />
-                )}
-              </div>
+              {navigation.totalChapters >
+                0 && (
+                <div className="mt-5">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-cyan-400 transition-all"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.max(
+                            0,
+                            (currentChapterPosition /
+                              navigation.totalChapters) *
+                              100
+                          )
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="mt-4 flex justify-center">
+            {/* Back to Story */}
+            <div className="mt-5 flex justify-center">
               <Button
                 variant="outline"
                 onClick={() =>

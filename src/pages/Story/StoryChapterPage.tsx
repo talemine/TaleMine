@@ -31,6 +31,23 @@ interface ChapterNavigation {
   totalChapters: number;
 }
 
+type FontSizeOption =
+  | "small"
+  | "medium"
+  | "large";
+
+const FONT_SIZE_STORAGE_KEY =
+  "talemine-reader-font-size";
+
+const fontSizeClasses: Record<
+  FontSizeOption,
+  string
+> = {
+  small: "text-base leading-8",
+  medium: "text-lg leading-9",
+  large: "text-xl leading-10",
+};
+
 export default function StoryChapterPage() {
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -55,11 +72,40 @@ export default function StoryChapterPage() {
       totalChapters: 0,
     });
 
+  const [fontSize, setFontSize] =
+    useState<FontSizeOption>("medium");
+
   const [loading, setLoading] =
     useState(true);
 
   const [errorMessage, setErrorMessage] =
     useState("");
+
+  useEffect(() => {
+    const savedFontSize =
+      window.localStorage.getItem(
+        FONT_SIZE_STORAGE_KEY
+      );
+
+    if (
+      savedFontSize === "small" ||
+      savedFontSize === "medium" ||
+      savedFontSize === "large"
+    ) {
+      setFontSize(savedFontSize);
+    }
+  }, []);
+
+  function changeFontSize(
+    nextSize: FontSizeOption
+  ) {
+    setFontSize(nextSize);
+
+    window.localStorage.setItem(
+      FONT_SIZE_STORAGE_KEY,
+      nextSize
+    );
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -187,11 +233,6 @@ export default function StoryChapterPage() {
 
         /*
          * Save reading progress
-         *
-         * For authenticated readers:
-         * 1. Find existing progress for this story.
-         * 2. Update it if it exists.
-         * 3. Insert it if it does not exist.
          */
         if (session?.user.id) {
           const now =
@@ -470,9 +511,77 @@ export default function StoryChapterPage() {
             {story.title}
           </p>
 
+          {/* Reader Controls */}
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-slate-800 py-4">
+            <p className="text-sm text-gray-400">
+              Reading size
+            </p>
+
+            <div
+              className="flex items-center gap-2"
+              aria-label="Reading text size"
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  changeFontSize("small")
+                }
+                aria-label="Small text"
+                aria-pressed={
+                  fontSize === "small"
+                }
+                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
+                  fontSize === "small"
+                    ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                    : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                }`}
+              >
+                A−
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  changeFontSize("medium")
+                }
+                aria-label="Default text"
+                aria-pressed={
+                  fontSize === "medium"
+                }
+                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
+                  fontSize === "medium"
+                    ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                    : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                }`}
+              >
+                A
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  changeFontSize("large")
+                }
+                aria-label="Large text"
+                aria-pressed={
+                  fontSize === "large"
+                }
+                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
+                  fontSize === "large"
+                    ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                    : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                }`}
+              >
+                A+
+              </button>
+            </div>
+          </div>
+
           {/* Chapter Content */}
           <div className="mt-10 border-t border-slate-800 pt-10">
-            <div className="mx-auto max-w-2xl whitespace-pre-wrap text-lg leading-9 text-gray-200">
+            <div
+              className={`mx-auto max-w-2xl whitespace-pre-wrap text-gray-200 ${fontSizeClasses[fontSize]}`}
+            >
               {chapter.content}
             </div>
           </div>

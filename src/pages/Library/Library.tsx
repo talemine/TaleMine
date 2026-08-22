@@ -15,6 +15,7 @@ interface ReadingProgress {
   story_slug: string;
   chapter_number: number;
   chapter_title: string | null;
+  chapter_count: number;
 }
 
 type LibraryFilter =
@@ -118,6 +119,7 @@ export default function Library() {
         const [
           storiesResult,
           chaptersResult,
+          chapterCountsResult,
         ] = await Promise.all([
           supabase
             .from("stories")
@@ -128,9 +130,15 @@ export default function Library() {
           supabase
             .from("chapters")
             .select(
-              "id, chapter_number, title"
+              "id, story_id, chapter_number, title"
             )
             .in("id", chapterIds)
+            .eq("status", "published"),
+
+          supabase
+            .from("chapters")
+            .select("story_id, id")
+            .in("story_id", storyIds)
             .eq("status", "published"),
         ]);
 
@@ -166,11 +174,31 @@ export default function Library() {
           return;
         }
 
+        if (chapterCountsResult.error) {
+          console.error(
+            "Library chapter counts error:",
+            chapterCountsResult.error
+          );
+        }
+
         const stories =
           storiesResult.data ?? [];
 
         const chapters =
           chaptersResult.data ?? [];
+
+        const chapterCounts =
+          new Map<string, number>();
+
+        for (const chapter of
+          chapterCountsResult.data ?? []) {
+          chapterCounts.set(
+            chapter.story_id,
+            (chapterCounts.get(
+              chapter.story_id
+            ) ?? 0) + 1
+          );
+        }
 
         const loadedProgress: ReadingProgress[] =
           [];
@@ -178,12 +206,14 @@ export default function Library() {
         for (const progress of progressRows) {
           const story = stories.find(
             (item) =>
-              item.id === progress.story_id
+              item.id ===
+              progress.story_id
           );
 
           const chapter = chapters.find(
             (item) =>
-              item.id === progress.chapter_id
+              item.id ===
+              progress.chapter_id
           );
 
           if (!story || !chapter) {
@@ -201,6 +231,10 @@ export default function Library() {
             chapter_number:
               chapter.chapter_number,
             chapter_title: chapter.title,
+            chapter_count:
+              chapterCounts.get(
+                progress.story_id
+              ) ?? 0,
           });
         }
 
@@ -272,6 +306,22 @@ export default function Library() {
 
   const showBookmarks =
     filter !== "recent";
+
+  const continueReadingPercentage =
+    latestReading &&
+    latestReading.chapter_count > 0
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            Math.round(
+              (latestReading.chapter_number /
+                latestReading.chapter_count) *
+                100
+            )
+          )
+        )
+      : 0;
 
   if (authLoading || loading) {
     return (
@@ -412,38 +462,63 @@ export default function Library() {
               </p>
 
               <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-6">
-                <p className="text-sm text-cyan-400">
-                  Chapter{" "}
-                  {latestReading.chapter_number}
-                </p>
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm text-cyan-400">
+                      Chapter{" "}
+                      {latestReading.chapter_number}{" "}
+                      of{" "}
+                      {latestReading.chapter_count}
+                    </p>
 
-                <h2 className="mt-2 text-2xl font-bold">
-                  {latestReading.story_title}
-                </h2>
+                    <h2 className="mt-2 text-2xl font-bold">
+                      {latestReading.story_title}
+                    </h2>
 
-                <p className="mt-2 text-gray-300">
-                  {latestReading.chapter_title ||
-                    `Chapter ${latestReading.chapter_number}`}
-                </p>
+                    <p className="mt-2 text-gray-300">
+                      {latestReading.chapter_title ||
+                        `Chapter ${latestReading.chapter_number}`}
+                    </p>
 
-                <p className="mt-3 text-sm text-gray-500">
-                  Last read{" "}
-                  {new Date(
-                    latestReading.last_read_at
-                  ).toLocaleDateString()}
-                </p>
+                    <p className="mt-3 text-sm text-gray-500">
+                      Last read{" "}
+                      {new Date(
+                        latestReading.last_read_at
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
 
-                <div className="mt-5">
-                  <Button
-                    onClick={() =>
-                      navigate(
-                        `/story/${latestReading.story_slug}/chapter/${latestReading.chapter_number}`
-                      )
-                    }
-                  >
-                    Continue Reading
-                  </Button>
+                  <div className="sm:pt-1">
+                    <Button
+                      onClick={() =>
+                        navigate(
+                          `/story/${latestReading.story_slug}/chapter/${latestReading.chapter_number}`
+                        )
+                      }
+                    >
+                      Continue Reading
+                    </Button>
+                  </div>
                 </div>
+
+                {latestReading.chapter_count >
+                  0 && (
+                  <div className="mt-5">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-cyan-400 transition-all"
+                        style={{
+                          width: `${continueReadingPercentage}%`,
+                        }}
+                      />
+                    </div>
+
+                    <p className="mt-2 text-xs text-gray-500">
+                      {continueReadingPercentage}%
+                      through published chapters
+                    </p>
+                  </div>
+                )}
               </div>
             </section>
           )}
@@ -479,7 +554,11 @@ export default function Library() {
                         <div className="flex-1">
                           <p className="text-sm text-cyan-400">
                             Chapter{" "}
-                            {progress.chapter_number}
+                            {
+                              progress.chapter_number
+                            }{" "}
+                            of{" "}
+                            {progress.chapter_count}
                           </p>
 
                           <h3 className="mt-2 text-xl font-semibold">

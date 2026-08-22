@@ -720,7 +720,9 @@ export default function Stories() {
                                   Chapter{" "}
                                   {
                                     progress.chapter_number
-                                  }
+                                  }{" "}
+                                  of{" "}
+                                  {chapterCount}
                                 </span>
                               </div>
 
@@ -728,6 +730,40 @@ export default function Stories() {
                                 {progress.chapter_title ||
                                   `Chapter ${progress.chapter_number}`}
                               </p>
+
+                              {chapterCount >
+                                0 && (
+                                <div className="mt-4">
+                                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                                    <div
+                                      className="h-full rounded-full bg-cyan-400 transition-all"
+                                      style={{
+                                        width: `${Math.min(
+                                          100,
+                                          Math.max(
+                                            0,
+                                            (progress.chapter_number /
+                                              chapterCount) *
+                                              100
+                                          )
+                                        )}%`,
+                                      }}
+                                    />
+                                  </div>
+
+                                  <p className="mt-2 text-xs text-gray-500">
+                                    {Math.min(
+                                      100,
+                                      Math.round(
+                                        (progress.chapter_number /
+                                          chapterCount) *
+                                          100
+                                      )
+                                    )}
+                                    % through published chapters
+                                  </p>
+                                </div>
+                              )}
                             </div>
 
                             <Button

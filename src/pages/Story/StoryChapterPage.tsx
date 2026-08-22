@@ -40,19 +40,25 @@ export default function StoryChapterPage() {
     chapterNumber: string;
   }>();
 
-  const [story, setStory] = useState<Story | null>(null);
-  const [chapter, setChapter] = useState<Chapter | null>(null);
+  const [story, setStory] =
+    useState<Story | null>(null);
+
+  const [chapter, setChapter] =
+    useState<Chapter | null>(null);
 
   const [navigation, setNavigation] =
     useState<ChapterNavigation>({
-        previous: null,
-        next: null,
-        currentIndex: 0,
-        totalChapters: 0,
+      previous: null,
+      next: null,
+      currentIndex: 0,
+      totalChapters: 0,
     });
 
-  const [loading, setLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -64,10 +70,13 @@ export default function StoryChapterPage() {
         return;
       }
 
-      const parsedChapterNumber = Number(chapterNumber);
+      const parsedChapterNumber =
+        Number(chapterNumber);
 
       if (
-        !Number.isInteger(parsedChapterNumber) ||
+        !Number.isInteger(
+          parsedChapterNumber
+        ) ||
         parsedChapterNumber < 1
       ) {
         setLoading(false);
@@ -87,7 +96,9 @@ export default function StoryChapterPage() {
           error: storyError,
         } = await supabase
           .from("stories")
-          .select("id, title, slug, status")
+          .select(
+            "id, title, slug, status"
+          )
           .eq("slug", slug)
           .eq("status", "published")
           .single();
@@ -104,15 +115,18 @@ export default function StoryChapterPage() {
 
           setStory(null);
           setChapter(null);
+
           setNavigation({
             previous: null,
             next: null,
             currentIndex: 0,
             totalChapters: 0,
           });
+
           setErrorMessage(
             "This story could not be found."
           );
+
           setLoading(false);
           return;
         }
@@ -130,7 +144,10 @@ export default function StoryChapterPage() {
           .select(
             "id, story_id, chapter_number, title, content, status"
           )
-          .eq("story_id", storyData.id)
+          .eq(
+            "story_id",
+            storyData.id
+          )
           .eq(
             "chapter_number",
             parsedChapterNumber
@@ -149,15 +166,18 @@ export default function StoryChapterPage() {
           );
 
           setChapter(null);
+
           setNavigation({
             previous: null,
             next: null,
             currentIndex: 0,
             totalChapters: 0,
           });
+
           setErrorMessage(
             "This chapter is not available."
           );
+
           setLoading(false);
           return;
         }
@@ -173,7 +193,8 @@ export default function StoryChapterPage() {
          * 3. Insert it if it does not exist.
          */
         if (session?.user.id) {
-          const now = new Date().toISOString();
+          const now =
+            new Date().toISOString();
 
           const {
             data: existingProgress,
@@ -181,8 +202,14 @@ export default function StoryChapterPage() {
           } = await supabase
             .from("reading_progress")
             .select("id")
-            .eq("user_id", session.user.id)
-            .eq("story_id", storyData.id)
+            .eq(
+              "user_id",
+              session.user.id
+            )
+            .eq(
+              "story_id",
+              storyData.id
+            )
             .maybeSingle();
 
           if (progressLookupError) {
@@ -191,18 +218,20 @@ export default function StoryChapterPage() {
               progressLookupError
             );
           } else if (existingProgress) {
-            const { error: progressUpdateError } =
-              await supabase
-                .from("reading_progress")
-                .update({
-                  chapter_id: chapterData.id,
-                  last_read_at: now,
-                  updated_at: now,
-                })
-                .eq(
-                  "id",
-                  existingProgress.id
-                );
+            const {
+              error: progressUpdateError,
+            } = await supabase
+              .from("reading_progress")
+              .update({
+                chapter_id:
+                  chapterData.id,
+                last_read_at: now,
+                updated_at: now,
+              })
+              .eq(
+                "id",
+                existingProgress.id
+              );
 
             if (progressUpdateError) {
               console.error(
@@ -211,16 +240,19 @@ export default function StoryChapterPage() {
               );
             }
           } else {
-            const { error: progressInsertError } =
-              await supabase
-                .from("reading_progress")
-                .insert({
-                  user_id: session.user.id,
-                  story_id: storyData.id,
-                  chapter_id: chapterData.id,
-                  last_read_at: now,
-                  updated_at: now,
-                });
+            const {
+              error: progressInsertError,
+            } = await supabase
+              .from("reading_progress")
+              .insert({
+                user_id:
+                  session.user.id,
+                story_id: storyData.id,
+                chapter_id:
+                  chapterData.id,
+                last_read_at: now,
+                updated_at: now,
+              });
 
             if (progressInsertError) {
               console.error(
@@ -241,7 +273,10 @@ export default function StoryChapterPage() {
         } = await supabase
           .from("chapters")
           .select("chapter_number")
-          .eq("story_id", storyData.id)
+          .eq(
+            "story_id",
+            storyData.id
+          )
           .eq("status", "published")
           .order("chapter_number", {
             ascending: true,
@@ -264,33 +299,45 @@ export default function StoryChapterPage() {
             totalChapters: 0,
           });
         } else {
-          const numbers = (chapterNumbers ?? [])
-            .map((item) => item.chapter_number)
-            .filter(
-              (number) =>
-                Number.isInteger(number) &&
-                number > 0
-            );
+          const numbers =
+            (chapterNumbers ?? [])
+              .map(
+                (item) =>
+                  item.chapter_number
+              )
+              .filter(
+                (number) =>
+                  Number.isInteger(
+                    number
+                  ) && number > 0
+              );
 
-          const currentIndex = numbers.indexOf(
-            parsedChapterNumber
-          );
+          const currentIndex =
+            numbers.indexOf(
+              parsedChapterNumber
+            );
 
           setNavigation({
             previous:
-                currentIndex > 0
-                    ? numbers[currentIndex - 1]
-                    : null,
+              currentIndex > 0
+                ? numbers[
+                    currentIndex - 1
+                  ]
+                : null,
 
             next:
-                currentIndex >= 0 &&
-                currentIndex < numbers.length - 1
-                    ? numbers[currentIndex + 1]
-                    : null,
+              currentIndex >= 0 &&
+              currentIndex <
+                numbers.length - 1
+                ? numbers[
+                    currentIndex + 1
+                  ]
+                : null,
 
             currentIndex,
-            totalChapters: numbers.length,
-      });
+            totalChapters:
+              numbers.length,
+          });
         }
       } catch (error) {
         if (cancelled) {
@@ -304,12 +351,13 @@ export default function StoryChapterPage() {
 
         setStory(null);
         setChapter(null);
+
         setNavigation({
-            previous: null,
-            next: null,
-            currentIndex: 0,
-            totalChapters: 0,
-          });
+          previous: null,
+          next: null,
+          currentIndex: 0,
+          totalChapters: 0,
+        });
 
         setErrorMessage(
           "Unable to load this chapter."
@@ -326,7 +374,11 @@ export default function StoryChapterPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, chapterNumber, session?.user.id]);
+  }, [
+    slug,
+    chapterNumber,
+    session?.user.id,
+  ]);
 
   function goToChapter(number: number) {
     if (!story) {
@@ -364,7 +416,9 @@ export default function StoryChapterPage() {
           <div className="mt-8 flex justify-center">
             <Button
               onClick={() =>
-                navigate(`/story/${slug}`)
+                navigate(
+                  `/story/${slug}`
+                )
               }
             >
               Back to Story
@@ -381,6 +435,10 @@ export default function StoryChapterPage() {
   const hasNextChapter =
     navigation.next !== null;
 
+  const isLastChapter =
+    !hasNextChapter &&
+    navigation.totalChapters > 0;
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <article className="mx-auto max-w-3xl">
@@ -388,7 +446,8 @@ export default function StoryChapterPage() {
           {/* Chapter Header */}
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-cyan-400">
-              Chapter {chapter.chapter_number}
+              Chapter{" "}
+              {chapter.chapter_number}
             </span>
 
             <span className="rounded-full border border-cyan-500/20 px-3 py-1 text-xs uppercase tracking-wide text-cyan-300">
@@ -434,6 +493,23 @@ export default function StoryChapterPage() {
           />
 
           {/* Navigation */}
+          {isLastChapter && (
+            <div className="mb-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6 text-center">
+              <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
+                Story Complete
+              </p>
+
+              <h2 className="mt-2 text-2xl font-bold text-white">
+                You've reached the end of this story.
+              </h2>
+
+              <p className="mt-2 text-gray-400">
+                Thanks for reading{" "}
+                {story.title}.
+              </p>
+            </div>
+          )}
+
           <div className="mt-10 border-t border-slate-800 pt-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -451,28 +527,31 @@ export default function StoryChapterPage() {
                 ) : (
                   <div />
                 )}
-                </div>
+              </div>
 
-                <div className="order-first text-center sm:order-none">
-                  <p className="text-sm font-medium text-gray-400">
-                    Chapter {navigation.currentIndex + 1} of{" "}
-                    {navigation.totalChapters}
-                  </p>
-                </div>
+              <div className="order-first text-center sm:order-none">
+                <p className="text-sm font-medium text-gray-400">
+                  Chapter{" "}
+                  {navigation.currentIndex +
+                    1}{" "}
+                  of{" "}
+                  {navigation.totalChapters}
+                </p>
+              </div>
 
-                <div>
-                  {hasNextChapter ? (
-                    <Button
-                      onClick={() =>
-                        goToChapter(
-                          navigation.next!
-                        )
-                      }
-                    >
-                      Next Chapter →
-                    </Button>
+              <div>
+                {hasNextChapter ? (
+                  <Button
+                    onClick={() =>
+                      goToChapter(
+                        navigation.next!
+                      )
+                    }
+                  >
+                    Next Chapter →
+                  </Button>
                 ) : (
-                    <div />
+                  <div />
                 )}
               </div>
             </div>

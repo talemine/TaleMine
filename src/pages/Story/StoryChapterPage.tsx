@@ -769,6 +769,18 @@ export default function StoryChapterPage() {
                     {currentChapterPosition}{" "}
                     of{" "}
                     {navigation.totalChapters}
+                    {navigation.totalChapters > 0 && (
+                      <>
+                        {" "}
+                        ·{" "}
+                        {Math.round(
+                          (currentChapterPosition /
+                            navigation.totalChapters) *
+                            100
+                        )}
+                        %
+                      </>
+                    )}
                   </p>
                 </div>
 

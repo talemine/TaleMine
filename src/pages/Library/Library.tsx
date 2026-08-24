@@ -592,6 +592,44 @@ export default function Library() {
                             {progress.chapter_count}
                           </p>
 
+                          {progress.chapter_count > 0 && (
+                            <div className="mt-3">
+                              <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                                <div
+                                  className="h-full rounded-full bg-cyan-400 transition-all"
+                                  style={{
+                                    width: `${Math.min(
+                                      100,
+                                      Math.max(
+                                        0,
+                                        Math.round(
+                                          (progress.chapter_number /
+                                            progress.chapter_count) *
+                                            100
+                                        )
+                                      )
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+
+                              <p className="mt-2 text-xs text-gray-500">
+                                {Math.min(
+                                  100,
+                                  Math.max(
+                                    0,
+                                    Math.round(
+                                      (progress.chapter_number /
+                                        progress.chapter_count) *
+                                        100
+                                    )
+                                  )
+                                )}
+                                % through published chapters
+                              </p>
+                            </div>
+                          )}
+
                           <h3 className="mt-2 text-xl font-semibold">
                             {progress.story_title}
                           </h3>

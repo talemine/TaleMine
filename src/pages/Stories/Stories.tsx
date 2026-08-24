@@ -39,6 +39,11 @@ interface StoryCard {
   chapterCount: number;
 }
 
+type StorySort =
+  | "newest"
+  | "title"
+  | "chapters";
+
 export default function Stories() {
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -51,6 +56,9 @@ export default function Stories() {
 
   const [selectedCategory, setSelectedCategory] =
     useState("all");
+
+  const [sortBy, setSortBy] =
+    useState<StorySort>("newest");
 
   const [loading, setLoading] =
     useState(true);
@@ -462,7 +470,7 @@ export default function Stories() {
     const query =
       searchQuery.trim().toLowerCase();
 
-    return stories.filter((item) => {
+    const filtered = stories.filter((item) => {
       const matchesSearch =
         !query ||
         item.story.title
@@ -485,10 +493,44 @@ export default function Stories() {
         matchesCategory
       );
     });
+
+    return [...filtered].sort(
+      (a, b) => {
+        if (sortBy === "title") {
+          return a.story.title.localeCompare(
+            b.story.title
+          );
+        }
+
+        if (sortBy === "chapters") {
+          return (
+            b.chapterCount -
+            a.chapterCount
+          );
+        }
+
+        const aDate =
+          a.story.published_at
+            ? new Date(
+                a.story.published_at
+              ).getTime()
+            : 0;
+
+        const bDate =
+          b.story.published_at
+            ? new Date(
+                b.story.published_at
+              ).getTime()
+            : 0;
+
+        return bDate - aDate;
+      }
+    );
   }, [
     stories,
     searchQuery,
     selectedCategory,
+    sortBy,
   ]);
 
   if (loading) {
@@ -523,7 +565,7 @@ export default function Stories() {
 
         {/* Search and Filters */}
         <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+          <div className="grid gap-4 md:grid-cols-[1fr_auto_auto]">
             <div>
               <label
                 htmlFor="story-search"
@@ -580,6 +622,38 @@ export default function Stories() {
                 )}
               </select>
             </div>
+
+            <div>
+              <label
+                htmlFor="story-sort"
+                className="sr-only"
+              >
+                Sort stories
+              </label>
+
+              <select
+                id="story-sort"
+                value={sortBy}
+                onChange={(event) =>
+                  setSortBy(
+                    event.target.value as StorySort
+                  )
+                }
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-400 md:min-w-52"
+              >
+                <option value="newest">
+                  Newest
+                </option>
+
+                <option value="title">
+                  Title A–Z
+                </option>
+
+                <option value="chapters">
+                  Most Chapters
+                </option>
+              </select>
+            </div>
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-4">
@@ -593,7 +667,8 @@ export default function Stories() {
 
             {(searchQuery ||
               selectedCategory !==
-                "all") && (
+                "all" ||
+              sortBy !== "newest") && (
               <button
                 type="button"
                 onClick={() => {
@@ -601,6 +676,7 @@ export default function Stories() {
                   setSelectedCategory(
                     "all"
                   );
+                  setSortBy("newest");
                 }}
                 className="text-sm text-cyan-400 transition hover:text-cyan-300"
               >
@@ -811,7 +887,8 @@ export default function Stories() {
 
               {(searchQuery ||
                 selectedCategory !==
-                  "all") && (
+                  "all" ||
+                sortBy !== "newest") && (
                 <div className="mt-6 flex justify-center">
                   <Button
                     variant="outline"
@@ -820,6 +897,7 @@ export default function Stories() {
                       setSelectedCategory(
                         "all"
                       );
+                      setSortBy("newest");
                     }}
                   >
                     Clear Filters

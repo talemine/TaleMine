@@ -296,6 +296,10 @@ export default function StoryChapterPage() {
               "story_id",
               storyData.id
             )
+            .order("updated_at", {
+              ascending: false,
+            })
+            .limit(1)
             .maybeSingle();
 
           if (progressLookupError) {

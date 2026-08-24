@@ -691,7 +691,7 @@ export default function StoryChapterPage() {
           {/* Chapter Content */}
           <div className="mt-10 border-t border-slate-800 pt-10">
             <div
-              className={`mx-auto whitespace-pre-wrap text-gray-200 ${readingWidthClasses[readingWidth]} ${fontSizeClasses[fontSize]}`}
+              className={`mx-auto whitespace-pre-wrap text-gray-200 ${readingWidthClasses[readingWidth]} ${fontSizeClasses[fontSize]} font-serif`}
             >
               {chapter.content}
             </div>

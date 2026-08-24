@@ -481,6 +481,32 @@ export default function StoryPage() {
                   </>
                 )}
               </div>
+
+              <div className="mt-6 flex flex-wrap gap-6 border-t border-slate-800 pt-5">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-gray-500">
+                    Chapters
+                  </p>
+
+                  <p className="mt-1 text-lg font-semibold text-white">
+                    {chapterCount}
+                  </p>
+                </div>
+
+                {story.published_at && (
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">
+                      Published
+                    </p>
+
+                    <p className="mt-1 text-lg font-semibold text-white">
+                      {new Date(
+                        story.published_at
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Reading Progress */}

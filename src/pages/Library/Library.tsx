@@ -489,7 +489,9 @@ export default function Library() {
           {showContinueReading && (
             <section className="mt-10 border-t border-slate-800 pt-8">
               <p className="text-sm text-gray-400">
-                Continue Reading
+                {continueReadingPercentage >= 100
+                  ? "Story Completed"
+                  : "Continue Reading"}
               </p>
 
               <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-6">
@@ -523,11 +525,17 @@ export default function Library() {
                     <Button
                       onClick={() =>
                         navigate(
-                          `/story/${latestReading.story_slug}/chapter/${latestReading.chapter_number}`
+                          `/story/${latestReading.story_slug}/chapter/${
+                            continueReadingPercentage >= 100
+                              ? 1
+                              : latestReading.chapter_number
+                          }`
                         )
                       }
                     >
-                      Continue Reading
+                      {continueReadingPercentage >= 100
+                        ? "Read Again"
+                        : "Continue Reading"}
                     </Button>
                   </div>
                 </div>

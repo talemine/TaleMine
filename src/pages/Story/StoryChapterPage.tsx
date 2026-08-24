@@ -738,6 +738,17 @@ export default function StoryChapterPage() {
                 Thanks for reading{" "}
                 {story.title}.
               </p>
+
+              <div className="mt-5 flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    navigate(`/story/${story.slug}`)
+                  }
+                >
+                  Back to Story
+                </Button>
+              </div>
             </div>
           )}
 
@@ -833,14 +844,9 @@ export default function StoryChapterPage() {
             {/* Back to Story */}
             <div className="mt-5 flex justify-center">
               <Button
-                variant="outline"
-                onClick={() =>
-                  navigate(
-                    `/story/${story.slug}`
-                  )
-                }
+                onClick={() => navigate("/stories")}
               >
-                Back to Story
+                Explore More Stories
               </Button>
             </div>
           </div>

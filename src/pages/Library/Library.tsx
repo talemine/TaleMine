@@ -660,11 +660,17 @@ export default function Library() {
                             variant="outline"
                             onClick={() =>
                               navigate(
-                                `/story/${progress.story_slug}/chapter/${progress.chapter_number}`
+                                `/story/${progress.story_slug}/chapter/${
+                                  progress.chapter_number >= progress.chapter_count
+                                    ? 1
+                                    : progress.chapter_number
+                                }`
                               )
                             }
                           >
-                            Read Again
+                            {progress.chapter_number >= progress.chapter_count
+                              ? "Read Again"
+                              : "Continue Reading"}
                           </Button>
                         </div>
                       </article>

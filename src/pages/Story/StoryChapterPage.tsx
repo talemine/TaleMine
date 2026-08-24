@@ -36,8 +36,25 @@ type FontSizeOption =
   | "medium"
   | "large";
 
+type ReadingWidthOption =
+  | "narrow"
+  | "standard"
+  | "wide";
+
 const FONT_SIZE_STORAGE_KEY =
   "talemine-reader-font-size";
+
+const READING_WIDTH_STORAGE_KEY =
+  "talemine-reader-width";
+
+const readingWidthClasses: Record<
+  ReadingWidthOption,
+  string
+> = {
+  narrow: "max-w-xl",
+  standard: "max-w-2xl",
+  wide: "max-w-4xl",
+};
 
 const fontSizeClasses: Record<
   FontSizeOption,
@@ -75,6 +92,9 @@ export default function StoryChapterPage() {
   const [fontSize, setFontSize] =
     useState<FontSizeOption>("medium");
 
+  const [readingWidth, setReadingWidth] =
+    useState<ReadingWidthOption>("standard");
+
   const [loading, setLoading] =
     useState(true);
 
@@ -94,6 +114,19 @@ export default function StoryChapterPage() {
     ) {
       setFontSize(savedFontSize);
     }
+
+    const savedReadingWidth =
+      window.localStorage.getItem(
+        READING_WIDTH_STORAGE_KEY
+      );
+
+    if (
+      savedReadingWidth === "narrow" ||
+      savedReadingWidth === "standard" ||
+      savedReadingWidth === "wide"
+    ) {
+      setReadingWidth(savedReadingWidth);
+    }
   }, []);
 
   function changeFontSize(
@@ -104,6 +137,17 @@ export default function StoryChapterPage() {
     window.localStorage.setItem(
       FONT_SIZE_STORAGE_KEY,
       nextSize
+    );
+  }
+
+  function changeReadingWidth(
+    nextWidth: ReadingWidthOption
+  ) {
+    setReadingWidth(nextWidth);
+
+    window.localStorage.setItem(
+      READING_WIDTH_STORAGE_KEY,
+      nextWidth
     );
   }
 
@@ -488,7 +532,7 @@ export default function StoryChapterPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
-      <article className="mx-auto max-w-3xl">
+      <article className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8 md:p-12">
           {/* Chapter Header */}
           <div className="flex flex-wrap items-center gap-3">
@@ -512,75 +556,142 @@ export default function StoryChapterPage() {
           </p>
 
           {/* Reader Controls */}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-slate-800 py-4">
-            <p className="text-sm text-gray-400">
-              Reading size
-            </p>
+          <div className="mt-8 flex flex-col gap-4 border-y border-slate-800 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="text-sm text-gray-400">
+                Reading size
+              </p>
 
-            <div
-              className="flex items-center gap-2"
-              aria-label="Reading text size"
-            >
-              <button
-                type="button"
-                onClick={() =>
-                  changeFontSize("small")
-                }
-                aria-label="Small text"
-                aria-pressed={
-                  fontSize === "small"
-                }
-                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
-                  fontSize === "small"
-                    ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
-                    : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
-                }`}
+              <div
+                className="flex items-center gap-2"
+                aria-label="Reading text size"
               >
-                A−
-              </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeFontSize("small")
+                  }
+                  aria-label="Small text"
+                  aria-pressed={
+                    fontSize === "small"
+                  }
+                  className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
+                    fontSize === "small"
+                      ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                      : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                  }`}
+                >
+                  A−
+                </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  changeFontSize("medium")
-                }
-                aria-label="Default text"
-                aria-pressed={
-                  fontSize === "medium"
-                }
-                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
-                  fontSize === "medium"
-                    ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
-                    : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
-                }`}
-              >
-                A
-              </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeFontSize("medium")
+                  }
+                  aria-label="Default text"
+                  aria-pressed={
+                    fontSize === "medium"
+                  }
+                  className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
+                    fontSize === "medium"
+                      ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                      : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                  }`}
+                >
+                  A
+                </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  changeFontSize("large")
-                }
-                aria-label="Large text"
-                aria-pressed={
-                  fontSize === "large"
-                }
-                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
-                  fontSize === "large"
-                    ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
-                    : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
-                }`}
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeFontSize("large")
+                  }
+                  aria-label="Large text"
+                  aria-pressed={
+                    fontSize === "large"
+                  }
+                  className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-semibold transition ${
+                    fontSize === "large"
+                      ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                      : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                  }`}
+                >
+                  A+
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="text-sm text-gray-400">
+                Reading width
+              </p>
+
+              <div
+                className="flex items-center gap-2"
+                aria-label="Reading width"
               >
-                A+
-              </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeReadingWidth("narrow")
+                  }
+                  aria-label="Narrow reading width"
+                  aria-pressed={
+                    readingWidth === "narrow"
+                  }
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                    readingWidth === "narrow"
+                      ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                      : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                  }`}
+                >
+                  Narrow
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeReadingWidth("standard")
+                  }
+                  aria-label="Standard reading width"
+                  aria-pressed={
+                    readingWidth === "standard"
+                  }
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                    readingWidth === "standard"
+                      ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                      : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                  }`}
+                >
+                  Standard
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    changeReadingWidth("wide")
+                  }
+                  aria-label="Wide reading width"
+                  aria-pressed={
+                    readingWidth === "wide"
+                  }
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold transition ${
+                    readingWidth === "wide"
+                      ? "border-cyan-400 bg-cyan-400/10 text-cyan-400"
+                      : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
+                  }`}
+                >
+                  Wide
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Chapter Content */}
           <div className="mt-10 border-t border-slate-800 pt-10">
             <div
-              className={`mx-auto max-w-2xl whitespace-pre-wrap text-gray-200 ${fontSizeClasses[fontSize]}`}
+              className={`mx-auto whitespace-pre-wrap text-gray-200 ${readingWidthClasses[readingWidth]} ${fontSizeClasses[fontSize]}`}
             >
               {chapter.content}
             </div>

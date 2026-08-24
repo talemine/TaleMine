@@ -474,6 +474,11 @@ export default function StoryChapterPage() {
     navigate(
       `/story/${story.slug}/chapter/${number}`
     );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "instant",
+    });
   }
 
   if (loading) {

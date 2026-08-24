@@ -369,6 +369,14 @@ export default function StoryPage() {
     );
   }
 
+  function startReading() {
+    if (!story) {
+      return;
+    }
+
+    navigate(`/story/${story.slug}/chapter/1`);
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
@@ -555,6 +563,30 @@ export default function StoryPage() {
                     </p>
                   </div>
                 )}
+              </section>
+            )}
+
+            {!readingProgress && chapterCount > 0 && (
+              <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
+                      Ready to Read?
+                    </p>
+
+                    <h2 className="mt-1 text-xl font-bold">
+                      Start with Chapter 1
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-400">
+                      Begin this story from the beginning.
+                    </p>
+                  </div>
+
+                  <Button onClick={startReading}>
+                    Start Reading
+                  </Button>
+                </div>
               </section>
             )}
 

@@ -533,6 +533,35 @@ export default function Stories() {
     sortBy,
   ]);
 
+  const popularStories = useMemo(() => {
+    return [...stories]
+      .sort((a, b) => {
+        const chapterDifference =
+          b.chapterCount - a.chapterCount;
+
+        if (chapterDifference !== 0) {
+          return chapterDifference;
+        }
+
+        const aDate =
+          a.story.published_at
+            ? new Date(
+                a.story.published_at
+              ).getTime()
+            : 0;
+
+        const bDate =
+          b.story.published_at
+            ? new Date(
+                b.story.published_at
+              ).getTime()
+            : 0;
+
+        return bDate - aDate;
+      })
+      .slice(0, 3);
+  }, [stories]);
+
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
@@ -693,6 +722,103 @@ export default function Stories() {
             </p>
           </div>
         )}
+
+        {/* Popular Reads */}
+        {!errorMessage &&
+          popularStories.length > 0 && (
+            <section className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5 md:p-6">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-cyan-400">
+                    Popular Reads
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-bold">
+                    Readers are exploring
+                  </h2>
+                </div>
+
+                <span className="hidden text-xs text-gray-500 sm:block">
+                  Most chapters
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                {popularStories.map(
+                  ({
+                    story,
+                    category,
+                    authorName,
+                    progress,
+                    chapterCount,
+                  }) => (
+                    <article
+                      key={story.id}
+                      className="group flex overflow-hidden rounded-xl border border-slate-800 bg-slate-950/70 transition hover:border-cyan-500/40"
+                    >
+                      {story.cover_image_url ? (
+                        <div className="h-28 w-24 shrink-0 overflow-hidden bg-slate-950 sm:h-32 sm:w-28">
+                          <img
+                            src={story.cover_image_url}
+                            alt={`${story.title} cover`}
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-28 w-24 shrink-0 items-center justify-center bg-slate-950 sm:h-32 sm:w-28">
+                          <span className="text-xs text-slate-600">
+                            TaleMine
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex min-w-0 flex-1 flex-col p-4">
+                        {category && (
+                          <span className="w-fit rounded-full border border-cyan-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-cyan-300">
+                            {category.name}
+                          </span>
+                        )}
+
+                        <h3 className="mt-2 line-clamp-2 text-base font-bold">
+                          {story.title}
+                        </h3>
+
+                        <p className="mt-1 truncate text-xs text-gray-400">
+                          By{" "}
+                          <span className="text-cyan-400">
+                            {authorName}
+                          </span>
+                        </p>
+
+                        <p className="mt-1 text-[11px] text-gray-500">
+                          {chapterCount}{" "}
+                          {chapterCount === 1
+                            ? "chapter"
+                            : "chapters"}
+                        </p>
+
+                        <div className="mt-auto pt-3">
+                          <Button
+                            onClick={() =>
+                              navigate(
+                                progress
+                                  ? `/story/${story.slug}/chapter/${progress.chapter_number}`
+                                  : `/story/${story.slug}`
+                              )
+                            }
+                          >
+                            {progress
+                              ? "Continue"
+                              : "Read Story"}
+                          </Button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                )}
+              </div>
+            </section>
+          )}
 
         {/* Story Grid */}
         {!errorMessage &&

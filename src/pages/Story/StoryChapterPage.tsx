@@ -571,7 +571,7 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeFontSize("small")
                   }
-                  aria-label="Small text"
+                  aria-label="Decrease reading text size"
                   aria-pressed={
                     fontSize === "small"
                   }
@@ -589,7 +589,7 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeFontSize("medium")
                   }
-                  aria-label="Default text"
+                  aria-label="Use default reading text size"
                   aria-pressed={
                     fontSize === "medium"
                   }
@@ -607,7 +607,7 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeFontSize("large")
                   }
-                  aria-label="Large text"
+                  aria-label="Increase reading text size"
                   aria-pressed={
                     fontSize === "large"
                   }

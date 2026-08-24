@@ -448,6 +448,37 @@ export default function Library() {
             </div>
           </section>
 
+          {!errorMessage && (
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                <p className="text-xs uppercase tracking-wide text-gray-500">
+                  Stories
+                </p>
+
+                <p className="mt-1 text-2xl font-bold text-white">
+                  {
+                    new Set(
+                      recentlyRead.map(
+                        (progress) =>
+                          progress.story_id
+                      )
+                    ).size
+                  }
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                <p className="text-xs uppercase tracking-wide text-gray-500">
+                  Recently Read
+                </p>
+
+                <p className="mt-1 text-2xl font-bold text-white">
+                  {recentlyRead.length}
+                </p>
+              </div>
+            </div>
+          )}
+
           {errorMessage && (
             <p className="mt-8 text-sm text-red-400">
               {errorMessage}

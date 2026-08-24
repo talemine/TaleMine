@@ -808,8 +808,8 @@ export default function Stories() {
                             }
                           >
                             {progress
-                              ? "Continue"
-                              : "Read Story"}
+                              ? "Continue Reading"
+                              : "Start Reading"}
                           </Button>
                         </div>
                       </div>

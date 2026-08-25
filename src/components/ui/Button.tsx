@@ -1,12 +1,18 @@
-import type { ReactNode } from "react";
+import type {
+  ReactNode,
+} from "react";
 
 interface ButtonProps {
   children: ReactNode;
-  variant?: "primary" | "secondary" | "outline";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline";
   href?: string;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  className?: string;
 }
 
 export default function Button({
@@ -16,6 +22,7 @@ export default function Button({
   type = "button",
   disabled,
   onClick,
+  className = "",
 }: ButtonProps) {
   const styles = {
     primary:
@@ -28,7 +35,7 @@ export default function Button({
       "border border-white text-white hover:bg-white hover:text-black",
   };
 
-  const className = `
+  const buttonClassName = `
     inline-flex
     items-center
     justify-center
@@ -40,11 +47,15 @@ export default function Button({
     duration-300
     disabled:opacity-50 disabled:cursor-not-allowed
     ${styles[variant]}
+    ${className}
   `;
 
   if (href) {
     return (
-      <a href={href} className={className}>
+      <a
+        href={href}
+        className={buttonClassName}
+      >
         {children}
       </a>
     );
@@ -53,7 +64,7 @@ export default function Button({
   return (
     <button
       type={type}
-      className={className}
+      className={buttonClassName}
       disabled={disabled}
       onClick={onClick}
     >

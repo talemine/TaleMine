@@ -675,7 +675,7 @@ export default function Stories() {
                 </option>
 
                 <option value="title">
-                  Title A–Z
+                  Title Aâ€“Z
                 </option>
 
                 <option value="chapters">
@@ -743,7 +743,7 @@ export default function Stories() {
                 </span>
               </div>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {popularStories.map(
                   ({
                     story,
@@ -751,70 +751,104 @@ export default function Stories() {
                     authorName,
                     progress,
                     chapterCount,
-                  }) => (
-                    <article
-                      key={story.id}
-                      className="group flex overflow-hidden rounded-xl border border-slate-800 bg-slate-950/70 transition hover:border-cyan-500/40"
-                    >
-                      {story.cover_image_url ? (
-                        <div className="h-28 w-24 shrink-0 overflow-hidden bg-slate-950 sm:h-32 sm:w-28">
-                          <img
-                            src={story.cover_image_url}
-                            alt={`${story.title} cover`}
-                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                          />
+                  }) => {
+                    const isCompleted =
+                      Boolean(
+                        progress &&
+                        chapterCount > 0 &&
+                        progress.chapter_number >=
+                          chapterCount
+                      );
+
+                    return (
+                      <article
+                        key={story.id}
+                        className="
+                          overflow-hidden
+                          rounded-xl
+                          border
+                          border-slate-800
+                          bg-slate-950/70
+                          transition
+                          hover:border-cyan-500/40
+                        "
+                      >
+                        <div className="flex h-36">
+                          {story.cover_image_url ? (
+                            <div className="h-36 w-[42%] shrink-0 overflow-hidden bg-slate-950">
+                              <img
+                                src={story.cover_image_url}
+                                alt={`${story.title} cover`}
+                                className="
+                                  h-full
+                                  w-full
+                                  object-cover
+                                  transition
+                                  duration-500
+                                  group-hover:scale-105
+                                "
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex h-36 w-[42%] shrink-0 items-center justify-center bg-slate-950">
+                              <span className="text-xs text-slate-600">
+                                TaleMine
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="min-w-0 flex-1 p-4">
+                            {category && (
+                              <span className="w-fit rounded-full border border-cyan-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-cyan-300">
+                                {category.name}
+                              </span>
+                            )}
+
+                            <h3 className="mt-2 line-clamp-2 text-base font-bold">
+                              {story.title}
+                            </h3>
+
+                            <p className="mt-1 truncate text-xs text-gray-400">
+                              By{" "}
+                              <span className="text-cyan-400">
+                                {authorName}
+                              </span>
+                            </p>
+
+                            <p className="mt-1 text-[11px] text-gray-500">
+                              {chapterCount}{" "}
+                              {chapterCount === 1
+                                ? "chapter"
+                                : "chapters"}
+                            </p>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="flex h-28 w-24 shrink-0 items-center justify-center bg-slate-950 sm:h-32 sm:w-28">
-                          <span className="text-xs text-slate-600">
-                            TaleMine
-                          </span>
-                        </div>
-                      )}
 
-                      <div className="flex min-w-0 flex-1 flex-col p-4">
-                        {category && (
-                          <span className="w-fit rounded-full border border-cyan-500/20 px-2 py-0.5 text-[10px] uppercase tracking-wide text-cyan-300">
-                            {category.name}
-                          </span>
-                        )}
-
-                        <h3 className="mt-2 line-clamp-2 text-base font-bold">
-                          {story.title}
-                        </h3>
-
-                        <p className="mt-1 truncate text-xs text-gray-400">
-                          By{" "}
-                          <span className="text-cyan-400">
-                            {authorName}
-                          </span>
-                        </p>
-
-                        <p className="mt-1 text-[11px] text-gray-500">
-                          {chapterCount}{" "}
-                          {chapterCount === 1
-                            ? "chapter"
-                            : "chapters"}
-                        </p>
-
-                        <div className="mt-auto pt-3">
+                        <div className="px-3 pb-3">
                           <Button
                             onClick={() =>
                               navigate(
                                 progress
-                                  ? `/story/${story.slug}/chapter/${progress.chapter_number}`
+                                  ? `/story/${story.slug}/chapter/${
+                                      isCompleted
+                                        ? 1
+                                        : progress.chapter_number
+                                    }`
                                   : `/story/${story.slug}`
                               )
                             }
+                            className="w-full whitespace-nowrap"
                           >
                             {progress
-                              ? "Continue Reading"
+                              ? isCompleted
+                                ? "Read Again"
+                                : "Continue Reading"
                               : "Start Reading"}
                           </Button>
                         </div>
-                      </div>
-                    </article>
-                  )
+                      </article>
+                    );
+                  }
                 )}
               </div>
             </section>
@@ -831,8 +865,17 @@ export default function Stories() {
                   authorName,
                   progress,
                   chapterCount,
-                }) => (
-                  <article
+                }) => {
+                  const isCompleted =
+                    Boolean(
+                      progress &&
+                      chapterCount > 0 &&
+                      progress.chapter_number >=
+                        chapterCount
+                    );
+
+                  return (
+                    <article
                     key={story.id}
                     className="group flex flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 transition hover:border-cyan-500/40"
                   >
@@ -915,7 +958,9 @@ export default function Stories() {
                             <div className="mb-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
                               <div className="flex items-center justify-between gap-3">
                                 <span className="text-xs font-semibold uppercase tracking-wide text-cyan-400">
-                                  Currently Reading
+                                  {isCompleted
+                                    ? "Story Completed"
+                                    : "Currently Reading"}
                                 </span>
 
                                 <span className="text-xs text-gray-500">
@@ -971,11 +1016,17 @@ export default function Stories() {
                             <Button
                               onClick={() =>
                                 navigate(
-                                  `/story/${story.slug}/chapter/${progress.chapter_number}`
+                                  `/story/${story.slug}/chapter/${
+                                    isCompleted
+                                      ? 1
+                                      : progress.chapter_number
+                                  }`
                                 )
                               }
                             >
-                              Continue Reading
+                              {isCompleted
+                                ? "Read Again"
+                                : "Continue Reading"}
                             </Button>
                           </>
                         ) : (
@@ -991,8 +1042,9 @@ export default function Stories() {
                         )}
                       </div>
                     </div>
-                  </article>
-                )
+                    </article>
+                  );
+                }
               )}
             </section>
           )}

@@ -1,6 +1,4 @@
-import type {
-  ReactNode,
-} from "react";
+import type { ReactNode } from "react";
 
 interface ButtonProps {
   children: ReactNode;
@@ -8,6 +6,7 @@ interface ButtonProps {
     | "primary"
     | "secondary"
     | "outline";
+  size?: "sm" | "md";
   href?: string;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
@@ -18,6 +17,7 @@ interface ButtonProps {
 export default function Button({
   children,
   variant = "primary",
+  size = "md",
   href,
   type = "button",
   disabled,
@@ -35,12 +35,16 @@ export default function Button({
       "border border-white text-white hover:bg-white hover:text-black",
   };
 
+  const sizeStyles = {
+    sm: "px-6 py-2.5 text-sm",
+    md: "px-8 py-4",
+  };
+
   const buttonClassName = `
     inline-flex
     items-center
     justify-center
-    px-8
-    py-4
+    ${sizeStyles[size]}
     rounded-full
     font-semibold
     transition-all

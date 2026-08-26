@@ -523,6 +523,7 @@ export default function Library() {
 
                   <div className="sm:pt-1">
                     <Button
+                      size="sm"
                       onClick={() =>
                         navigate(
                           `/story/${latestReading.story_slug}/chapter/${

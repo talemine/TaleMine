@@ -826,6 +826,7 @@ export default function Stories() {
 
                         <div className="px-3 pb-3">
                           <Button
+                            size="sm"
                             onClick={() =>
                               navigate(
                                 progress

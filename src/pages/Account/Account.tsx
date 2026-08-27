@@ -342,7 +342,7 @@ export default function Account() {
 
   if (!session) {
     return (
-      <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
+      <main className="min-h-screen bg-slate-950 px-4 py-12 text-white sm:px-6 sm:py-20">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
             Please Log In
@@ -369,8 +369,8 @@ export default function Account() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-3xl">
-        <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8">
-          <h1 className="text-4xl font-bold">
+        <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-4 sm:p-8">
+          <h1 className="text-3xl font-bold sm:text-4xl">
             Welcome to TaleMine
           </h1>
 

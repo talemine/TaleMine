@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
-import Button from "../ui/Button";
 import { supabase } from "../../services/supabase";
 
 interface Notification {
@@ -27,21 +25,107 @@ interface ActorProfile {
   avatar_url: string | null;
 }
 
-interface NotificationWithActor
+interface StoryInfo {
+  id: string;
+  slug: string;
+  title: string;
+}
+
+interface ChapterInfo {
+  id: string;
+  chapter_number: number;
+  title: string;
+}
+
+interface CommentInfo {
+  id: string;
+  content: string;
+}
+
+interface NotificationWithDetails
   extends Notification {
   actor: ActorProfile | null;
+  story: StoryInfo | null;
+  chapter: ChapterInfo | null;
+  comment: CommentInfo | null;
+}
+
+interface NotificationGroup {
+  dateKey: string;
+  label: string;
+  notifications: NotificationWithDetails[];
+}
+
+function getDateKey(dateString: string) {
+  const date = new Date(dateString);
+
+  const year = date.getFullYear();
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, "0");
+  const day = String(
+    date.getDate()
+  ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDateLabel(dateString: string) {
+  const date = new Date(dateString);
+
+  const now = new Date();
+
+  const todayKey = getDateKey(
+    now.toISOString()
+  );
+
+  const yesterday = new Date(now);
+  yesterday.setDate(
+    yesterday.getDate() - 1
+  );
+
+  const yesterdayKey = getDateKey(
+    yesterday.toISOString()
+  );
+
+  const dateKey = getDateKey(
+    dateString
+  );
+
+  if (dateKey === todayKey) {
+    return "Today";
+  }
+
+  if (dateKey === yesterdayKey) {
+    return "Yesterday";
+  }
+
+  return date.toLocaleDateString(
+    undefined,
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }
+  );
 }
 
 export default function Notifications() {
   const { session } = useAuth();
-  const navigate = useNavigate();
 
   const [notifications, setNotifications] =
-    useState<NotificationWithActor[]>([]);
+    useState<NotificationWithDetails[]>(
+      []
+    );
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
+
   const [errorMessage, setErrorMessage] =
     useState("");
+
+  const [expandedNotificationId, setExpandedNotificationId] =
+    useState<string | null>(null);
 
   const userId = session?.user.id;
 
@@ -103,7 +187,9 @@ export default function Notifications() {
       const loadedNotifications =
         notificationData ?? [];
 
-      if (loadedNotifications.length === 0) {
+      if (
+        loadedNotifications.length === 0
+      ) {
         setNotifications([]);
         setLoading(false);
         return;
@@ -157,8 +243,27 @@ export default function Notifications() {
         )
       );
 
+      const commentIds = Array.from(
+        new Set(
+          loadedNotifications
+            .map(
+              (notification) =>
+                notification.comment_id
+            )
+            .filter(
+              (
+                commentId
+              ): commentId is string =>
+                Boolean(commentId)
+            )
+        )
+      );
+
       const [
-        { data: storyData, error: storyError },
+        {
+          data: storyData,
+          error: storyError,
+        },
         {
           data: chapterData,
           error: chapterError,
@@ -167,11 +272,17 @@ export default function Notifications() {
           data: actorData,
           error: actorError,
         },
+        {
+          data: commentData,
+          error: commentError,
+        },
       ] = await Promise.all([
         storyIds.length > 0
           ? supabase
               .from("stories")
-              .select("id, slug")
+              .select(
+                "id, slug, title"
+              )
               .in("id", storyIds)
           : Promise.resolve({
               data: [],
@@ -182,7 +293,7 @@ export default function Notifications() {
           ? supabase
               .from("chapters")
               .select(
-                "id, chapter_number"
+                "id, chapter_number, title"
               )
               .in("id", chapterIds)
           : Promise.resolve({
@@ -194,9 +305,24 @@ export default function Notifications() {
           ? supabase
               .from("profiles")
               .select(
-                "id, display_name, username, avatar_url"
+                `
+                  id,
+                  display_name,
+                  username,
+                  avatar_url
+                `
               )
               .in("id", actorIds)
+          : Promise.resolve({
+              data: [],
+              error: null,
+            }),
+
+        commentIds.length > 0
+          ? supabase
+              .from("chapter_comments")
+              .select("id, content")
+              .in("id", commentIds)
           : Promise.resolve({
               data: [],
               error: null,
@@ -228,37 +354,63 @@ export default function Notifications() {
         );
       }
 
+      if (commentError) {
+        console.error(
+          "Notification comment loading error:",
+          commentError
+        );
+      }
+
       const enrichedNotifications =
         loadedNotifications.map(
-          (notification) => ({
-            ...notification,
-
-            story_slug:
+          (notification) => {
+            const story =
               storyData?.find(
-                (story) =>
-                  story.id ===
+                (item) =>
+                  item.id ===
                   notification.story_id
-              )?.slug ?? null,
+              ) ?? null;
 
-            chapter_number:
+            const chapter =
               chapterData?.find(
-                (chapter) =>
-                  chapter.id ===
+                (item) =>
+                  item.id ===
                   notification.chapter_id
-              )?.chapter_number ?? null,
+              ) ?? null;
 
-            actor:
+            const actor =
               actorData?.find(
-                (actor) =>
-                  actor.id ===
+                (item) =>
+                  item.id ===
                   notification.actor_user_id
-              ) ?? null,
-          })
+              ) ?? null;
+
+            const comment =
+              commentData?.find(
+                (item) =>
+                  item.id ===
+                  notification.comment_id
+              ) ?? null;
+
+            return {
+              ...notification,
+              story_slug:
+                story?.slug ?? null,
+              chapter_number:
+                chapter?.chapter_number ??
+                null,
+              actor,
+              story,
+              chapter,
+              comment,
+            };
+          }
         );
 
       setNotifications(
         enrichedNotifications
       );
+
       setLoading(false);
     }
 
@@ -276,7 +428,8 @@ export default function Notifications() {
       return;
     }
 
-    const readAt = new Date().toISOString();
+    const readAt =
+      new Date().toISOString();
 
     const { error } = await supabase
       .from("notifications")
@@ -310,37 +463,187 @@ export default function Notifications() {
     );
   }
 
-  async function openNotification(
-    notification: NotificationWithActor
+  async function handleNotificationClick(
+    notification: NotificationWithDetails
   ) {
-    if (notification.read_at === null) {
-      await markAsRead(notification.id);
+    const willExpand =
+      expandedNotificationId !==
+      notification.id;
+
+    if (
+      notification.read_at === null
+    ) {
+      await markAsRead(
+        notification.id
+      );
+    }
+
+    setExpandedNotificationId(
+      willExpand
+        ? notification.id
+        : null
+    );
+  }
+
+  function getNotificationAction(
+    notification: NotificationWithDetails
+  ) {
+    const message =
+      notification.message?.trim() || "";
+
+    const lowerMessage =
+      message.toLowerCase();
+
+    if (
+      lowerMessage.includes("liked")
+    ) {
+      return "liked";
     }
 
     if (
-      notification.type === "comment" &&
-      notification.story_slug &&
-      notification.chapter_number !== null
+      lowerMessage.includes("commented")
     ) {
-      navigate(
-        `/story/${notification.story_slug}/chapter/${notification.chapter_number}`
+      return "commented on";
+    }
+
+    if (
+      lowerMessage.includes("replied")
+    ) {
+      return "replied to";
+    }
+
+    return message
+      .replace(/^someone\s+/i, "")
+      .replace(/\.$/, "");
+  }
+
+  function getNotificationTargetText(
+    notification: NotificationWithDetails
+  ) {
+    const action =
+      getNotificationAction(
+        notification
+      );
+
+    const chapterTitle =
+      notification.chapter?.title ||
+      (notification.chapter_number !==
+      null
+        ? `Chapter ${notification.chapter_number}`
+        : "your chapter");
+
+    const storyTitle =
+      notification.story?.title ||
+      "your story";
+
+    if (
+      action === "liked"
+    ) {
+      return (
+        <>
+          <span>
+            liked
+          </span>{" "}
+          <span className="font-medium text-white">
+            {chapterTitle}
+          </span>{" "}
+          <span>
+            of
+          </span>{" "}
+          <span className="font-medium text-white">
+            {storyTitle}
+          </span>
+        </>
       );
     }
+
+    if (
+      action === "commented on"
+    ) {
+      return (
+        <>
+          <span>
+            commented on
+          </span>{" "}
+          <span className="font-medium text-white">
+            {chapterTitle}
+          </span>{" "}
+          <span>
+            of
+          </span>{" "}
+          <span className="font-medium text-white">
+            {storyTitle}
+          </span>
+        </>
+      );
+    }
+
+    return (
+      <>
+        {notification.message}
+      </>
+    );
   }
+
+  const notificationGroups =
+    useMemo<NotificationGroup[]>(
+      () => {
+        const groups =
+          new Map<
+            string,
+            NotificationGroup
+          >();
+
+        notifications.forEach(
+          (notification) => {
+            const dateKey =
+              getDateKey(
+                notification.created_at
+              );
+
+            const existing =
+              groups.get(dateKey);
+
+            if (existing) {
+              existing.notifications.push(
+                notification
+              );
+              return;
+            }
+
+            groups.set(dateKey, {
+              dateKey,
+              label: getDateLabel(
+                notification.created_at
+              ),
+              notifications: [
+                notification,
+              ],
+            });
+          }
+        );
+
+        return Array.from(
+          groups.values()
+        );
+      },
+      [notifications]
+    );
 
   if (!session) {
     return (
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <p className="text-gray-400">
-          Log in to view your notifications.
+          Log in to view your
+          notifications.
         </p>
       </section>
     );
   }
 
   return (
-    <section className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <section className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-3 sm:p-4">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm text-gray-400">
             Activity
@@ -355,7 +658,8 @@ export default function Notifications() {
           {
             notifications.filter(
               (notification) =>
-                notification.read_at === null
+                notification.read_at ===
+                null
             ).length
           }{" "}
           unread
@@ -363,122 +667,211 @@ export default function Notifications() {
       </div>
 
       {loading ? (
-        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-6 text-center">
-          <p className="text-gray-400">
+        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-5 text-center">
+          <p className="text-sm text-gray-400">
             Loading notifications...
           </p>
         </div>
       ) : errorMessage ? (
-        <p className="mt-6 text-sm text-red-400">
+        <p className="mt-5 text-sm text-red-400">
           {errorMessage}
         </p>
-      ) : notifications.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-6 text-center">
-          <p className="text-gray-400">
-            You have no notifications yet.
+      ) : notifications.length ===
+        0 ? (
+        <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-5 text-center">
+          <p className="text-sm text-gray-400">
+            You have no notifications
+            yet.
           </p>
         </div>
       ) : (
-        <div className="mt-6 space-y-4">
-          {notifications.map(
-            (notification) => (
-              <article
-                key={notification.id}
-                onClick={() =>
-                  openNotification(
-                    notification
-                  )
-                }
-                className={`cursor-pointer rounded-2xl border p-5 ${
-                  notification.read_at
-                    ? "border-slate-800 bg-slate-950/30"
-                    : "border-cyan-500/30 bg-cyan-500/5"
-                }`}
+        <div className="mt-3 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700">
+          <div className="space-y-3">
+            {notificationGroups.map(
+            (group) => (
+              <div
+                key={group.dateKey}
               >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
-                      {notification.actor
-                        ?.avatar_url ? (
-                        <img
-                          src={
-                            notification.actor
-                              .avatar_url
-                          }
-                          alt={
-                            notification.actor
-                              .display_name ||
-                            "User avatar"
-                          }
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-cyan-400">
-                          {(
-                            notification.actor
-                              ?.display_name ||
-                            notification.actor
-                              ?.username ||
-                            "T"
-                          )
-                            .charAt(0)
-                            .toUpperCase()}
-                        </div>
-                      )}
-                    </div>
+                {/* WhatsApp-style date separator */}
+                <div className="mb-1.5 flex justify-center">
+                  <span className="rounded-full bg-slate-800/80 px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
+                    {group.label}
+                  </span>
+                </div>
 
-                    <div>
-                      <p className="font-semibold text-white">
-                        {notification.actor
+                <div className="space-y-0.5">
+                  {group.notifications.map(
+                    (
+                      notification
+                    ) => {
+                      const actorName =
+                        notification.actor
                           ?.display_name ||
-                          notification.actor
-                            ?.username ||
-                          "TaleMine User"}
-                      </p>
+                        notification.actor
+                          ?.username ||
+                        "TaleMine User";
 
-                      {notification.actor
-                        ?.username && (
-                        <p className="text-xs text-cyan-400">
-                          @
-                          {
-                            notification.actor
-                              .username
+                      const actorInitial =
+                        actorName
+                          .charAt(0)
+                          .toUpperCase();
+
+                      const isExpanded =
+                        expandedNotificationId ===
+                        notification.id;
+
+                      const isUnread =
+                        notification.read_at ===
+                        null;
+
+                      return (
+                        <article
+                          key={
+                            notification.id
                           }
-                        </p>
-                      )}
+                          onClick={() =>
+                            handleNotificationClick(
+                              notification
+                            )
+                          }
+                          className={`cursor-pointer rounded-lg border px-2 py-1.5 transition ${
+                            isUnread
+                              ? "border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10"
+                              : "border-transparent bg-transparent hover:border-slate-800 hover:bg-slate-950/40"
+                          }`}
+                        >
+                          {/* Compact notification row */}
+                          <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-950">
+                              {notification
+                                .actor
+                                ?.avatar_url ? (
+                                <img
+                                  src={
+                                    notification
+                                      .actor
+                                      .avatar_url
+                                  }
+                                  alt={
+                                    actorName
+                                  }
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-cyan-400">
+                                  {
+                                    actorInitial
+                                  }
+                                </div>
+                              )}
+                            </div>
 
-                      <p className="mt-2 text-gray-300">
-                        {notification.message}
-                      </p>
+                            <p className="min-w-0 flex-1 text-[13px] leading-5 text-gray-300">
+                              <span className="font-semibold text-cyan-300">
+                                {actorName}
+                              </span>{" "}
+                              {getNotificationAction(
+                                notification
+                              ) ===
+                              "liked"
+                                ? "liked your chapter."
+                                : getNotificationAction(
+                                      notification
+                                    ) ===
+                                    "commented on"
+                                  ? "commented on your story."
+                                  : notification.message}
+                            </p>
+                          </div>
 
-                      <p className="mt-1 text-xs text-gray-500">
-                        {new Date(
-                          notification.created_at
-                        ).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
+                          {/* Expanded notification details */}
+                          {isExpanded && (
+                            <div className="mt-1.5 ml-9 rounded-lg border border-cyan-500/20 bg-slate-950/50 p-2.5">
+                              <div className="flex items-start gap-3">
+                                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
+                                  {notification
+                                    .actor
+                                    ?.avatar_url ? (
+                                    <img
+                                      src={
+                                        notification
+                                          .actor
+                                          .avatar_url
+                                      }
+                                      alt={
+                                        actorName
+                                      }
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-cyan-400">
+                                      {
+                                        actorInitial
+                                      }
+                                    </div>
+                                  )}
+                                </div>
 
-                  {notification.read_at ===
-                    null && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={(event) => {
-                        event.stopPropagation();
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-semibold text-white">
+                                    {
+                                      actorName
+                                    }
+                                  </p>
 
-                        markAsRead(
-                          notification.id
-                        );
-                      }}
-                    >
-                      Mark as Read
-                    </Button>
+                                  {notification
+                                    .actor
+                                    ?.username && (
+                                    <p className="text-xs text-cyan-400">
+                                      @
+                                      {
+                                        notification
+                                          .actor
+                                          .username
+                                      }
+                                    </p>
+                                  )}
+
+                                  <p className="mt-2 text-sm leading-5 text-gray-300">
+                                    <span className="font-semibold text-cyan-300">
+                                      {
+                                        actorName
+                                      }
+                                    </span>{" "}
+                                    {
+                                      getNotificationTargetText(
+                                        notification
+                                      )
+                                    }
+                                  </p>
+
+                                  {notification.comment
+                                    ?.content && (
+                                    <div className="mt-2 rounded-lg border border-slate-800 bg-slate-900/70 px-2.5 py-2">
+                                      <p className="text-xs text-gray-300">
+                                        {notification.comment.content}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  <p className="mt-2 text-[11px] text-gray-500">
+                                    {new Date(
+                                      notification.created_at
+                                    ).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </article>
+                      );
+                    }
                   )}
                 </div>
-              </article>
+              </div>
             )
-          )}
+            )}
+          </div>
         </div>
       )}
     </section>

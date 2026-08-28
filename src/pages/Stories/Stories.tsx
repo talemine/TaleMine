@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Story {
   id: string;
@@ -47,6 +48,7 @@ type StorySort =
 export default function Stories() {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { t } = useLanguage();
 
   const [stories, setStories] =
     useState<StoryCard[]>([]);
@@ -578,17 +580,15 @@ export default function Stories() {
         {/* Header */}
         <div className="text-center">
           <p className="text-sm uppercase tracking-wide text-cyan-400">
-            Discover
+            {t.stories.discover}
           </p>
 
           <h1 className="mt-2 text-4xl font-bold md:text-6xl">
-            Stories
+            {t.stories.title}
           </h1>
 
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-gray-300">
-            Discover published stories from
-            TaleMine writers and find your next
-            read.
+            {t.stories.description}
           </p>
         </div>
 
@@ -600,7 +600,7 @@ export default function Stories() {
                 htmlFor="story-search"
                 className="sr-only"
               >
-                Search stories
+                {t.stories.searchStories}
               </label>
 
               <input
@@ -612,7 +612,7 @@ export default function Stories() {
                     event.target.value
                   )
                 }
-                placeholder="Search stories, authors, or descriptions..."
+                placeholder={t.stories.searchPlaceholder}
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
               />
             </div>
@@ -622,7 +622,7 @@ export default function Stories() {
                 htmlFor="story-category"
                 className="sr-only"
               >
-                Filter by category
+                {t.stories.filterByCategory}
               </label>
 
               <select
@@ -636,7 +636,7 @@ export default function Stories() {
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-400 md:min-w-52"
               >
                 <option value="all">
-                  All Categories
+                    {t.stories.allCategories}
                 </option>
 
                 {categories.map(
@@ -657,7 +657,7 @@ export default function Stories() {
                 htmlFor="story-sort"
                 className="sr-only"
               >
-                Sort stories
+                {t.stories.sortStories}
               </label>
 
               <select
@@ -671,15 +671,15 @@ export default function Stories() {
                 className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-400 md:min-w-52"
               >
                 <option value="newest">
-                  Newest
+                  {t.stories.newest}
                 </option>
 
                 <option value="title">
-                  Title Aâ€“Z
+                  {t.stories.titleAZ}
                 </option>
 
                 <option value="chapters">
-                  Most Chapters
+                  {t.stories.mostChapters}
                 </option>
               </select>
             </div>
@@ -689,9 +689,9 @@ export default function Stories() {
             <p className="text-sm text-gray-400">
               {filteredStories.length}{" "}
               {filteredStories.length === 1
-                ? "story"
-                : "stories"}{" "}
-              found
+                ? t.stories.story
+                : t.stories.stories}{" "}
+              {t.stories.found}
             </p>
 
             {(searchQuery ||
@@ -709,7 +709,7 @@ export default function Stories() {
                 }}
                 className="text-sm text-cyan-400 transition hover:text-cyan-300"
               >
-                Clear filters
+                {t.stories.clearFilters}
               </button>
             )}
           </div>
@@ -730,16 +730,16 @@ export default function Stories() {
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-cyan-400">
-                    Popular Reads
+                    {t.stories.popularReads}
                   </p>
 
                   <h2 className="mt-1 text-xl font-bold">
-                    Readers are exploring
+                    {t.stories.readersAreExploring}
                   </h2>
                 </div>
 
                 <span className="hidden text-xs text-gray-500 sm:block">
-                  Most chapters
+                  {t.stories.mostChapters}
                 </span>
               </div>
 
@@ -809,7 +809,7 @@ export default function Stories() {
                             </h3>
 
                             <p className="mt-1 truncate text-xs text-gray-400">
-                              By{" "}
+                              {t.stories.by}{" "}
                               <span className="text-cyan-400">
                                 {authorName}
                               </span>
@@ -818,8 +818,8 @@ export default function Stories() {
                             <p className="mt-1 text-[11px] text-gray-500">
                               {chapterCount}{" "}
                               {chapterCount === 1
-                                ? "chapter"
-                                : "chapters"}
+                                ? t.stories.chapter
+                                : t.stories.chapters}
                             </p>
                           </div>
                         </div>
@@ -842,9 +842,9 @@ export default function Stories() {
                           >
                             {progress
                               ? isCompleted
-                                ? "Read Again"
-                                : "Continue Reading"
-                              : "Start Reading"}
+                                ? t.stories.readAgain
+                                : t.stories.continueReading
+                              : t.stories.startReading}
                           </Button>
                         </div>
                       </article>
@@ -909,7 +909,7 @@ export default function Stories() {
                         )}
 
                         <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-400">
-                          Published
+                          {t.stories.published}
                         </span>
                       </div>
 
@@ -924,7 +924,7 @@ export default function Stories() {
                       )}
 
                       <div className="mt-5 text-sm text-gray-400">
-                        By{" "}
+                        {t.stories.by}{" "}
                         <span className="text-cyan-400">
                           {authorName}
                         </span>
@@ -934,8 +934,8 @@ export default function Stories() {
                         <span>
                           {chapterCount}{" "}
                           {chapterCount === 1
-                            ? "chapter"
-                            : "chapters"}
+                            ? t.stories.chapter
+                            : t.stories.chapters}
                         </span>
 
                         {story.published_at && (
@@ -943,7 +943,7 @@ export default function Stories() {
                             <span>•</span>
 
                             <span>
-                              Published{" "}
+                              {t.stories.published}{" "}
                               {new Date(
                                 story.published_at
                               ).toLocaleDateString()}
@@ -960,16 +960,16 @@ export default function Stories() {
                               <div className="flex items-center justify-between gap-3">
                                 <span className="text-xs font-semibold uppercase tracking-wide text-cyan-400">
                                   {isCompleted
-                                    ? "Story Completed"
-                                    : "Currently Reading"}
+                                    ? t.stories.storyCompleted
+                                    : t.stories.currentlyReading}
                                 </span>
 
                                 <span className="text-xs text-gray-500">
-                                  Chapter{" "}
+                                  {t.stories.chapter}{" "}
                                   {
                                     progress.chapter_number
                                   }{" "}
-                                  of{" "}
+                                  {t.stories.of}{" "}
                                   {chapterCount}
                                 </span>
                               </div>
@@ -1008,7 +1008,8 @@ export default function Stories() {
                                           100
                                       )
                                     )}
-                                    % through published chapters
+                                    %{" "}
+                                    {t.stories.throughPublishedChapters}
                                   </p>
                                 </div>
                               )}
@@ -1026,8 +1027,8 @@ export default function Stories() {
                               }
                             >
                               {isCompleted
-                                ? "Read Again"
-                                : "Continue Reading"}
+                                ? t.stories.readAgain
+                                : t.stories.continueReading}
                             </Button>
                           </>
                         ) : (
@@ -1038,7 +1039,7 @@ export default function Stories() {
                               )
                             }
                           >
-                            Start Reading
+                            {t.stories.startReading}
                           </Button>
                         )}
                       </div>
@@ -1055,13 +1056,13 @@ export default function Stories() {
           filteredStories.length === 0 && (
             <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/60 p-10 text-center">
               <h2 className="text-2xl font-bold">
-                No Stories Found
+                {t.stories.noStoriesFound}
               </h2>
 
               <p className="mt-3 text-gray-400">
                 {stories.length === 0
-                  ? "There are no published stories available yet."
-                  : "Try a different search or category."}
+                  ? t.stories.noPublishedStories
+                  : t.stories.tryDifferentSearch}
               </p>
 
               {(searchQuery ||
@@ -1079,7 +1080,7 @@ export default function Stories() {
                       setSortBy("newest");
                     }}
                   >
-                    Clear Filters
+                    {t.stories.clearFilters}
                   </Button>
                 </div>
               )}
@@ -1092,7 +1093,7 @@ export default function Stories() {
             variant="outline"
             onClick={() => navigate("/")}
           >
-            Back to TaleMine
+            {t.stories.backToTaleMine}
           </Button>
         </div>
       </div>

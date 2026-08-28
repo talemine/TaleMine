@@ -1,4 +1,3 @@
-import Navbar from "../../components/layout/Navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
 import ReaderFeatures from "./components/ReaderFeatures";
@@ -6,29 +5,22 @@ import WriterFeatures from "./components/WriterFeatures";
 import Vision from "./components/Vision";
 import Roadmap from "./components/Roadmap";
 import Waitlist from "./components/Waitlist";
-import Footer from "../../components/layout/Footer";
 
 import PublicStoryList from "../../components/story/PublicStoryList";
 
 export default function LandingPage() {
   return (
-    <>
-      <Navbar />
+    <main>
+      <Hero />
+      <About />
+      <ReaderFeatures />
 
-      <main>
-        <Hero />
-        <About />
-        <ReaderFeatures />
+      <PublicStoryList />
 
-        <PublicStoryList />
-
-        <WriterFeatures />
-        <Vision />
-        <Roadmap />
-        <Waitlist />
-      </main>
-
-      <Footer />
-    </>
+      <WriterFeatures />
+      <Vision />
+      <Roadmap />
+      <Waitlist />
+    </main>
   );
 }

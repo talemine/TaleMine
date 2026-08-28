@@ -1,7 +1,11 @@
+import { useLanguage } from "../../i18n/LanguageContext";
+
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
-    <footer className="py-10 text-center border-t border-slate-800">
-      <p>© 2026 TaleMine. All rights reserved.</p>
+    <footer className="border-t border-slate-800 py-10 text-center">
+      <p>{t.footer.copyright}</p>
     </footer>
   );
 }

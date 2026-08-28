@@ -9,6 +9,7 @@ import MyBookmarks from "../../components/story/MyBookmarks";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Profile {
   id: string;
@@ -41,6 +42,7 @@ interface ReadingProgress {
 export default function Account() {
   const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const userId = session?.user.id;
 
@@ -334,7 +336,7 @@ export default function Account() {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
-          Loading your account...
+          {t.account.loading}
         </p>
       </main>
     );
@@ -345,11 +347,11 @@ export default function Account() {
       <main className="min-h-screen bg-slate-950 px-4 py-12 text-white sm:px-6 sm:py-20">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
-            Please Log In
+            {t.account.pleaseLogIn}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            You need to be signed in to view your account.
+            {t.account.signInToView}
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -358,7 +360,7 @@ export default function Account() {
                 navigate("/login")
               }
             >
-              Go to Login
+              {t.account.goToLogin}
             </Button>
           </div>
         </div>
@@ -371,11 +373,11 @@ export default function Account() {
       <div className="mx-auto max-w-3xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-4 sm:p-8">
           <h1 className="text-3xl font-bold sm:text-4xl">
-            Welcome to TaleMine
+            {t.account.welcome}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            You are signed in as:
+            {t.account.signedInAs}
           </p>
 
           <p className="mt-2 break-all text-cyan-400">
@@ -392,12 +394,12 @@ export default function Account() {
           {readingProgress && (
             <section className="mt-8 border-t border-slate-800 pt-8">
               <p className="text-sm text-gray-400">
-                Continue Reading
+                {t.account.continueReading}
               </p>
 
               <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-5">
                 <p className="text-sm text-cyan-400">
-                  Chapter{" "}
+                  {t.account.chapter}{" "}
                   {readingProgress.chapter_number}
                 </p>
 
@@ -418,7 +420,7 @@ export default function Account() {
                       )
                     }
                   >
-                    Continue Reading
+                    {t.account.continueReading}
                   </Button>
                 </div>
               </div>
@@ -429,11 +431,11 @@ export default function Account() {
           {recentlyRead.length > 0 && (
             <section className="mt-8 border-t border-slate-800 pt-8">
               <p className="text-sm text-gray-400">
-                Reading History
+                {t.account.readingHistory}
               </p>
 
               <h2 className="mt-1 text-3xl font-bold">
-                Recently Read
+                {t.account.recentlyRead}
               </h2>
 
               <div className="mt-6 space-y-4">
@@ -444,7 +446,7 @@ export default function Account() {
                       className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
                     >
                       <p className="text-sm text-cyan-400">
-                        Chapter{" "}
+                        {t.account.chapter}{" "}
                         {progress.chapter_number}
                       </p>
 
@@ -458,7 +460,7 @@ export default function Account() {
                       </p>
 
                       <p className="mt-3 text-sm text-gray-500">
-                        Last read{" "}
+                        {t.account.lastRead}{" "}
                         {new Date(
                           progress.last_read_at
                         ).toLocaleDateString()}
@@ -473,7 +475,7 @@ export default function Account() {
                             )
                           }
                         >
-                          Read Again
+                          {t.account.readAgain}
                         </Button>
                       </div>
                     </article>
@@ -489,7 +491,7 @@ export default function Account() {
               <section className="mt-8 space-y-6 border-t border-slate-800 pt-6">
                 <div>
                   <p className="text-sm text-gray-400">
-                    Display Name
+                    {t.account.displayName}
                   </p>
 
                   <p className="mt-1 text-xl font-semibold text-white">
@@ -499,7 +501,7 @@ export default function Account() {
 
                 <div>
                   <p className="text-sm text-gray-400">
-                    Username
+                    {t.account.username}
                   </p>
 
                   <p className="mt-1 text-cyan-400">
@@ -509,12 +511,12 @@ export default function Account() {
 
                 <div>
                   <p className="text-sm text-gray-400">
-                    Bio
+                    {t.account.bio}
                   </p>
 
                   <p className="mt-1 text-gray-300">
                     {profile.bio ||
-                      "No bio added yet."}
+                      `${t.account.noBio}`}
                   </p>
                 </div>
               </section>
@@ -565,7 +567,7 @@ export default function Account() {
               {writerProfile ? (
                 <section className="mt-8 border-t border-slate-800 pt-8">
                   <p className="text-sm text-gray-400">
-                    Writer Profile
+                    {t.account.writerProfile}
                   </p>
 
                   <h2 className="mt-2 text-2xl font-bold text-white">
@@ -575,7 +577,7 @@ export default function Account() {
 
                   <p className="mt-2 text-gray-300">
                     {writerProfile.author_bio ||
-                      "No author bio added yet."}
+                      `${t.account.noAuthorBio}`}
                   </p>
 
                   {writerProfile.website_url && (
@@ -587,7 +589,7 @@ export default function Account() {
                       rel="noreferrer"
                       className="mt-3 inline-block text-cyan-400 transition hover:text-cyan-300"
                     >
-                      Visit Website
+                      {t.account.visitWebsite}
                     </a>
                   )}
                 </section>
@@ -619,14 +621,14 @@ export default function Account() {
             <Button
               onClick={() => navigate("/")}
             >
-              Back to TaleMine
+              {t.account.backToTaleMine}
             </Button>
 
             <Button
               variant="outline"
               onClick={handleLogout}
             >
-              Log Out
+              {t.account.logOut}
             </Button>
           </div>
         </div>

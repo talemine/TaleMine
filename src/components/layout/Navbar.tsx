@@ -11,6 +11,7 @@ import Button from "../ui/Button";
 import Container from "../ui/Container";
 import { useAuth } from "../auth/AuthProvider";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const navLinks = [
   { name: "About", href: "#about" },
@@ -26,6 +27,7 @@ export default function Navbar() {
 
   const { session } = useAuth();
   const navigate = useNavigate();
+  const { language, setLanguage, t } = useLanguage();
 
   function closeMenu() {
     setMenuOpen(false);
@@ -149,13 +151,42 @@ export default function Navbar() {
                 href={link.href}
                 className="text-sm text-slate-300 transition hover:text-cyan-400"
               >
-                {link.name}
+                {link.name === "About" && t.nav.about}
+                {link.name === "Readers" && t.nav.readers}
+                {link.name === "Writers" && t.nav.writers}
+                {link.name === "Vision" && t.nav.vision}
+                {link.name === "Roadmap" && t.nav.roadmap}
               </a>
             ))}
           </nav>
 
           {/* Desktop Authentication Actions */}
           <div className="hidden items-center gap-3 md:flex">
+            <div className="flex items-center rounded-full border border-slate-700 bg-slate-900/60 p-1">
+              <button
+                type="button"
+                onClick={() => setLanguage("en")}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  language === "en"
+                    ? "bg-cyan-400 text-slate-950"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                EN
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setLanguage("hi")}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  language === "hi"
+                    ? "bg-cyan-400 text-slate-950"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                हिन्दी
+              </button>
+            </div>
             {session ? (
               <>
                 {/* Stories */}
@@ -163,7 +194,7 @@ export default function Navbar() {
                   variant="outline"
                   onClick={openStories}
                 >
-                  Stories
+                  {t.nav.stories}
                 </Button>
 
                 {/* Library */}
@@ -171,7 +202,7 @@ export default function Navbar() {
                   variant="outline"
                   onClick={openLibrary}
                 >
-                  Library
+                  {t.nav.library}
                 </Button>
 
                 {/* Notifications */}
@@ -197,14 +228,14 @@ export default function Navbar() {
                 </button>
 
                 <Button href="/account">
-                  Account
+                  {t.nav.account}
                 </Button>
 
                 <Button
                   variant="outline"
                   onClick={handleLogout}
                 >
-                  Log Out
+                  {t.nav.logout}
                 </Button>
               </>
             ) : (
@@ -214,7 +245,7 @@ export default function Navbar() {
                   variant="outline"
                   onClick={openStories}
                 >
-                  Stories
+                  {t.nav.stories}
                 </Button>
 
                 {/* Log In */}
@@ -222,12 +253,13 @@ export default function Navbar() {
                   variant="outline"
                   href="/login"
                 >
-                  Log In
+                  {t.nav.login}
+
                 </Button>
 
                 {/* Join Waitlist */}
                 <Button href="#waitlist">
-                  Join Waitlist
+                  {t.nav.joinWaitlist}
                 </Button>
               </>
             )}
@@ -259,6 +291,33 @@ export default function Navbar() {
         {menuOpen && (
           <div className="border-t border-slate-800/50 py-5 md:hidden">
             <nav className="flex flex-col gap-2">
+              <div className="mb-2 flex items-center justify-end px-4">
+                <div className="flex items-center rounded-full border border-slate-700 bg-slate-900/60 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setLanguage("en")}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                      language === "en"
+                        ? "bg-cyan-400 text-slate-950"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    EN
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLanguage("hi")}
+                    className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                      language === "hi"
+                        ? "bg-cyan-400 text-slate-950"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    हिन्दी
+                  </button>
+                </div>
+              </div>
               {navLinks.map((link) => (
                 <a
                   key={link.name}
@@ -278,7 +337,7 @@ export default function Navbar() {
                     onClick={openStories}
                     className="mt-3 w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
                   >
-                    Stories
+                    {t.nav.stories}
                   </button>
 
                   {/* Mobile Library */}
@@ -287,7 +346,7 @@ export default function Navbar() {
                     onClick={openLibrary}
                     className="w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
                   >
-                    Library
+                    {t.nav.library}
                   </button>
 
                   {/* Mobile Notifications */}
@@ -298,7 +357,7 @@ export default function Navbar() {
                   >
                     <span className="flex items-center gap-3">
                       <HiOutlineBell className="text-xl" />
-                      Notifications
+                      {t.nav.notifications}
                     </span>
 
                     {unreadCount > 0 && (
@@ -315,7 +374,7 @@ export default function Navbar() {
                     onClick={closeMenu}
                   >
                     <Button href="/account">
-                      Account
+                      {t.nav.account}
                     </Button>
                   </div>
 
@@ -324,7 +383,7 @@ export default function Navbar() {
                       variant="outline"
                       onClick={handleLogout}
                     >
-                      Log Out
+                      {t.nav.logout}
                     </Button>
                   </div>
                 </>
@@ -336,7 +395,7 @@ export default function Navbar() {
                     onClick={openStories}
                     className="mt-3 w-full rounded-xl px-4 py-3 text-left text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
                   >
-                    Stories
+                    {t.nav.stories}
                   </button>
 
                   {/* Mobile Log In */}
@@ -348,7 +407,7 @@ export default function Navbar() {
                       variant="outline"
                       href="/login"
                     >
-                      Log In
+                      {t.nav.login}
                     </Button>
                   </div>
 
@@ -358,7 +417,7 @@ export default function Navbar() {
                     onClick={closeMenu}
                   >
                     <Button href="#waitlist">
-                      Join Waitlist
+                      {t.nav.joinWaitlist}
                     </Button>
                   </div>
                 </>

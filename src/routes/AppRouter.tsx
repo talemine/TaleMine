@@ -15,54 +15,61 @@ import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
 import WriterOnlyRoute from "./WriterOnlyRoute";
 
+import AppLayout from "../components/layout/AppLayout";
+
 export default function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<LandingPage />} />
-        
-        <Route
-          path="/stories"
-          element={<Stories />}
-        />
-        
-        <Route
-          path="/story/:slug"
-          element={<StoryPage />}
-        />
+        <Route element={<AppLayout />}>
 
-        <Route
-          path="/story/:slug/chapter/:chapterNumber"
-          element={<StoryChapterPage />}
-        />
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
 
-        {/* Public-only routes */}
-        <Route element={<PublicOnlyRoute />}>
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
-        </Route>
-
-        {/* Authenticated user routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/account" element={<Account />} />
           <Route
-            path="/library"
-            element={<Library />}
-          />
-        </Route>
-
-        {/* Writer-only routes */}
-        <Route element={<WriterOnlyRoute />}>
-          <Route
-            path="/writer"
-            element={<WriterDashboard />}
+            path="/stories"
+            element={<Stories />}
           />
 
           <Route
-            path="/writer/stories/:storyId"
-            element={<StoryEditor />}
+            path="/story/:slug"
+            element={<StoryPage />}
           />
+
+          <Route
+            path="/story/:slug/chapter/:chapterNumber"
+            element={<StoryChapterPage />}
+          />
+
+          {/* Public-only routes */}
+          <Route element={<PublicOnlyRoute />}>
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
+          </Route>
+
+          {/* Authenticated user routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/account" element={<Account />} />
+
+            <Route
+              path="/library"
+              element={<Library />}
+            />
+          </Route>
+
+          {/* Writer-only routes */}
+          <Route element={<WriterOnlyRoute />}>
+            <Route
+              path="/writer"
+              element={<WriterDashboard />}
+            />
+
+            <Route
+              path="/writer/stories/:storyId"
+              element={<StoryEditor />}
+            />
+          </Route>
+
         </Route>
       </Routes>
     </BrowserRouter>

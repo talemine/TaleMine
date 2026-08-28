@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 type AuthMode = "login" | "signup";
 
@@ -15,6 +16,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const { t } = useLanguage();
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -47,10 +49,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
       if (data.user && !data.session) {
         setMessage(
-          "Account created. Please check your email to verify your account."
+          t.auth.form.accountCreatedVerify
         );
       } else {
-        setMessage("Account created successfully.");
+        setMessage(t.auth.form.accountCreated);
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -64,7 +66,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      setMessage("You're signed in.");
+      setMessage(t.auth.form.signedIn);
     }
 
     setLoading(false);
@@ -79,7 +81,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               htmlFor="username"
               className="mb-2 block text-sm font-medium text-gray-200"
             >
-              Username
+              {t.auth.form.username}
             </label>
 
             <input
@@ -110,7 +112,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
               htmlFor="displayName"
               className="mb-2 block text-sm font-medium text-gray-200"
             >
-              Display Name
+              {t.auth.form.displayName}
             </label>
 
             <input
@@ -143,7 +145,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           htmlFor="email"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Email
+          {t.auth.form.email}
         </label>
 
         <input
@@ -174,7 +176,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
           htmlFor="password"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Password
+          {t.auth.form.password}
         </label>
 
         <input
@@ -215,10 +217,10 @@ export default function AuthForm({ mode }: AuthFormProps) {
 
       <Button type="submit" disabled={loading}>
         {loading
-          ? "Please wait..."
+          ? t.auth.form.pleaseWait
           : isSignUp
-            ? "Create Account"
-            : "Log In"}
+            ? t.auth.form.createAccount
+            : t.auth.form.logIn}
       </Button>
     </form>
   );

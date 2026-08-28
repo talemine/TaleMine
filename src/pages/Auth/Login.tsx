@@ -1,17 +1,20 @@
 import { Link } from "react-router-dom";
 import AuthForm from "../../components/auth/AuthForm";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function Login() {
+  const { t } = useLanguage();
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <div className="mx-auto max-w-md">
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-bold">
-            Welcome Back to TaleMine
+            {t.auth.welcomeBack}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            Log in to continue discovering and sharing stories.
+            {t.auth.loginDescription}
           </p>
         </div>
 
@@ -20,12 +23,12 @@ export default function Login() {
         </div>
 
         <p className="mt-6 text-center text-sm text-gray-400">
-          Don't have an account?{" "}
+          {t.auth.dontHaveAccount}{" "}
           <Link
             to="/signup"
             className="text-cyan-400 transition hover:text-cyan-300"
           >
-            Create one
+            {t.auth.createOne}
           </Link>
         </p>
 
@@ -34,7 +37,7 @@ export default function Login() {
             to="/"
             className="transition hover:text-cyan-400"
           >
-            ← Back to TaleMine
+            ← {t.auth.backToTaleMine}
           </Link>
         </p>
       </div>

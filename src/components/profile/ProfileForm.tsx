@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ProfileFormProps {
   profileId: string;
@@ -21,8 +22,11 @@ export default function ProfileForm({
   initialBio,
   onSaved,
 }: ProfileFormProps) {
+  const { t } = useLanguage();
+
   const [username, setUsername] = useState(initialUsername);
-  const [displayName, setDisplayName] = useState(initialDisplayName);
+  const [displayName, setDisplayName] =
+    useState(initialDisplayName);
   const [bio, setBio] = useState(initialBio ?? "");
 
   const [loading, setLoading] = useState(false);
@@ -41,7 +45,10 @@ export default function ProfileForm({
     setErrorMessage("");
 
     if (!normalizedUsername || !normalizedDisplayName) {
-      setErrorMessage("Username and display name are required.");
+      setErrorMessage(
+        t.account.profileForm
+          .usernameAndDisplayNameRequired
+      );
       setLoading(false);
       return;
     }
@@ -59,10 +66,17 @@ export default function ProfileForm({
 
     if (error) {
       if (error.code === "23505") {
-        setErrorMessage("That username is already in use.");
+        setErrorMessage(
+          t.account.profileForm.usernameAlreadyInUse
+        );
       } else {
-        console.error("Profile update error:", error);
-        setErrorMessage("Unable to save your profile.");
+        console.error(
+          "Profile update error:",
+          error
+        );
+        setErrorMessage(
+          t.account.profileForm.unableToSave
+        );
       }
 
       setLoading(false);
@@ -74,25 +88,32 @@ export default function ProfileForm({
     setBio(data.bio ?? "");
 
     onSaved(data);
-    setMessage("Profile saved successfully.");
+    setMessage(
+      t.account.profileForm.profileSaved
+    );
     setLoading(false);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-5 border-t border-slate-800 pt-8">
+    <form
+      onSubmit={handleSubmit}
+      className="mt-8 space-y-5 border-t border-slate-800 pt-8"
+    >
       <div>
         <label
           htmlFor="profile-username"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Username
+          {t.account.profileForm.username}
         </label>
 
         <input
           id="profile-username"
           type="text"
           value={username}
-          onChange={(event) => setUsername(event.target.value)}
+          onChange={(event) =>
+            setUsername(event.target.value)
+          }
           required
           disabled={loading}
           className="
@@ -117,14 +138,16 @@ export default function ProfileForm({
           htmlFor="profile-display-name"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Display Name
+          {t.account.profileForm.displayName}
         </label>
 
         <input
           id="profile-display-name"
           type="text"
           value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
+          onChange={(event) =>
+            setDisplayName(event.target.value)
+          }
           required
           disabled={loading}
           className="
@@ -149,13 +172,15 @@ export default function ProfileForm({
           htmlFor="profile-bio"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Bio
+          {t.account.profileForm.bio}
         </label>
 
         <textarea
           id="profile-bio"
           value={bio}
-          onChange={(event) => setBio(event.target.value)}
+          onChange={(event) =>
+            setBio(event.target.value)
+          }
           rows={4}
           disabled={loading}
           className="
@@ -189,7 +214,9 @@ export default function ProfileForm({
       )}
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Save Profile"}
+        {loading
+          ? t.account.profileForm.saving
+          : t.account.profileForm.saveProfile}
       </Button>
     </form>
   );

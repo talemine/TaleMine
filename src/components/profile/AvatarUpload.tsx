@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface AvatarUploadProps {
   userId: string;
@@ -22,6 +23,8 @@ export default function AvatarUpload({
   currentAvatarUrl,
   onUploaded,
 }: AvatarUploadProps) {
+  const { t } = useLanguage();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -41,14 +44,12 @@ export default function AvatarUpload({
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setErrorMessage(
-        "Please choose a JPG, PNG, WebP, or GIF image."
-      );
+      setErrorMessage(t.account.avatar.invalidImageType);
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage("Avatar image must be 1 MB or smaller.");
+      setErrorMessage(t.account.avatar.imageTooLarge);
       return;
     }
 
@@ -57,7 +58,7 @@ export default function AvatarUpload({
 
   async function handleUpload() {
     if (!selectedFile) {
-      setErrorMessage("Please choose an image first.");
+      setErrorMessage(t.account.avatar.chooseImageFirst);
       return;
     }
 
@@ -81,7 +82,7 @@ export default function AvatarUpload({
 
     if (uploadError) {
       console.error("Avatar upload error:", uploadError);
-      setErrorMessage("Unable to upload your avatar.");
+      setErrorMessage(t.account.avatar.uploadFailed);
       setLoading(false);
       return;
     }
@@ -100,22 +101,27 @@ export default function AvatarUpload({
       .eq("id", userId);
 
     if (profileError) {
-      console.error("Avatar profile update error:", profileError);
-      setErrorMessage("Avatar uploaded, but the profile could not be updated.");
+      console.error(
+        "Avatar profile update error:",
+        profileError
+      );
+      setErrorMessage(
+        t.account.avatar.profileUpdateFailed
+      );
       setLoading(false);
       return;
     }
 
     onUploaded(publicUrl);
     setSelectedFile(null);
-    setMessage("Avatar updated successfully.");
+    setMessage(t.account.avatar.updatedSuccessfully);
     setLoading(false);
   }
 
   return (
     <div className="mt-8 border-t border-slate-800 pt-8">
       <p className="text-sm text-gray-400">
-        Profile Avatar
+        {t.account.avatar.profileAvatar}
       </p>
 
       <div className="mt-4 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
@@ -123,12 +129,12 @@ export default function AvatarUpload({
           {currentAvatarUrl ? (
             <img
               src={currentAvatarUrl}
-              alt="Profile avatar"
+              alt={t.account.avatar.profileAvatarAlt}
               className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-              No Avatar
+              {t.account.avatar.noAvatar}
             </div>
           )}
         </div>
@@ -159,7 +165,7 @@ export default function AvatarUpload({
 
           {selectedFile && (
             <p className="text-sm text-gray-400">
-              Selected: {selectedFile.name}
+              {t.account.avatar.selected}: {selectedFile.name}
             </p>
           )}
 
@@ -168,7 +174,9 @@ export default function AvatarUpload({
             onClick={handleUpload}
             disabled={!selectedFile || loading}
           >
-            {loading ? "Uploading..." : "Upload Avatar"}
+            {loading
+              ? t.account.avatar.uploading
+              : t.account.avatar.uploadAvatar}
           </Button>
         </div>
       </div>

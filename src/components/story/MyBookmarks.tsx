@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Bookmark {
   id: string;
@@ -36,6 +37,7 @@ interface BookmarkItem {
 export default function MyBookmarks() {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { language, t } = useLanguage();
 
   const [items, setItems] = useState<BookmarkItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ export default function MyBookmarks() {
 
           setItems([]);
           setErrorMessage(
-            "Unable to load your bookmarks."
+            t.bookmarks.unableToLoad
           );
           setLoading(false);
           return;
@@ -117,7 +119,9 @@ export default function MyBookmarks() {
         ] = await Promise.all([
           supabase
             .from("stories")
-            .select("id, title, slug, status")
+            .select(
+              "id, title, slug, status"
+            )
             .in("id", storyIds)
             .eq("status", "published"),
 
@@ -142,7 +146,7 @@ export default function MyBookmarks() {
 
           setItems([]);
           setErrorMessage(
-            "Unable to load bookmarked stories."
+            t.bookmarks.unableToLoadStories
           );
           setLoading(false);
           return;
@@ -156,16 +160,19 @@ export default function MyBookmarks() {
 
           setItems([]);
           setErrorMessage(
-            "Unable to load bookmarked chapters."
+            t.bookmarks.unableToLoadChapters
           );
           setLoading(false);
           return;
         }
 
-        const stories = storyResult.data ?? [];
-        const chapters = chapterResult.data ?? [];
+        const stories =
+          storyResult.data ?? [];
+        const chapters =
+          chapterResult.data ?? [];
 
-        const loadedItems: BookmarkItem[] = [];
+        const loadedItems: BookmarkItem[] =
+          [];
 
         for (const bookmark of bookmarks) {
           const story = stories.find(
@@ -200,7 +207,7 @@ export default function MyBookmarks() {
 
         setItems([]);
         setErrorMessage(
-          "Unable to load your bookmarks."
+          t.bookmarks.unableToLoad
         );
       } finally {
         if (!cancelled) {
@@ -214,14 +221,24 @@ export default function MyBookmarks() {
     return () => {
       cancelled = true;
     };
-  }, [session?.user.id]);
+  }, [
+    session?.user.id,
+    t.bookmarks.unableToLoad,
+    t.bookmarks.unableToLoadStories,
+    t.bookmarks.unableToLoadChapters,
+  ]);
+
+  const locale =
+    language === "hi"
+      ? "hi-IN"
+      : "en-IN";
 
   if (loading) {
     return (
       <section className="mt-10">
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
           <p className="text-gray-400">
-            Loading your bookmarks...
+            {t.bookmarks.loading}
           </p>
         </div>
       </section>
@@ -245,11 +262,11 @@ export default function MyBookmarks() {
       <section className="mt-10">
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
           <h2 className="text-2xl font-bold">
-            My Bookmarks
+            {t.bookmarks.myBookmarks}
           </h2>
 
           <p className="mt-3 text-gray-400">
-            You haven't bookmarked any chapters yet.
+            {t.bookmarks.empty}
           </p>
         </div>
       </section>
@@ -260,62 +277,74 @@ export default function MyBookmarks() {
     <section className="mt-10">
       <div>
         <p className="text-sm text-gray-400">
-          Reading
+          {t.bookmarks.reading}
         </p>
 
         <h2 className="mt-1 text-3xl font-bold">
-          My Bookmarks
+          {t.bookmarks.myBookmarks}
         </h2>
       </div>
 
       <div className="mt-6 space-y-4">
         {items.map(
-          ({ bookmark, story, chapter }) => (
-            <article
-              key={bookmark.id}
-              className="
-                rounded-2xl
-                border
-                border-slate-800
-                bg-slate-950/50
-                p-6
-                transition
-                hover:border-cyan-500/40
-              "
-            >
-              <p className="text-sm text-cyan-400">
-                Chapter {chapter.chapter_number}
-              </p>
+          ({
+            bookmark,
+            story,
+            chapter,
+          }) => {
+            const chapterLabel =
+              `${t.bookmarks.chapter} ${chapter.chapter_number}`;
 
-              <h3 className="mt-2 text-xl font-semibold">
-                {chapter.title ||
-                  `Chapter ${chapter.chapter_number}`}
-              </h3>
+            return (
+              <article
+                key={bookmark.id}
+                className="
+                  rounded-2xl
+                  border
+                  border-slate-800
+                  bg-slate-950/50
+                  p-6
+                  transition
+                  hover:border-cyan-500/40
+                "
+              >
+                <p className="text-sm text-cyan-400">
+                  {chapterLabel}
+                </p>
 
-              <p className="mt-2 text-sm text-cyan-300">
-                From {story.title}
-              </p>
+                <h3 className="mt-2 text-xl font-semibold">
+                  {chapter.title ||
+                    chapterLabel}
+                </h3>
 
-              <p className="mt-3 text-sm text-gray-500">
-                Bookmarked{" "}
-                {new Date(
-                  bookmark.created_at
-                ).toLocaleDateString()}
-              </p>
+                <p className="mt-2 text-sm text-cyan-300">
+                  {t.bookmarks.from}{" "}
+                  {story.title}
+                </p>
 
-              <div className="mt-5">
-                <Button
-                  onClick={() =>
-                    navigate(
-                      `/story/${story.slug}/chapter/${chapter.chapter_number}`
-                    )
-                  }
-                >
-                  Continue Reading
-                </Button>
-              </div>
-            </article>
-          )
+                <p className="mt-3 text-sm text-gray-500">
+                  {t.bookmarks.bookmarked}{" "}
+                  {new Date(
+                    bookmark.created_at
+                  ).toLocaleDateString(
+                    locale
+                  )}
+                </p>
+
+                <div className="mt-5">
+                  <Button
+                    onClick={() =>
+                      navigate(
+                        `/story/${story.slug}/chapter/${chapter.chapter_number}`
+                      )
+                    }
+                  >
+                    {t.bookmarks.continueReading}
+                  </Button>
+                </div>
+              </article>
+            );
+          }
         )}
       </div>
     </section>

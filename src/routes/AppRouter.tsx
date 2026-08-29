@@ -10,6 +10,7 @@ import StoryPage from "../pages/Story/StoryPage";
 import StoryChapterPage from "../pages/Story/StoryChapterPage";
 import Library from "../pages/Library/Library";
 import Stories from "../pages/Stories/Stories";
+import ScrollManager from "../components/layout/ScrollManager";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -70,6 +71,14 @@ export default function AppRouter() {
             />
           </Route>
 
+        </Route>
+      </Routes>
+
+      <ScrollManager />
+
+      <Routes>
+        <Route element={<AppLayout />}>
+          {/* existing routes */}
         </Route>
       </Routes>
     </BrowserRouter>

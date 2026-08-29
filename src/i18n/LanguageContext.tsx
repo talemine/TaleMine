@@ -31,19 +31,35 @@ interface LanguageProviderProps {
 export function LanguageProvider({
   children,
 }: LanguageProviderProps) {
-  const { session } = useAuth();
+  const {
+    session,
+    loading: authLoading,
+  } = useAuth();
 
   const [language, setLanguageState] =
     useState<LanguageCode>("en");
+
+  const [languageLoading, setLanguageLoading] =
+    useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadLanguagePreference() {
-      if (!session?.user.id) {
-        setLanguageState("en");
+      if (authLoading) {
         return;
       }
+
+      if (!session?.user.id) {
+        if (!cancelled) {
+          setLanguageState("en");
+          setLanguageLoading(false);
+        }
+
+        return;
+      }
+
+      setLanguageLoading(true);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -51,26 +67,30 @@ export function LanguageProvider({
         .eq("id", session.user.id)
         .maybeSingle();
 
+      if (cancelled) {
+        return;
+      }
+
       if (error) {
         console.error(
           "Language preference loading error:",
           error
         );
+
+        setLanguageState("en");
+        setLanguageLoading(false);
+
         return;
       }
 
-      if (cancelled) {
-        return;
-      }
-
-      if (
+      const savedLanguage =
         data?.preferred_language === "en" ||
         data?.preferred_language === "hi"
-      ) {
-        setLanguageState(data.preferred_language);
-      } else {
-        setLanguageState("en");
-      }
+          ? data.preferred_language
+          : "en";
+
+      setLanguageState(savedLanguage);
+      setLanguageLoading(false);
     }
 
     loadLanguagePreference();
@@ -78,11 +98,15 @@ export function LanguageProvider({
     return () => {
       cancelled = true;
     };
-  }, [session?.user.id]);
+  }, [authLoading, session?.user.id]);
 
   async function setLanguage(
     nextLanguage: LanguageCode
   ) {
+    if (nextLanguage === language) {
+      return;
+    }
+
     setLanguageState(nextLanguage);
 
     if (!session?.user.id) {
@@ -112,6 +136,12 @@ export function LanguageProvider({
     }),
     [language, session?.user.id]
   );
+
+  if (authLoading || languageLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950" />
+    );
+  }
 
   return (
     <LanguageContext.Provider value={value}>

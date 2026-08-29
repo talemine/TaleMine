@@ -207,6 +207,26 @@ const en = {
       saving: "Saving...",
       saveProfile: "Save Profile",
     },
+
+    writerProfileForm: {
+      penName: "Pen Name",
+      penNamePlaceholder: "Your author name",
+      authorBio: "Author Bio",
+      authorBioPlaceholder:
+        "Tell readers about yourself as a writer.",
+      website: "Website",
+      websitePlaceholder: "https://example.com",
+
+      alreadyHaveProfile:
+        "You already have a writer profile.",
+      unableToCreate:
+        "Unable to create your writer profile.",
+      createdSuccessfully:
+        "Writer profile created successfully.",
+
+      creating: "Creating...",
+      becomeWriter: "Become a Writer",
+    },
   },
 
   avatar: {
@@ -229,6 +249,131 @@ const en = {
     updatedSuccessfully:
       "Avatar updated successfully.",
   },
+
+  notifications: {
+    title: "Notifications",
+    activity: "Activity",
+    unread: "unread",
+
+    loading: "Loading notifications...",
+    empty: "You have no notifications yet.",
+    loginRequired:
+      "Log in to view your notifications.",
+    loadError:
+      "Unable to load notifications.",
+
+    today: "Today",
+    yesterday: "Yesterday",
+
+    user: "TaleMine User",
+
+    chapter: "Chapter",
+    yourChapter: "your chapter",
+    yourStory: "your story",
+
+    liked: "liked",
+    commentedOn: "commented on",
+    repliedTo: "replied to",
+    of: "of",
+
+    likedYourChapter:
+      "liked your chapter.",
+    commentedOnYourStory:
+      "commented on your story.",
+    repliedToComment:
+      "replied to your comment.",
+  },
+
+  bookmarks: {
+    checking: "Checking bookmark...",
+    saving: "Saving...",
+    bookmarkChapter: "Bookmark Chapter",
+    removeBookmark: "Remove Bookmark",
+
+    loginToBookmark:
+      "Please log in to bookmark chapters.",
+
+    unableToCheck:
+      "Unable to check bookmark status.",
+
+    unableToRemove:
+      "Unable to remove this bookmark.",
+
+    unableToBookmark:
+      "Unable to bookmark this chapter.",
+
+    loading: "Loading your bookmarks...",
+    myBookmarks: "My Bookmarks",
+    empty:
+      "You haven't bookmarked any chapters yet.",
+    reading: "Reading",
+    chapter: "Chapter",
+    from: "From",
+    bookmarked: "Bookmarked",
+    continueReading: "Continue Reading",
+
+    unableToLoad:
+      "Unable to load your bookmarks.",
+
+    unableToLoadStories:
+      "Unable to load bookmarked stories.",
+
+    unableToLoadChapters:
+      "Unable to load bookmarked chapters.",
+  },
+
+  library: {
+    loading: "Loading your library...",
+    pleaseLogIn: "Please Log In",
+    signInToView:
+      "You need to be signed in to view your library.",
+    goToLogin: "Go to Login",
+
+    reader: "Reader",
+    myLibrary: "My Library",
+    description:
+      "Pick up where you left off or revisit something you've read.",
+    account: "Account",
+
+    filters: {
+      all: "All",
+      recent: "Recently Read",
+      bookmarks: "Bookmarks",
+    },
+
+    searchLabel: "Search your library",
+    searchPlaceholder:
+      "Search stories or chapters...",
+
+    stats: {
+      stories: "Stories",
+      recentlyRead: "Recently Read",
+    },
+
+    storyCompleted: "Story Completed",
+    continueReading: "Continue Reading",
+    chapter: "Chapter",
+    of: "of",
+    lastRead: "Last read",
+    readAgain: "Read Again",
+    throughPublishedChapters:
+      " through published chapters",
+
+    readingActivity: "Reading Activity",
+    recentlyRead: "Recently Read",
+
+    noSearchResults:
+      "No recently read stories or chapters match your search.",
+    nothingStarted:
+      "You haven't started reading anything yet.",
+
+    unableToLoadHistory:
+      "Unable to load your reading history.",
+    unableToLoad:
+      "Unable to load your library.",
+  },
+
+
 };
 
 export default en;

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import Button from "../ui/Button";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterBookmarkButtonProps {
   storyId: string;
@@ -14,6 +15,7 @@ export default function ChapterBookmarkButton({
   chapterId,
 }: ChapterBookmarkButtonProps) {
   const { session } = useAuth();
+  const { t } = useLanguage();
 
   const [isBookmarked, setIsBookmarked] =
     useState(false);
@@ -56,7 +58,7 @@ export default function ChapterBookmarkButton({
         );
 
         setErrorMessage(
-          "Unable to check bookmark status."
+          t.bookmarks.unableToCheck
         );
         setIsBookmarked(false);
       } else {
@@ -71,12 +73,16 @@ export default function ChapterBookmarkButton({
     return () => {
       cancelled = true;
     };
-  }, [userId, chapterId]);
+  }, [
+    userId,
+    chapterId,
+    t.bookmarks.unableToCheck,
+  ]);
 
   async function handleBookmarkToggle() {
     if (!userId) {
       setErrorMessage(
-        "Please log in to bookmark chapters."
+        t.bookmarks.loginToBookmark
       );
       return;
     }
@@ -98,7 +104,7 @@ export default function ChapterBookmarkButton({
         );
 
         setErrorMessage(
-          "Unable to remove this bookmark."
+          t.bookmarks.unableToRemove
         );
         setLoading(false);
         return;
@@ -110,13 +116,13 @@ export default function ChapterBookmarkButton({
     }
 
     const { error } = await supabase
-        .from("bookmarks")
-        .insert({
-            user_id: userId,
-            story_id: storyId,
-            chapter_id: chapterId,
-        });
-        
+      .from("bookmarks")
+      .insert({
+        user_id: userId,
+        story_id: storyId,
+        chapter_id: chapterId,
+      });
+
     if (error) {
       console.error(
         "Bookmark creation error:",
@@ -124,7 +130,7 @@ export default function ChapterBookmarkButton({
       );
 
       setErrorMessage(
-        "Unable to bookmark this chapter."
+        t.bookmarks.unableToBookmark
       );
       setLoading(false);
       return;
@@ -141,7 +147,7 @@ export default function ChapterBookmarkButton({
         variant="outline"
         disabled
       >
-        Checking bookmark...
+        {t.bookmarks.checking}
       </Button>
     );
   }
@@ -150,15 +156,19 @@ export default function ChapterBookmarkButton({
     <div>
       <Button
         type="button"
-        variant={isBookmarked ? "outline" : "primary"}
+        variant={
+          isBookmarked
+            ? "outline"
+            : "primary"
+        }
         onClick={handleBookmarkToggle}
         disabled={loading}
       >
         {loading
-          ? "Saving..."
+          ? t.bookmarks.saving
           : isBookmarked
-            ? "Remove Bookmark"
-            : "Bookmark Chapter"}
+            ? t.bookmarks.removeBookmark
+            : t.bookmarks.bookmarkChapter}
       </Button>
 
       {errorMessage && (

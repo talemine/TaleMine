@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface WriterProfileFormProps {
   profileId: string;
@@ -16,6 +17,8 @@ export default function WriterProfileForm({
   profileId,
   onCreated,
 }: WriterProfileFormProps) {
+  const { t } = useLanguage();
+
   const [penName, setPenName] = useState("");
   const [authorBio, setAuthorBio] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -50,10 +53,17 @@ export default function WriterProfileForm({
 
     if (error) {
       if (error.code === "23505") {
-        setErrorMessage("You already have a writer profile.");
+        setErrorMessage(
+          t.account.writerProfileForm.alreadyHaveProfile
+        );
       } else {
-        console.error("Writer profile creation error:", error);
-        setErrorMessage("Unable to create your writer profile.");
+        console.error(
+          "Writer profile creation error:",
+          error
+        );
+        setErrorMessage(
+          t.account.writerProfileForm.unableToCreate
+        );
       }
 
       setLoading(false);
@@ -61,7 +71,9 @@ export default function WriterProfileForm({
     }
 
     onCreated(data);
-    setMessage("Writer profile created successfully.");
+    setMessage(
+      t.account.writerProfileForm.createdSuccessfully
+    );
     setLoading(false);
   }
 
@@ -75,16 +87,20 @@ export default function WriterProfileForm({
           htmlFor="pen-name"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Pen Name
+          {t.account.writerProfileForm.penName}
         </label>
 
         <input
           id="pen-name"
           type="text"
           value={penName}
-          onChange={(event) => setPenName(event.target.value)}
+          onChange={(event) =>
+            setPenName(event.target.value)
+          }
           disabled={loading}
-          placeholder="Your author name"
+          placeholder={
+            t.account.writerProfileForm.penNamePlaceholder
+          }
           className="
             w-full
             rounded-xl
@@ -108,16 +124,20 @@ export default function WriterProfileForm({
           htmlFor="author-bio"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Author Bio
+          {t.account.writerProfileForm.authorBio}
         </label>
 
         <textarea
           id="author-bio"
           value={authorBio}
-          onChange={(event) => setAuthorBio(event.target.value)}
+          onChange={(event) =>
+            setAuthorBio(event.target.value)
+          }
           rows={4}
           disabled={loading}
-          placeholder="Tell readers about yourself as a writer."
+          placeholder={
+            t.account.writerProfileForm.authorBioPlaceholder
+          }
           className="
             w-full
             resize-none
@@ -142,16 +162,20 @@ export default function WriterProfileForm({
           htmlFor="website-url"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Website
+          {t.account.writerProfileForm.website}
         </label>
 
         <input
           id="website-url"
           type="url"
           value={websiteUrl}
-          onChange={(event) => setWebsiteUrl(event.target.value)}
+          onChange={(event) =>
+            setWebsiteUrl(event.target.value)
+          }
           disabled={loading}
-          placeholder="https://example.com"
+          placeholder={
+            t.account.writerProfileForm.websitePlaceholder
+          }
           className="
             w-full
             rounded-xl
@@ -183,7 +207,9 @@ export default function WriterProfileForm({
       )}
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Become a Writer"}
+        {loading
+          ? t.account.writerProfileForm.creating
+          : t.account.writerProfileForm.becomeWriter}
       </Button>
     </form>
   );

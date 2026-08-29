@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "../auth/AuthProvider";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Notification {
   id: string;
@@ -70,9 +71,13 @@ function getDateKey(dateString: string) {
   return `${year}-${month}-${day}`;
 }
 
-function getDateLabel(dateString: string) {
+function getDateLabel(
+  dateString: string,
+  todayLabel: string,
+  yesterdayLabel: string,
+  locale: string
+) {
   const date = new Date(dateString);
-
   const now = new Date();
 
   const todayKey = getDateKey(
@@ -93,15 +98,15 @@ function getDateLabel(dateString: string) {
   );
 
   if (dateKey === todayKey) {
-    return "Today";
+    return todayLabel;
   }
 
   if (dateKey === yesterdayKey) {
-    return "Yesterday";
+    return yesterdayLabel;
   }
 
   return date.toLocaleDateString(
-    undefined,
+    locale,
     {
       day: "numeric",
       month: "short",
@@ -112,6 +117,7 @@ function getDateLabel(dateString: string) {
 
 export default function Notifications() {
   const { session } = useAuth();
+  const { language, t } = useLanguage();
 
   const [notifications, setNotifications] =
     useState<NotificationWithDetails[]>(
@@ -124,8 +130,10 @@ export default function Notifications() {
   const [errorMessage, setErrorMessage] =
     useState("");
 
-  const [expandedNotificationId, setExpandedNotificationId] =
-    useState<string | null>(null);
+  const [
+    expandedNotificationId,
+    setExpandedNotificationId,
+  ] = useState<string | null>(null);
 
   const userId = session?.user.id;
 
@@ -178,7 +186,7 @@ export default function Notifications() {
 
         setNotifications([]);
         setErrorMessage(
-          "Unable to load notifications."
+          t.notifications.loadError
         );
         setLoading(false);
         return;
@@ -419,7 +427,7 @@ export default function Notifications() {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [userId, t.notifications.loadError]);
 
   async function markAsRead(
     notificationId: string
@@ -487,7 +495,7 @@ export default function Notifications() {
 
   function getNotificationAction(
     notification: NotificationWithDetails
-  ) {
+  ): "liked" | "commented" | "replied" | "unknown" {
     const message =
       notification.message?.trim() || "";
 
@@ -503,18 +511,16 @@ export default function Notifications() {
     if (
       lowerMessage.includes("commented")
     ) {
-      return "commented on";
+      return "commented";
     }
 
     if (
       lowerMessage.includes("replied")
     ) {
-      return "replied to";
+      return "replied";
     }
 
-    return message
-      .replace(/^someone\s+/i, "")
-      .replace(/\.$/, "");
+    return "unknown";
   }
 
   function getNotificationTargetText(
@@ -529,26 +535,43 @@ export default function Notifications() {
       notification.chapter?.title ||
       (notification.chapter_number !==
       null
-        ? `Chapter ${notification.chapter_number}`
-        : "your chapter");
+        ? `${t.notifications.chapter} ${notification.chapter_number}`
+        : t.notifications.yourChapter);
 
     const storyTitle =
       notification.story?.title ||
-      "your story";
+      t.notifications.yourStory;
 
-    if (
-      action === "liked"
-    ) {
+    if (action === "liked") {
+      if (language === "hi") {
+        return (
+          <>
+            <span>
+              {t.notifications.liked}
+            </span>{" "}
+            <span className="font-medium text-white">
+              {chapterTitle}
+            </span>{" "}
+            <span>
+              {t.notifications.of}
+            </span>{" "}
+            <span className="font-medium text-white">
+              {storyTitle}
+            </span>
+          </>
+        );
+      }
+
       return (
         <>
           <span>
-            liked
+            {t.notifications.liked}
           </span>{" "}
           <span className="font-medium text-white">
             {chapterTitle}
           </span>{" "}
           <span>
-            of
+            {t.notifications.of}
           </span>{" "}
           <span className="font-medium text-white">
             {storyTitle}
@@ -557,24 +580,49 @@ export default function Notifications() {
       );
     }
 
-    if (
-      action === "commented on"
-    ) {
+    if (action === "commented") {
+      if (language === "hi") {
+        return (
+          <>
+            <span>
+              {t.notifications.commentedOn}
+            </span>{" "}
+            <span className="font-medium text-white">
+              {chapterTitle}
+            </span>{" "}
+            <span>
+              {t.notifications.of}
+            </span>{" "}
+            <span className="font-medium text-white">
+              {storyTitle}
+            </span>
+          </>
+        );
+      }
+
       return (
         <>
           <span>
-            commented on
+            {t.notifications.commentedOn}
           </span>{" "}
           <span className="font-medium text-white">
             {chapterTitle}
           </span>{" "}
           <span>
-            of
+            {t.notifications.of}
           </span>{" "}
           <span className="font-medium text-white">
             {storyTitle}
           </span>
         </>
+      );
+    }
+
+    if (action === "replied") {
+      return (
+        <span>
+          {t.notifications.repliedTo}
+        </span>
       );
     }
 
@@ -584,6 +632,34 @@ export default function Notifications() {
       </>
     );
   }
+
+  function getCompactNotificationText(
+    notification: NotificationWithDetails
+  ) {
+    const action =
+      getNotificationAction(
+        notification
+      );
+
+    if (action === "liked") {
+      return t.notifications.likedYourChapter;
+    }
+
+    if (action === "commented") {
+      return t.notifications.commentedOnYourStory;
+    }
+
+    if (action === "replied") {
+      return t.notifications.repliedToComment;
+    }
+
+    return notification.message;
+  }
+
+  const locale =
+    language === "hi"
+      ? "hi-IN"
+      : "en-IN";
 
   const notificationGroups =
     useMemo<NotificationGroup[]>(
@@ -614,7 +690,10 @@ export default function Notifications() {
             groups.set(dateKey, {
               dateKey,
               label: getDateLabel(
-                notification.created_at
+                notification.created_at,
+                t.notifications.today,
+                t.notifications.yesterday,
+                locale
               ),
               notifications: [
                 notification,
@@ -627,15 +706,19 @@ export default function Notifications() {
           groups.values()
         );
       },
-      [notifications]
+      [
+        notifications,
+        t.notifications.today,
+        t.notifications.yesterday,
+        locale,
+      ]
     );
 
   if (!session) {
     return (
       <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
         <p className="text-gray-400">
-          Log in to view your
-          notifications.
+          {t.notifications.loginRequired}
         </p>
       </section>
     );
@@ -646,11 +729,11 @@ export default function Notifications() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm text-gray-400">
-            Activity
+            {t.notifications.activity}
           </p>
 
           <h2 className="mt-1 text-2xl font-bold text-white">
-            Notifications
+            {t.notifications.title}
           </h2>
         </div>
 
@@ -662,14 +745,14 @@ export default function Notifications() {
                 null
             ).length
           }{" "}
-          unread
+          {t.notifications.unread}
         </span>
       </div>
 
       {loading ? (
         <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-5 text-center">
           <p className="text-sm text-gray-400">
-            Loading notifications...
+            {t.notifications.loading}
           </p>
         </div>
       ) : errorMessage ? (
@@ -680,196 +763,192 @@ export default function Notifications() {
         0 ? (
         <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/50 p-5 text-center">
           <p className="text-sm text-gray-400">
-            You have no notifications
-            yet.
+            {t.notifications.empty}
           </p>
         </div>
       ) : (
         <div className="mt-3 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-700">
           <div className="space-y-3">
             {notificationGroups.map(
-            (group) => (
-              <div
-                key={group.dateKey}
-              >
-                {/* WhatsApp-style date separator */}
-                <div className="mb-1.5 flex justify-center">
-                  <span className="rounded-full bg-slate-800/80 px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
-                    {group.label}
-                  </span>
-                </div>
+              (group) => (
+                <div
+                  key={group.dateKey}
+                >
+                  <div className="mb-1.5 flex justify-center">
+                    <span className="rounded-full bg-slate-800/80 px-2.5 py-0.5 text-[10px] font-medium text-gray-400">
+                      {group.label}
+                    </span>
+                  </div>
 
-                <div className="space-y-0.5">
-                  {group.notifications.map(
-                    (
-                      notification
-                    ) => {
-                      const actorName =
-                        notification.actor
-                          ?.display_name ||
-                        notification.actor
-                          ?.username ||
-                        "TaleMine User";
+                  <div className="space-y-0.5">
+                    {group.notifications.map(
+                      (
+                        notification
+                      ) => {
+                        const actorName =
+                          notification.actor
+                            ?.display_name ||
+                          notification.actor
+                            ?.username ||
+                          t.notifications.user;
 
-                      const actorInitial =
-                        actorName
-                          .charAt(0)
-                          .toUpperCase();
+                        const actorInitial =
+                          actorName
+                            .charAt(0)
+                            .toUpperCase();
 
-                      const isExpanded =
-                        expandedNotificationId ===
-                        notification.id;
+                        const isExpanded =
+                          expandedNotificationId ===
+                          notification.id;
 
-                      const isUnread =
-                        notification.read_at ===
-                        null;
+                        const isUnread =
+                          notification.read_at ===
+                          null;
 
-                      return (
-                        <article
-                          key={
-                            notification.id
-                          }
-                          onClick={() =>
-                            handleNotificationClick(
-                              notification
-                            )
-                          }
-                          className={`cursor-pointer rounded-lg border px-2 py-1.5 transition ${
-                            isUnread
-                              ? "border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10"
-                              : "border-transparent bg-transparent hover:border-slate-800 hover:bg-slate-950/40"
-                          }`}
-                        >
-                          {/* Compact notification row */}
-                          <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-950">
-                              {notification
-                                .actor
-                                ?.avatar_url ? (
-                                <img
-                                  src={
-                                    notification
-                                      .actor
-                                      .avatar_url
-                                  }
-                                  alt={
-                                    actorName
-                                  }
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-cyan-400">
-                                  {
-                                    actorInitial
-                                  }
-                                </div>
-                              )}
-                            </div>
-
-                            <p className="min-w-0 flex-1 text-[13px] leading-5 text-gray-300">
-                              <span className="font-semibold text-cyan-300">
-                                {actorName}
-                              </span>{" "}
-                              {getNotificationAction(
+                        return (
+                          <article
+                            key={
+                              notification.id
+                            }
+                            onClick={() =>
+                              handleNotificationClick(
                                 notification
-                              ) ===
-                              "liked"
-                                ? "liked your chapter."
-                                : getNotificationAction(
+                              )
+                            }
+                            className={`cursor-pointer rounded-lg border px-2 py-1.5 transition ${
+                              isUnread
+                                ? "border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10"
+                                : "border-transparent bg-transparent hover:border-slate-800 hover:bg-slate-950/40"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-950">
+                                {notification
+                                  .actor
+                                  ?.avatar_url ? (
+                                  <img
+                                    src={
                                       notification
-                                    ) ===
-                                    "commented on"
-                                  ? "commented on your story."
-                                  : notification.message}
-                            </p>
-                          </div>
-
-                          {/* Expanded notification details */}
-                          {isExpanded && (
-                            <div className="mt-1.5 ml-9 rounded-lg border border-cyan-500/20 bg-slate-950/50 p-2.5">
-                              <div className="flex items-start gap-3">
-                                <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
-                                  {notification
-                                    .actor
-                                    ?.avatar_url ? (
-                                    <img
-                                      src={
-                                        notification
-                                          .actor
-                                          .avatar_url
-                                      }
-                                      alt={
-                                        actorName
-                                      }
-                                      className="h-full w-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-cyan-400">
-                                      {
-                                        actorInitial
-                                      }
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-semibold text-white">
-                                    {
+                                        .actor
+                                        .avatar_url
+                                    }
+                                    alt={
                                       actorName
                                     }
-                                  </p>
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-cyan-400">
+                                    {
+                                      actorInitial
+                                    }
+                                  </div>
+                                )}
+                              </div>
 
-                                  {notification
-                                    .actor
-                                    ?.username && (
-                                    <p className="text-xs text-cyan-400">
-                                      @
-                                      {
-                                        notification
-                                          .actor
-                                          .username
-                                      }
-                                    </p>
-                                  )}
+                              <p className="min-w-0 flex-1 text-[13px] leading-5 text-gray-300">
+                                <span className="font-semibold text-cyan-300">
+                                  {actorName}
+                                </span>{" "}
+                                {
+                                  getCompactNotificationText(
+                                    notification
+                                  )
+                                }
+                              </p>
+                            </div>
 
-                                  <p className="mt-2 text-sm leading-5 text-gray-300">
-                                    <span className="font-semibold text-cyan-300">
+                            {isExpanded && (
+                              <div className="mt-1.5 ml-9 rounded-lg border border-cyan-500/20 bg-slate-950/50 p-2.5">
+                                <div className="flex items-start gap-3">
+                                  <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
+                                    {notification
+                                      .actor
+                                      ?.avatar_url ? (
+                                      <img
+                                        src={
+                                          notification
+                                            .actor
+                                            .avatar_url
+                                        }
+                                        alt={
+                                          actorName
+                                        }
+                                        className="h-full w-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-cyan-400">
+                                        {
+                                          actorInitial
+                                        }
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-white">
                                       {
                                         actorName
                                       }
-                                    </span>{" "}
-                                    {
-                                      getNotificationTargetText(
-                                        notification
-                                      )
-                                    }
-                                  </p>
+                                    </p>
 
-                                  {notification.comment
-                                    ?.content && (
-                                    <div className="mt-2 rounded-lg border border-slate-800 bg-slate-900/70 px-2.5 py-2">
-                                      <p className="text-xs text-gray-300">
-                                        {notification.comment.content}
+                                    {notification
+                                      .actor
+                                      ?.username && (
+                                      <p className="text-xs text-cyan-400">
+                                        @
+                                        {
+                                          notification
+                                            .actor
+                                            .username
+                                        }
                                       </p>
-                                    </div>
-                                  )}
+                                    )}
 
-                                  <p className="mt-2 text-[11px] text-gray-500">
-                                    {new Date(
-                                      notification.created_at
-                                    ).toLocaleString()}
-                                  </p>
+                                    <p className="mt-2 text-sm leading-5 text-gray-300">
+                                      <span className="font-semibold text-cyan-300">
+                                        {
+                                          actorName
+                                        }
+                                      </span>{" "}
+                                      {
+                                        getNotificationTargetText(
+                                          notification
+                                        )
+                                      }
+                                    </p>
+
+                                    {notification.comment
+                                      ?.content && (
+                                      <div className="mt-2 rounded-lg border border-slate-800 bg-slate-900/70 px-2.5 py-2">
+                                        <p className="text-xs text-gray-300">
+                                          {
+                                            notification
+                                              .comment
+                                              .content
+                                          }
+                                        </p>
+                                      </div>
+                                    )}
+
+                                    <p className="mt-2 text-[11px] text-gray-500">
+                                      {new Date(
+                                        notification.created_at
+                                      ).toLocaleString(
+                                        locale
+                                      )}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
-                        </article>
-                      );
-                    }
-                  )}
+                            )}
+                          </article>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
+              )
             )}
           </div>
         </div>

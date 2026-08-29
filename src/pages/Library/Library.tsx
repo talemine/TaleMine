@@ -5,6 +5,7 @@ import MyBookmarks from "../../components/story/MyBookmarks";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ReadingProgress {
   id: string;
@@ -27,6 +28,7 @@ export default function Library() {
   const { session, loading: authLoading } =
     useAuth();
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
 
   const [recentlyRead, setRecentlyRead] =
     useState<ReadingProgress[]>([]);
@@ -83,7 +85,7 @@ export default function Library() {
 
           setRecentlyRead([]);
           setErrorMessage(
-            "Unable to load your reading history."
+            t.library.unableToLoadHistory
           );
           setLoading(false);
           return;
@@ -101,8 +103,7 @@ export default function Library() {
         const storyIds = Array.from(
           new Set(
             progressRows.map(
-              (progress) =>
-                progress.story_id
+              (progress) => progress.story_id
             )
           )
         );
@@ -110,8 +111,7 @@ export default function Library() {
         const chapterIds = Array.from(
           new Set(
             progressRows.map(
-              (progress) =>
-                progress.chapter_id
+              (progress) => progress.chapter_id
             )
           )
         );
@@ -154,7 +154,7 @@ export default function Library() {
 
           setRecentlyRead([]);
           setErrorMessage(
-            "Unable to load your reading history."
+            t.library.unableToLoadHistory
           );
           setLoading(false);
           return;
@@ -168,7 +168,7 @@ export default function Library() {
 
           setRecentlyRead([]);
           setErrorMessage(
-            "Unable to load your reading history."
+            t.library.unableToLoadHistory
           );
           setLoading(false);
           return;
@@ -251,7 +251,7 @@ export default function Library() {
 
         setRecentlyRead([]);
         setErrorMessage(
-          "Unable to load your library."
+          t.library.unableToLoad
         );
       } finally {
         if (!cancelled) {
@@ -265,7 +265,11 @@ export default function Library() {
     return () => {
       cancelled = true;
     };
-  }, [session?.user.id]);
+  }, [
+    session?.user.id,
+    t.library.unableToLoad,
+    t.library.unableToLoadHistory,
+  ]);
 
   const filteredRecentlyRead =
     useMemo(() => {
@@ -323,11 +327,16 @@ export default function Library() {
         )
       : 0;
 
+  const locale =
+    language === "hi"
+      ? "hi-IN"
+      : "en-IN";
+
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
-          Loading your library...
+          {t.library.loading}
         </p>
       </main>
     );
@@ -338,12 +347,11 @@ export default function Library() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
-            Please Log In
+            {t.library.pleaseLogIn}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            You need to be signed in to view
-            your library.
+            {t.library.signInToView}
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -352,7 +360,7 @@ export default function Library() {
                 navigate("/login")
               }
             >
-              Go to Login
+              {t.library.goToLogin}
             </Button>
           </div>
         </div>
@@ -368,16 +376,15 @@ export default function Library() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm text-gray-400">
-                Reader
+                {t.library.reader}
               </p>
 
               <h1 className="mt-1 text-4xl font-bold">
-                My Library
+                {t.library.myLibrary}
               </h1>
 
               <p className="mt-3 text-gray-300">
-                Pick up where you left off or
-                revisit something you've read.
+                {t.library.description}
               </p>
             </div>
 
@@ -387,7 +394,7 @@ export default function Library() {
                 navigate("/account")
               }
             >
-              Account
+              {t.library.account}
             </Button>
           </div>
 
@@ -397,9 +404,18 @@ export default function Library() {
               <div className="flex flex-wrap gap-2">
                 {(
                   [
-                    ["all", "All"],
-                    ["recent", "Recently Read"],
-                    ["bookmarks", "Bookmarks"],
+                    [
+                      "all",
+                      t.library.filters.all,
+                    ],
+                    [
+                      "recent",
+                      t.library.filters.recent,
+                    ],
+                    [
+                      "bookmarks",
+                      t.library.filters.bookmarks,
+                    ],
                   ] as const
                 ).map(([value, label]) => {
                   const active =
@@ -429,7 +445,7 @@ export default function Library() {
                   htmlFor="library-search"
                   className="sr-only"
                 >
-                  Search your library
+                  {t.library.searchLabel}
                 </label>
 
                 <input
@@ -441,7 +457,9 @@ export default function Library() {
                       event.target.value
                     )
                   }
-                  placeholder="Search stories or chapters..."
+                  placeholder={
+                    t.library.searchPlaceholder
+                  }
                   className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400"
                 />
               </div>
@@ -452,7 +470,7 @@ export default function Library() {
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
                 <p className="text-xs uppercase tracking-wide text-gray-500">
-                  Stories
+                  {t.library.stats.stories}
                 </p>
 
                 <p className="mt-1 text-2xl font-bold text-white">
@@ -469,7 +487,7 @@ export default function Library() {
 
               <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
                 <p className="text-xs uppercase tracking-wide text-gray-500">
-                  Recently Read
+                  {t.library.stats.recentlyRead}
                 </p>
 
                 <p className="mt-1 text-2xl font-bold text-white">
@@ -489,18 +507,19 @@ export default function Library() {
           {showContinueReading && (
             <section className="mt-10 border-t border-slate-800 pt-8">
               <p className="text-sm text-gray-400">
-                {continueReadingPercentage >= 100
-                  ? "Story Completed"
-                  : "Continue Reading"}
+                {continueReadingPercentage >=
+                100
+                  ? t.library.storyCompleted
+                  : t.library.continueReading}
               </p>
 
               <div className="mt-4 rounded-2xl border border-cyan-500/20 bg-slate-950/50 p-6">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex-1">
                     <p className="text-sm text-cyan-400">
-                      Chapter{" "}
+                      {t.library.chapter}{" "}
                       {latestReading.chapter_number}{" "}
-                      of{" "}
+                      {t.library.of}{" "}
                       {latestReading.chapter_count}
                     </p>
 
@@ -510,14 +529,16 @@ export default function Library() {
 
                     <p className="mt-2 text-gray-300">
                       {latestReading.chapter_title ||
-                        `Chapter ${latestReading.chapter_number}`}
+                        `${t.library.chapter} ${latestReading.chapter_number}`}
                     </p>
 
                     <p className="mt-3 text-sm text-gray-500">
-                      Last read{" "}
+                      {t.library.lastRead}{" "}
                       {new Date(
                         latestReading.last_read_at
-                      ).toLocaleDateString()}
+                      ).toLocaleDateString(
+                        locale
+                      )}
                     </p>
                   </div>
 
@@ -527,16 +548,18 @@ export default function Library() {
                       onClick={() =>
                         navigate(
                           `/story/${latestReading.story_slug}/chapter/${
-                            continueReadingPercentage >= 100
+                            continueReadingPercentage >=
+                            100
                               ? 1
                               : latestReading.chapter_number
                           }`
                         )
                       }
                     >
-                      {continueReadingPercentage >= 100
-                        ? "Read Again"
-                        : "Continue Reading"}
+                      {continueReadingPercentage >=
+                      100
+                        ? t.library.readAgain
+                        : t.library.continueReading}
                     </Button>
                   </div>
                 </div>
@@ -555,7 +578,7 @@ export default function Library() {
 
                     <p className="mt-2 text-xs text-gray-500">
                       {continueReadingPercentage}%
-                      through published chapters
+                      {t.library.throughPublishedChapters}
                     </p>
                   </div>
                 )}
@@ -567,11 +590,11 @@ export default function Library() {
           {showRecentlyRead && (
             <section className="mt-10 border-t border-slate-800 pt-8">
               <p className="text-sm text-gray-400">
-                Reading Activity
+                {t.library.readingActivity}
               </p>
 
               <h2 className="mt-1 text-3xl font-bold">
-                Recently Read
+                {t.library.recentlyRead}
               </h2>
 
               {filteredRecentlyRead.length ===
@@ -579,103 +602,113 @@ export default function Library() {
                 <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
                   <p className="text-gray-400">
                     {searchQuery.trim()
-                      ? "No recently read stories or chapters match your search."
-                      : "You haven't started reading anything yet."}
+                      ? t.library.noSearchResults
+                      : t.library.nothingStarted}
                   </p>
                 </div>
               ) : (
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   {filteredRecentlyRead.map(
-                    (progress) => (
-                      <article
-                        key={progress.id}
-                        className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
-                      >
-                        <div className="flex-1">
-                          <p className="text-sm text-cyan-400">
-                            Chapter{" "}
-                            {
-                              progress.chapter_number
-                            }{" "}
-                            of{" "}
-                            {progress.chapter_count}
-                          </p>
-
-                          {progress.chapter_count > 0 && (
-                            <div className="mt-3">
-                              <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-                                <div
-                                  className="h-full rounded-full bg-cyan-400 transition-all"
-                                  style={{
-                                    width: `${Math.min(
-                                      100,
-                                      Math.max(
-                                        0,
-                                        Math.round(
-                                          (progress.chapter_number /
-                                            progress.chapter_count) *
-                                            100
-                                        )
-                                      )
-                                    )}%`,
-                                  }}
-                                />
-                              </div>
-
-                              <p className="mt-2 text-xs text-gray-500">
-                                {Math.min(
-                                  100,
-                                  Math.max(
-                                    0,
-                                    Math.round(
-                                      (progress.chapter_number /
-                                        progress.chapter_count) *
-                                        100
-                                    )
-                                  )
-                                )}
-                                % through published chapters
-                              </p>
-                            </div>
-                          )}
-
-                          <h3 className="mt-2 text-xl font-semibold">
-                            {progress.story_title}
-                          </h3>
-
-                          <p className="mt-2 text-gray-300">
-                            {progress.chapter_title ||
-                              `Chapter ${progress.chapter_number}`}
-                          </p>
-
-                          <p className="mt-3 text-sm text-gray-500">
-                            Last read{" "}
-                            {new Date(
-                              progress.last_read_at
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-
-                        <div className="mt-5">
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              navigate(
-                                `/story/${progress.story_slug}/chapter/${
-                                  progress.chapter_number >= progress.chapter_count
-                                    ? 1
-                                    : progress.chapter_number
-                                }`
+                    (progress) => {
+                      const percentage =
+                        progress.chapter_count >
+                        0
+                          ? Math.min(
+                              100,
+                              Math.max(
+                                0,
+                                Math.round(
+                                  (progress.chapter_number /
+                                    progress.chapter_count) *
+                                    100
+                                )
                               )
-                            }
-                          >
-                            {progress.chapter_number >= progress.chapter_count
-                              ? "Read Again"
-                              : "Continue Reading"}
-                          </Button>
-                        </div>
-                      </article>
-                    )
+                            )
+                          : 0;
+
+                      return (
+                        <article
+                          key={progress.id}
+                          className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/50 p-5 transition hover:border-cyan-500/40"
+                        >
+                          <div className="flex-1">
+                            <p className="text-sm text-cyan-400">
+                              {t.library.chapter}{" "}
+                              {
+                                progress.chapter_number
+                              }{" "}
+                              {t.library.of}{" "}
+                              {
+                                progress.chapter_count
+                              }
+                            </p>
+
+                            {progress.chapter_count >
+                              0 && (
+                              <div className="mt-3">
+                                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                                  <div
+                                    className="h-full rounded-full bg-cyan-400 transition-all"
+                                    style={{
+                                      width: `${percentage}%`,
+                                    }}
+                                  />
+                                </div>
+
+                                <p className="mt-2 text-xs text-gray-500">
+                                  {percentage}%
+                                  {
+                                    t.library
+                                      .throughPublishedChapters
+                                  }
+                                </p>
+                              </div>
+                            )}
+
+                            <h3 className="mt-2 text-xl font-semibold">
+                              {
+                                progress.story_title
+                              }
+                            </h3>
+
+                            <p className="mt-2 text-gray-300">
+                              {progress.chapter_title ||
+                                `${t.library.chapter} ${progress.chapter_number}`}
+                            </p>
+
+                            <p className="mt-3 text-sm text-gray-500">
+                              {t.library.lastRead}{" "}
+                              {new Date(
+                                progress.last_read_at
+                              ).toLocaleDateString(
+                                locale
+                              )}
+                            </p>
+                          </div>
+
+                          <div className="mt-5">
+                            <Button
+                              variant="outline"
+                              onClick={() =>
+                                navigate(
+                                  `/story/${progress.story_slug}/chapter/${
+                                    progress.chapter_number >=
+                                    progress.chapter_count
+                                      ? 1
+                                      : progress.chapter_number
+                                  }`
+                                )
+                              }
+                            >
+                              {progress.chapter_number >=
+                              progress.chapter_count
+                                ? t.library.readAgain
+                                : t.library.continueReading}
+                            </Button>
+                          </div>
+                        </article>
+                      );
+                    }
                   )}
                 </div>
               )}

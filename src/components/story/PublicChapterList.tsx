@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import ChapterLikeCount from "./ChapterLikeCount";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface PublicChapter {
   id: string;
@@ -22,6 +23,7 @@ export default function PublicChapterList({
   storySlug,
 }: PublicChapterListProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [chapters, setChapters] = useState<
     PublicChapter[]
@@ -61,7 +63,7 @@ export default function PublicChapterList({
 
         setChapters([]);
         setErrorMessage(
-          "Unable to load the chapters."
+          t.publicChapterList.unableToLoad
         );
       } else {
         setChapters(data ?? []);
@@ -75,13 +77,16 @@ export default function PublicChapterList({
     return () => {
       cancelled = true;
     };
-  }, [storyId]);
+  }, [
+    storyId,
+    t.publicChapterList.unableToLoad,
+  ]);
 
   if (loading) {
     return (
       <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
         <p className="text-gray-400">
-          Loading chapters...
+          {t.publicChapterList.loading}
         </p>
       </div>
     );
@@ -101,11 +106,11 @@ export default function PublicChapterList({
     return (
       <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
         <h3 className="text-xl font-semibold">
-          No published chapters yet
+          {t.publicChapterList.noPublishedChapters}
         </h3>
 
         <p className="mt-3 text-gray-400">
-          This story has not published any chapters yet.
+          {t.publicChapterList.storyNoChapters}
         </p>
       </div>
     );
@@ -138,17 +143,18 @@ export default function PublicChapterList({
         >
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-cyan-400">
-              Chapter {chapter.chapter_number}
+              {t.publicChapterList.chapter}{" "}
+              {chapter.chapter_number}
             </span>
 
             <span className="rounded-full border border-cyan-500/20 px-3 py-1 text-xs uppercase tracking-wide text-cyan-300">
-              Published
+              {t.publicChapterList.published}
             </span>
           </div>
 
           <h3 className="mt-3 text-2xl font-semibold">
             {chapter.title ||
-              `Chapter ${chapter.chapter_number}`}
+              `${t.publicChapterList.chapter} ${chapter.chapter_number}`}
           </h3>
 
           <div className="mt-3">
@@ -158,7 +164,7 @@ export default function PublicChapterList({
           </div>
 
           <p className="mt-3 text-sm text-gray-400">
-            Read chapter →
+            {t.publicChapterList.readChapter}
           </p>
         </button>
       ))}

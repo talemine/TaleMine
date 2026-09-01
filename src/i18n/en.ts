@@ -18,6 +18,9 @@ const en = {
     login: "Log In",
     logout: "Log Out",
     joinWaitlist: "Join Waitlist",
+    unreadNotifications: "unread notifications",
+    openNavigationMenu: "Open navigation menu",
+    closeNavigationMenu: "Close navigation menu",
   },
 
   common: {
@@ -115,21 +118,6 @@ const en = {
         "Account created successfully.",
       signedIn: "You're signed in.",
     },
-  },
-
-  form: {
-    username: "Username",
-    displayName: "Display Name",
-    email: "Email",
-    password: "Password",
-    pleaseWait: "Please wait...",
-    createAccount: "Create Account",
-    logIn: "Log In",
-    accountCreatedVerify:
-      "Account created. Please check your email to verify your account.",
-    accountCreated:
-      "Account created successfully.",
-    signedIn: "You're signed in.",
   },
 
   account: {
@@ -373,6 +361,174 @@ const en = {
       "Unable to load your library.",
   },
 
+  story: {
+    loading: "Loading story...",
+    notFound: "Story not found.",
+    unableToFind: "This story could not be found.",
+    unableToLoad: "Unable to load this story.",
+    notFoundTitle: "Story Not Found",
+    notAvailable: "This story is not available.",
+
+    backToTaleMine: "Back to TaleMine",
+    taleMineWriter: "TaleMine Writer",
+    cover: "cover",
+
+    published: "Published",
+    by: "By",
+    chapters: "Chapters",
+
+    continueReading: "Continue Reading",
+    chapter: "Chapter",
+    of: "of",
+    throughPublishedChapters:
+      "through published chapters",
+
+    readyToRead: "Ready to Read?",
+    startWithChapterOne: "Start with Chapter 1",
+    beginFromBeginning:
+      "Begin this story from the beginning.",
+    startReading: "Start Reading",
+
+    story: "Story",
+  },
+
+  publicChapterList: {
+    loading: "Loading chapters...",
+    unableToLoad: "Unable to load the chapters.",
+    noPublishedChapters:
+      "No published chapters yet",
+    storyNoChapters:
+      "This story has not published any chapters yet.",
+    chapter: "Chapter",
+    published: "Published",
+    readChapter: "Read chapter →",
+  },
+
+  storyChapter: {
+    loading: "Loading chapter...",
+    chapterNotFound: "Chapter not found.",
+    storyNotFound: "This story could not be found.",
+    chapterNotAvailable:
+      "This chapter is not available.",
+    unableToLoad: "Unable to load this chapter.",
+    chapterNotFoundTitle: "Chapter Not Found",
+
+    backToStory: "Back to Story",
+
+    chapter: "Chapter",
+    published: "Published",
+
+    readingSize: "Reading size",
+    readingTextSize: "Reading text size",
+    decreaseTextSize:
+      "Decrease reading text size",
+    defaultTextSize:
+      "Use default reading text size",
+    increaseTextSize:
+      "Increase reading text size",
+
+    readingWidth: "Reading width",
+    narrowReadingWidth:
+      "Narrow reading width",
+    standardReadingWidth:
+      "Standard reading width",
+    wideReadingWidth:
+      "Wide reading width",
+
+    narrow: "Narrow",
+    standard: "Standard",
+    wide: "Wide",
+
+    storyComplete: "Story Complete",
+    reachedEnd:
+      "You've reached the end of this story.",
+    thanksForReading: "Thanks for reading",
+
+    previousChapter: "Previous Chapter",
+    nextChapter: "Next Chapter",
+    readingProgress: "Reading Progress",
+    of: "of",
+
+    exploreMoreStories:
+      "Explore More Stories",
+  },
+
+  chapterLikeButton: {
+    unableToLoadCount:
+      "Unable to load the like count.",
+    loginToLike:
+      "Please log in to like chapters.",
+    unableToRemove:
+      "Unable to remove your like.",
+    unableToLike:
+      "Unable to like this chapter.",
+    loadingLikes: "Loading Likes...",
+    saving: "Saving...",
+    liked: "Liked",
+    like: "Like",
+  },
+
+  chapterLikeCount: {
+    loading: "Loading likes...",
+    like: "like",
+    likes: "likes",
+  },
+
+  chapterComments: {
+    unableToLoad: "Unable to load comments.",
+    loginToComment:
+      "Please log in to leave a comment.",
+    writeCommentFirst:
+      "Please write a comment first.",
+    characterLimit:
+      "Comments must be 2000 characters or fewer.",
+    unableToPost:
+      "Unable to post your comment.",
+    commentPosted: "Comment posted.",
+    unableToDelete:
+      "Unable to delete this comment.",
+    commentDeleted: "Comment deleted.",
+    commentRemovedByWriter:
+      "Comment removed by story writer.",
+    commentUpdated: "Comment updated.",
+
+    discussion: "Discussion",
+    comments: "Comments",
+    leaveComment: "Leave a comment",
+    shareThoughts: "Share your thoughts...",
+    posting: "Posting...",
+    postComment: "Post Comment",
+    loginToDiscussion:
+      "Log in to join the discussion.",
+    loadingComments: "Loading comments...",
+    noComments:
+      "No comments yet. Be the first to comment.",
+
+    readerAvatar: "Reader avatar",
+    taleMineReader: "TaleMine Reader",
+
+    edit: "Edit",
+    deleting: "Deleting...",
+    delete: "Delete",
+  },
+
+  chapterCommentEdit: {
+    emptyComment: "Comment cannot be empty.",
+    characterLimit:
+      "Comments must be 2000 characters or fewer.",
+    unableToUpdate:
+      "Unable to update your comment.",
+    cancel: "Cancel",
+    saving: "Saving...",
+    saveComment: "Save Comment",
+  },
+
+  chapterCommentModeration: {
+    unableToDelete:
+      "Unable to delete this comment.",
+    deleting: "Deleting...",
+    removeComment: "Remove Comment",
+  },
 
 };
 

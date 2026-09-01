@@ -7,6 +7,7 @@ import ChapterComments from "../../components/story/ChapterComments";
 import Button from "../../components/ui/Button";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Story {
   id: string;
@@ -68,6 +69,7 @@ const fontSizeClasses: Record<
 export default function StoryChapterPage() {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { t } = useLanguage();
 
   const { slug, chapterNumber } =
     useParams<{
@@ -157,7 +159,9 @@ export default function StoryChapterPage() {
     async function loadChapter() {
       if (!slug || !chapterNumber) {
         setLoading(false);
-        setErrorMessage("Chapter not found.");
+        setErrorMessage(
+          t.storyChapter.chapterNotFound
+        );
         return;
       }
 
@@ -171,7 +175,9 @@ export default function StoryChapterPage() {
         parsedChapterNumber < 1
       ) {
         setLoading(false);
-        setErrorMessage("Chapter not found.");
+        setErrorMessage(
+          t.storyChapter.chapterNotFound
+        );
         return;
       }
 
@@ -215,7 +221,7 @@ export default function StoryChapterPage() {
           });
 
           setErrorMessage(
-            "This story could not be found."
+            t.storyChapter.storyNotFound
           );
 
           setLoading(false);
@@ -266,7 +272,7 @@ export default function StoryChapterPage() {
           });
 
           setErrorMessage(
-            "This chapter is not available."
+            t.storyChapter.chapterNotAvailable
           );
 
           setLoading(false);
@@ -337,7 +343,8 @@ export default function StoryChapterPage() {
               .insert({
                 user_id:
                   session.user.id,
-                story_id: storyData.id,
+                story_id:
+                  storyData.id,
                 chapter_id:
                   chapterData.id,
                 last_read_at: now,
@@ -450,7 +457,7 @@ export default function StoryChapterPage() {
         });
 
         setErrorMessage(
-          "Unable to load this chapter."
+          t.storyChapter.unableToLoad
         );
       } finally {
         if (!cancelled) {
@@ -468,6 +475,10 @@ export default function StoryChapterPage() {
     slug,
     chapterNumber,
     session?.user.id,
+    t.storyChapter.chapterNotFound,
+    t.storyChapter.storyNotFound,
+    t.storyChapter.chapterNotAvailable,
+    t.storyChapter.unableToLoad,
   ]);
 
   function goToChapter(number: number) {
@@ -489,7 +500,7 @@ export default function StoryChapterPage() {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
-          Loading chapter...
+          {t.storyChapter.loading}
         </p>
       </main>
     );
@@ -500,12 +511,12 @@ export default function StoryChapterPage() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="text-4xl font-bold">
-            Chapter Not Found
+            {t.storyChapter.chapterNotFoundTitle}
           </h1>
 
           <p className="mt-4 text-gray-300">
             {errorMessage ||
-              "This chapter is not available."}
+              t.storyChapter.chapterNotAvailable}
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -516,7 +527,7 @@ export default function StoryChapterPage() {
                 )
               }
             >
-              Back to Story
+              {t.storyChapter.backToStory}
             </Button>
           </div>
         </div>
@@ -539,6 +550,19 @@ export default function StoryChapterPage() {
       ? navigation.currentIndex + 1
       : chapter.chapter_number;
 
+  const progressPercentage =
+    navigation.totalChapters > 0
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            (currentChapterPosition /
+              navigation.totalChapters) *
+              100
+          )
+        )
+      : 0;
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
       <article className="mx-auto max-w-5xl">
@@ -546,18 +570,18 @@ export default function StoryChapterPage() {
           {/* Chapter Header */}
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-cyan-400">
-              Chapter{" "}
+              {t.storyChapter.chapter}{" "}
               {chapter.chapter_number}
             </span>
 
             <span className="rounded-full border border-cyan-500/20 px-3 py-1 text-xs uppercase tracking-wide text-cyan-300">
-              Published
+              {t.storyChapter.published}
             </span>
           </div>
 
           <h1 className="mt-5 text-4xl font-bold md:text-5xl">
             {chapter.title ||
-              `Chapter ${chapter.chapter_number}`}
+              `${t.storyChapter.chapter} ${chapter.chapter_number}`}
           </h1>
 
           <p className="mt-4 text-sm text-gray-400">
@@ -568,19 +592,23 @@ export default function StoryChapterPage() {
           <div className="mt-8 flex flex-col gap-4 border-y border-slate-800 py-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-sm text-gray-400">
-                Reading size
+                {t.storyChapter.readingSize}
               </p>
 
               <div
                 className="flex items-center gap-2"
-                aria-label="Reading text size"
+                aria-label={
+                  t.storyChapter.readingTextSize
+                }
               >
                 <button
                   type="button"
                   onClick={() =>
                     changeFontSize("small")
                   }
-                  aria-label="Decrease reading text size"
+                  aria-label={
+                    t.storyChapter.decreaseTextSize
+                  }
                   aria-pressed={
                     fontSize === "small"
                   }
@@ -598,7 +626,9 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeFontSize("medium")
                   }
-                  aria-label="Use default reading text size"
+                  aria-label={
+                    t.storyChapter.defaultTextSize
+                  }
                   aria-pressed={
                     fontSize === "medium"
                   }
@@ -616,7 +646,9 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeFontSize("large")
                   }
-                  aria-label="Increase reading text size"
+                  aria-label={
+                    t.storyChapter.increaseTextSize
+                  }
                   aria-pressed={
                     fontSize === "large"
                   }
@@ -633,19 +665,23 @@ export default function StoryChapterPage() {
 
             <div className="flex flex-wrap items-center justify-between gap-4">
               <p className="text-sm text-gray-400">
-                Reading width
+                {t.storyChapter.readingWidth}
               </p>
 
               <div
                 className="flex items-center gap-2"
-                aria-label="Reading width"
+                aria-label={
+                  t.storyChapter.readingWidth
+                }
               >
                 <button
                   type="button"
                   onClick={() =>
                     changeReadingWidth("narrow")
                   }
-                  aria-label="Narrow reading width"
+                  aria-label={
+                    t.storyChapter.narrowReadingWidth
+                  }
                   aria-pressed={
                     readingWidth === "narrow"
                   }
@@ -655,7 +691,7 @@ export default function StoryChapterPage() {
                       : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
                   }`}
                 >
-                  Narrow
+                  {t.storyChapter.narrow}
                 </button>
 
                 <button
@@ -663,7 +699,9 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeReadingWidth("standard")
                   }
-                  aria-label="Standard reading width"
+                  aria-label={
+                    t.storyChapter.standardReadingWidth
+                  }
                   aria-pressed={
                     readingWidth === "standard"
                   }
@@ -673,7 +711,7 @@ export default function StoryChapterPage() {
                       : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
                   }`}
                 >
-                  Standard
+                  {t.storyChapter.standard}
                 </button>
 
                 <button
@@ -681,7 +719,9 @@ export default function StoryChapterPage() {
                   onClick={() =>
                     changeReadingWidth("wide")
                   }
-                  aria-label="Wide reading width"
+                  aria-label={
+                    t.storyChapter.wideReadingWidth
+                  }
                   aria-pressed={
                     readingWidth === "wide"
                   }
@@ -691,7 +731,7 @@ export default function StoryChapterPage() {
                       : "border-slate-700 text-gray-400 hover:border-cyan-400 hover:text-cyan-400"
                   }`}
                 >
-                  Wide
+                  {t.storyChapter.wide}
                 </button>
               </div>
             </div>
@@ -731,15 +771,15 @@ export default function StoryChapterPage() {
           {isLastChapter && (
             <div className="mb-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-6 text-center">
               <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
-                Story Complete
+                {t.storyChapter.storyComplete}
               </p>
 
               <h2 className="mt-2 text-2xl font-bold text-white">
-                You've reached the end of this story.
+                {t.storyChapter.reachedEnd}
               </h2>
 
               <p className="mt-2 text-gray-400">
-                Thanks for reading{" "}
+                {t.storyChapter.thanksForReading}{" "}
                 {story.title}.
               </p>
 
@@ -747,10 +787,12 @@ export default function StoryChapterPage() {
                 <Button
                   variant="outline"
                   onClick={() =>
-                    navigate(`/story/${story.slug}`)
+                    navigate(
+                      `/story/${story.slug}`
+                    )
                   }
                 >
-                  Back to Story
+                  {t.storyChapter.backToStory}
                 </Button>
               </div>
             </div>
@@ -771,7 +813,8 @@ export default function StoryChapterPage() {
                         )
                       }
                     >
-                      ← Previous Chapter
+                      ←{" "}
+                      {t.storyChapter.previousChapter}
                     </Button>
                   ) : (
                     <div className="hidden sm:block" />
@@ -781,22 +824,22 @@ export default function StoryChapterPage() {
                 {/* Position */}
                 <div className="order-first text-center sm:order-none">
                   <p className="text-xs uppercase tracking-wide text-gray-500">
-                    Reading Progress
+                    {t.storyChapter.readingProgress}
                   </p>
 
                   <p className="mt-1 text-base font-semibold text-gray-200">
-                    Chapter{" "}
+                    {t.storyChapter.chapter}{" "}
                     {currentChapterPosition}{" "}
-                    of{" "}
+                    {t.storyChapter.of}{" "}
                     {navigation.totalChapters}
-                    {navigation.totalChapters > 0 && (
+
+                    {navigation.totalChapters >
+                      0 && (
                       <>
                         {" "}
                         ·{" "}
                         {Math.round(
-                          (currentChapterPosition /
-                            navigation.totalChapters) *
-                            100
+                          progressPercentage
                         )}
                         %
                       </>
@@ -814,7 +857,7 @@ export default function StoryChapterPage() {
                         )
                       }
                     >
-                      Next Chapter →
+                      {t.storyChapter.nextChapter} →
                     </Button>
                   ) : (
                     <div className="hidden sm:block" />
@@ -829,15 +872,7 @@ export default function StoryChapterPage() {
                     <div
                       className="h-full rounded-full bg-cyan-400 transition-all"
                       style={{
-                        width: `${Math.min(
-                          100,
-                          Math.max(
-                            0,
-                            (currentChapterPosition /
-                              navigation.totalChapters) *
-                              100
-                          )
-                        )}%`,
+                        width: `${progressPercentage}%`,
                       }}
                     />
                   </div>
@@ -845,12 +880,14 @@ export default function StoryChapterPage() {
               )}
             </div>
 
-            {/* Back to Story */}
+            {/* Back to Stories */}
             <div className="mt-5 flex justify-center">
               <Button
-                onClick={() => navigate("/stories")}
+                onClick={() =>
+                  navigate("/stories")
+                }
               >
-                Explore More Stories
+                {t.storyChapter.exploreMoreStories}
               </Button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterLikeCountProps {
   chapterId: string;
@@ -9,6 +10,8 @@ interface ChapterLikeCountProps {
 export default function ChapterLikeCount({
   chapterId,
 }: ChapterLikeCountProps) {
+  const { t } = useLanguage();
+
   const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +57,7 @@ export default function ChapterLikeCount({
   if (loading) {
     return (
       <span className="text-sm text-gray-500">
-        Loading likes...
+        {t.chapterLikeCount.loading}
       </span>
     );
   }
@@ -62,7 +65,9 @@ export default function ChapterLikeCount({
   return (
     <span className="text-sm text-gray-500">
       ♥ {likeCount}{" "}
-      {likeCount === 1 ? "like" : "likes"}
+      {likeCount === 1
+        ? t.chapterLikeCount.like
+        : t.chapterLikeCount.likes}
     </span>
   );
 }

@@ -14,12 +14,12 @@ import { supabase } from "../../services/supabase";
 import { useLanguage } from "../../i18n/LanguageContext";
 
 const navLinks = [
-  { name: "About", href: "#about" },
-  { name: "Readers", href: "#readers" },
-  { name: "Writers", href: "#writers" },
-  { name: "Vision", href: "#vision" },
-  { name: "Roadmap", href: "#roadmap" },
-];
+  { key: "about", href: "#about" },
+  { key: "readers", href: "#readers" },
+  { key: "writers", href: "#writers" },
+  { key: "vision", href: "#vision" },
+  { key: "roadmap", href: "#roadmap" },
+] as const;
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -137,6 +137,12 @@ export default function Navbar() {
     navigate("/stories");
   }
 
+  function getNavLabel(
+    key: (typeof navLinks)[number]["key"]
+  ) {
+    return t.nav[key];
+  }
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-slate-800/50 bg-slate-950/70 backdrop-blur-lg">
       <Container>
@@ -147,15 +153,11 @@ export default function Navbar() {
           <nav className="hidden items-center gap-8 md:flex">
             {navLinks.map((link) => (
               <a
-                key={link.name}
+                key={link.key}
                 href={link.href}
                 className="text-sm text-slate-300 transition hover:text-cyan-400"
               >
-                {link.name === "About" && t.nav.about}
-                {link.name === "Readers" && t.nav.readers}
-                {link.name === "Writers" && t.nav.writers}
-                {link.name === "Vision" && t.nav.vision}
-                {link.name === "Roadmap" && t.nav.roadmap}
+                {getNavLabel(link.key)}
               </a>
             ))}
           </nav>
@@ -187,6 +189,7 @@ export default function Navbar() {
                 हिन्दी
               </button>
             </div>
+
             {session ? (
               <>
                 {/* Stories */}
@@ -211,8 +214,8 @@ export default function Navbar() {
                   onClick={openNotifications}
                   aria-label={
                     unreadCount > 0
-                      ? `${unreadCount} unread notifications`
-                      : "Notifications"
+                      ? `${unreadCount} ${t.nav.unreadNotifications}`
+                      : t.nav.notifications
                   }
                   className="relative flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-cyan-400 hover:text-cyan-400"
                 >
@@ -254,7 +257,6 @@ export default function Navbar() {
                   href="/login"
                 >
                   {t.nav.login}
-
                 </Button>
 
                 {/* Join Waitlist */}
@@ -273,8 +275,8 @@ export default function Navbar() {
             }
             aria-label={
               menuOpen
-                ? "Close navigation menu"
-                : "Open navigation menu"
+                ? t.nav.closeNavigationMenu
+                : t.nav.openNavigationMenu
             }
             aria-expanded={menuOpen}
             className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-700 text-slate-200 transition hover:border-cyan-400 hover:text-cyan-400 md:hidden"
@@ -318,14 +320,15 @@ export default function Navbar() {
                   </button>
                 </div>
               </div>
+
               {navLinks.map((link) => (
                 <a
-                  key={link.name}
+                  key={link.key}
                   href={link.href}
                   onClick={closeMenu}
                   className="rounded-xl px-4 py-3 text-slate-200 transition hover:bg-slate-900 hover:text-cyan-400"
                 >
-                  {link.name}
+                  {getNavLabel(link.key)}
                 </a>
               ))}
 

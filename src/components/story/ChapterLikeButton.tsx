@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import Button from "../ui/Button";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterLikeButtonProps {
   storyId: string;
@@ -14,6 +15,7 @@ export default function ChapterLikeButton({
   chapterId,
 }: ChapterLikeButtonProps) {
   const { session } = useAuth();
+  const { t } = useLanguage();
 
   const [likeCount, setLikeCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
@@ -69,7 +71,7 @@ export default function ChapterLikeButton({
         );
 
         setErrorMessage(
-          "Unable to load the like count."
+          t.chapterLikeButton.unableToLoadCount
         );
       } else {
         setLikeCount(countResult.count ?? 0);
@@ -94,12 +96,16 @@ export default function ChapterLikeButton({
     return () => {
       cancelled = true;
     };
-  }, [chapterId, userId]);
+  }, [
+    chapterId,
+    userId,
+    t.chapterLikeButton.unableToLoadCount,
+  ]);
 
   async function handleLikeToggle() {
     if (!userId) {
       setErrorMessage(
-        "Please log in to like chapters."
+        t.chapterLikeButton.loginToLike
       );
       return;
     }
@@ -121,7 +127,7 @@ export default function ChapterLikeButton({
         );
 
         setErrorMessage(
-          "Unable to remove your like."
+          t.chapterLikeButton.unableToRemove
         );
         setLoading(false);
         return;
@@ -150,7 +156,7 @@ export default function ChapterLikeButton({
       );
 
       setErrorMessage(
-        "Unable to like this chapter."
+        t.chapterLikeButton.unableToLike
       );
       setLoading(false);
       return;
@@ -170,7 +176,7 @@ export default function ChapterLikeButton({
         variant="outline"
         disabled
       >
-        Loading Likes...
+        {t.chapterLikeButton.loadingLikes}
       </Button>
     );
   }
@@ -179,15 +185,17 @@ export default function ChapterLikeButton({
     <div>
       <Button
         type="button"
-        variant={isLiked ? "outline" : "primary"}
+        variant={
+          isLiked ? "outline" : "primary"
+        }
         onClick={handleLikeToggle}
         disabled={loading}
       >
         {loading
-          ? "Saving..."
+          ? t.chapterLikeButton.saving
           : isLiked
-            ? `♥ Liked (${likeCount})`
-            : `♡ Like (${likeCount})`}
+            ? `♥ ${t.chapterLikeButton.liked} (${likeCount})`
+            : `♡ ${t.chapterLikeButton.like} (${likeCount})`}
       </Button>
 
       {errorMessage && (

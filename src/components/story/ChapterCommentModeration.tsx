@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import Button from "../ui/Button";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterCommentModerationProps {
   commentId: string;
@@ -12,6 +13,8 @@ export default function ChapterCommentModeration({
   commentId,
   onDeleted,
 }: ChapterCommentModerationProps) {
+  const { t } = useLanguage();
+
   const [deleting, setDeleting] = useState(false);
   const [errorMessage, setErrorMessage] =
     useState("");
@@ -32,7 +35,7 @@ export default function ChapterCommentModeration({
       );
 
       setErrorMessage(
-        "Unable to delete this comment."
+        t.chapterCommentModeration.unableToDelete
       );
       setDeleting(false);
       return;
@@ -51,8 +54,8 @@ export default function ChapterCommentModeration({
         disabled={deleting}
       >
         {deleting
-          ? "Deleting..."
-          : "Remove Comment"}
+          ? t.chapterCommentModeration.deleting
+          : t.chapterCommentModeration.removeComment}
       </Button>
 
       {errorMessage && (

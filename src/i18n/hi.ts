@@ -18,6 +18,9 @@ const hi = {
     login: "लॉग इन",
     logout: "लॉग आउट",
     joinWaitlist: "वेटलिस्ट में शामिल हों",
+    unreadNotifications: "अपठित सूचनाएँ",
+    openNavigationMenu: "नेविगेशन मेनू खोलें",
+    closeNavigationMenu: "नेविगेशन मेनू बंद करें",
   },
 
   common: {
@@ -115,21 +118,6 @@ const hi = {
         "अकाउंट सफलतापूर्वक बन गया है।",
       signedIn: "आप सफलतापूर्वक लॉग इन हैं।",
     },
-  },
-
-  form: {
-    username: "यूज़रनेम",
-    displayName: "डिस्प्ले नाम",
-    email: "ईमेल",
-    password: "पासवर्ड",
-    pleaseWait: "कृपया प्रतीक्षा करें...",
-    createAccount: "अकाउंट बनाएँ",
-    logIn: "लॉग इन करें",
-    accountCreatedVerify:
-      "अकाउंट बन गया है। कृपया अपने अकाउंट को सत्यापित करने के लिए अपना ईमेल देखें।",
-    accountCreated:
-      "अकाउंट सफलतापूर्वक बन गया है।",
-    signedIn: "आप सफलतापूर्वक लॉग इन हैं।",
   },
 
   account: {
@@ -383,8 +371,181 @@ const hi = {
       "आपकी लाइब्रेरी लोड नहीं की जा सकी।",
   },
 
-  
+  story: {
+    loading: "कहानी लोड हो रही है...",
+    notFound: "कहानी नहीं मिली।",
+    unableToFind: "यह कहानी नहीं मिली।",
+    unableToLoad: "यह कहानी लोड नहीं की जा सकी।",
+    notFoundTitle: "कहानी नहीं मिली",
+    notAvailable: "यह कहानी उपलब्ध नहीं है।",
 
+    backToTaleMine: "TaleMine पर वापस जाएँ",
+    taleMineWriter: "TaleMine लेखक",
+    cover: "कवर",
+
+    published: "प्रकाशित",
+    by: "लेखक:",
+    chapters: "अध्याय",
+
+    continueReading: "पढ़ना जारी रखें",
+    chapter: "अध्याय",
+    of: "में से",
+    throughPublishedChapters:
+      "प्रकाशित अध्यायों में",
+
+    readyToRead: "पढ़ने के लिए तैयार हैं?",
+    startWithChapterOne: "अध्याय 1 से शुरू करें",
+    beginFromBeginning:
+      "इस कहानी को शुरुआत से पढ़ना शुरू करें।",
+    startReading: "पढ़ना शुरू करें",
+
+    story: "कहानी",
+  },
+
+  publicChapterList: {
+    loading: "अध्याय लोड हो रहे हैं...",
+    unableToLoad:
+      "अध्याय लोड नहीं किए जा सके।",
+    noPublishedChapters:
+      "अभी तक कोई प्रकाशित अध्याय नहीं है",
+    storyNoChapters:
+      "इस कहानी का अभी तक कोई अध्याय प्रकाशित नहीं हुआ है।",
+    chapter: "अध्याय",
+    published: "प्रकाशित",
+    readChapter: "अध्याय पढ़ें →",
+  },
+
+  storyChapter: {
+    loading: "अध्याय लोड हो रहा है...",
+    chapterNotFound: "अध्याय नहीं मिला।",
+    storyNotFound: "यह कहानी नहीं मिली।",
+    chapterNotAvailable:
+      "यह अध्याय उपलब्ध नहीं है।",
+    unableToLoad:
+      "यह अध्याय लोड नहीं किया जा सका।",
+    chapterNotFoundTitle: "अध्याय नहीं मिला",
+
+    backToStory: "कहानी पर वापस जाएँ",
+
+    chapter: "अध्याय",
+    published: "प्रकाशित",
+
+    readingSize: "पढ़ने का आकार",
+    readingTextSize: "पाठ का आकार",
+    decreaseTextSize:
+      "पाठ का आकार कम करें",
+    defaultTextSize:
+      "डिफ़ॉल्ट पाठ आकार उपयोग करें",
+    increaseTextSize:
+      "पाठ का आकार बढ़ाएँ",
+
+    readingWidth: "पढ़ने की चौड़ाई",
+    narrowReadingWidth:
+      "पढ़ने की चौड़ाई संकरी करें",
+    standardReadingWidth:
+      "मानक पढ़ने की चौड़ाई",
+    wideReadingWidth:
+      "पढ़ने की चौड़ाई चौड़ी करें",
+
+    narrow: "संकीर्ण",
+    standard: "मानक",
+    wide: "चौड़ा",
+
+    storyComplete: "कहानी पूरी हुई",
+    reachedEnd:
+      "आप इस कहानी के अंत तक पहुँच गए हैं।",
+    thanksForReading: "पढ़ने के लिए धन्यवाद",
+
+    previousChapter: "पिछला अध्याय",
+    nextChapter: "अगला अध्याय",
+    readingProgress: "पढ़ने की प्रगति",
+    of: "में से",
+
+    exploreMoreStories:
+      "और कहानियाँ देखें",
+  },
+
+  chapterLikeButton: {
+    unableToLoadCount:
+      "लाइक की संख्या लोड नहीं की जा सकी।",
+    loginToLike:
+      "अध्याय को लाइक करने के लिए कृपया लॉग इन करें।",
+    unableToRemove:
+      "आपका लाइक हटाया नहीं जा सका।",
+    unableToLike:
+      "इस अध्याय को लाइक नहीं किया जा सका।",
+    loadingLikes: "लाइक्स लोड हो रहे हैं...",
+    saving: "सेव हो रहा है...",
+    liked: "लाइक किया",
+    like: "लाइक",
+  },
+
+  chapterLikeCount: {
+    loading: "लाइक्स लोड हो रहे हैं...",
+    like: "लाइक",
+    likes: "लाइक्स",
+  },
+
+  chapterComments: {
+    unableToLoad:
+      "टिप्पणियाँ लोड नहीं की जा सकीं।",
+    loginToComment:
+      "टिप्पणी करने के लिए कृपया लॉग इन करें।",
+    writeCommentFirst:
+      "कृपया पहले एक टिप्पणी लिखें।",
+    characterLimit:
+      "टिप्पणी 2000 अक्षरों या उससे कम होनी चाहिए।",
+    unableToPost:
+      "आपकी टिप्पणी पोस्ट नहीं की जा सकी।",
+    commentPosted: "टिप्पणी पोस्ट की गई।",
+    unableToDelete:
+      "यह टिप्पणी हटाई नहीं जा सकी।",
+    commentDeleted: "टिप्पणी हटा दी गई।",
+    commentRemovedByWriter:
+      "कहानी के लेखक ने टिप्पणी हटा दी।",
+    commentUpdated:
+      "टिप्पणी अपडेट की गई।",
+
+    discussion: "चर्चा",
+    comments: "टिप्पणियाँ",
+    leaveComment: "टिप्पणी करें",
+    shareThoughts:
+      "अपने विचार साझा करें...",
+    posting: "पोस्ट हो रहा है...",
+    postComment: "टिप्पणी पोस्ट करें",
+    loginToDiscussion:
+      "चर्चा में शामिल होने के लिए लॉग इन करें।",
+    loadingComments:
+      "टिप्पणियाँ लोड हो रही हैं...",
+    noComments:
+      "अभी तक कोई टिप्पणी नहीं है। पहली टिप्पणी करें।",
+
+    readerAvatar: "रीडर का अवतार",
+    taleMineReader: "TaleMine रीडर",
+
+    edit: "संपादित करें",
+    deleting: "हटाया जा रहा है...",
+    delete: "हटाएँ",
+  },
+
+  chapterCommentEdit: {
+    emptyComment:
+      "टिप्पणी खाली नहीं हो सकती।",
+    characterLimit:
+      "टिप्पणी 2000 अक्षरों या उससे कम होनी चाहिए।",
+    unableToUpdate:
+      "आपकी टिप्पणी अपडेट नहीं की जा सकी।",
+    cancel: "रद्द करें",
+    saving: "सेव हो रहा है...",
+    saveComment: "टिप्पणी सेव करें",
+  },
+
+  chapterCommentModeration: {
+    unableToDelete:
+      "यह टिप्पणी हटाई नहीं जा सकी।",
+    deleting: "हटाया जा रहा है...",
+    removeComment: "टिप्पणी हटाएँ",
+  },
 
 };
 

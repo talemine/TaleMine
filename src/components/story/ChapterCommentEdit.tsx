@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import Button from "../ui/Button";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterCommentEditProps {
   commentId: string;
@@ -19,6 +20,8 @@ export default function ChapterCommentEdit({
   onSaved,
   onCancel,
 }: ChapterCommentEditProps) {
+  const { t } = useLanguage();
+
   const [content, setContent] =
     useState(initialContent);
 
@@ -31,14 +34,14 @@ export default function ChapterCommentEdit({
 
     if (!trimmedContent) {
       setErrorMessage(
-        "Comment cannot be empty."
+        t.chapterCommentEdit.emptyComment
       );
       return;
     }
 
     if (trimmedContent.length > 2000) {
       setErrorMessage(
-        "Comments must be 2000 characters or fewer."
+        t.chapterCommentEdit.characterLimit
       );
       return;
     }
@@ -60,7 +63,7 @@ export default function ChapterCommentEdit({
       );
 
       setErrorMessage(
-        "Unable to update your comment."
+        t.chapterCommentEdit.unableToUpdate
       );
       setSaving(false);
       return;
@@ -107,7 +110,7 @@ export default function ChapterCommentEdit({
             onClick={onCancel}
             disabled={saving}
           >
-            Cancel
+            {t.chapterCommentEdit.cancel}
           </Button>
 
           <Button
@@ -115,7 +118,9 @@ export default function ChapterCommentEdit({
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? "Saving..." : "Save Comment"}
+            {saving
+              ? t.chapterCommentEdit.saving
+              : t.chapterCommentEdit.saveComment}
           </Button>
         </div>
       </div>

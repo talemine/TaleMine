@@ -5,6 +5,7 @@ import Button from "../../components/ui/Button";
 import PublicChapterList from "../../components/story/PublicChapterList";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Story {
   id: string;
@@ -42,6 +43,7 @@ interface ReadingProgress {
 export default function StoryPage() {
   const navigate = useNavigate();
   const { session } = useAuth();
+  const { language, t } = useLanguage();
   const { slug } = useParams<{ slug: string }>();
 
   const [story, setStory] = useState<Story | null>(null);
@@ -78,7 +80,7 @@ export default function StoryPage() {
         setReadingProgress(null);
         setChapterCount(0);
         setLoading(false);
-        setErrorMessage("Story not found.");
+        setErrorMessage(t.story.notFound);
         return;
       }
 
@@ -115,7 +117,7 @@ export default function StoryPage() {
           setReadingProgress(null);
           setChapterCount(0);
           setErrorMessage(
-            "This story could not be found."
+            t.story.unableToFind
           );
           setLoading(false);
           return;
@@ -177,9 +179,7 @@ export default function StoryPage() {
           session?.user.id
             ? supabase
                 .from("reading_progress")
-                .select(
-                  "chapter_id"
-                )
+                .select("chapter_id")
                 .eq(
                   "user_id",
                   session.user.id
@@ -302,8 +302,7 @@ export default function StoryPage() {
             setReadingProgress(null);
           } else if (chapterData) {
             setReadingProgress({
-              chapter_id:
-                chapterData.id,
+              chapter_id: chapterData.id,
               chapter_number:
                 chapterData.chapter_number,
               chapter_title:
@@ -332,7 +331,7 @@ export default function StoryPage() {
         setReadingProgress(null);
         setChapterCount(0);
         setErrorMessage(
-          "Unable to load this story."
+          t.story.unableToLoad
         );
       } finally {
         if (!cancelled) {
@@ -346,13 +345,19 @@ export default function StoryPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, session?.user.id]);
+  }, [
+    slug,
+    session?.user.id,
+    t.story.notFound,
+    t.story.unableToFind,
+    t.story.unableToLoad,
+  ]);
 
   function getAuthorName() {
     return (
       writerProfile?.pen_name?.trim() ||
       profile?.display_name?.trim() ||
-      "TaleMine Writer"
+      t.story.taleMineWriter
     );
   }
 
@@ -374,14 +379,21 @@ export default function StoryPage() {
       return;
     }
 
-    navigate(`/story/${story.slug}/chapter/1`);
+    navigate(
+      `/story/${story.slug}/chapter/1`
+    );
   }
+
+  const locale =
+    language === "hi"
+      ? "hi-IN"
+      : "en-IN";
 
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
-          Loading story...
+          {t.story.loading}
         </p>
       </main>
     );
@@ -392,19 +404,19 @@ export default function StoryPage() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-2xl text-center">
           <h1 className="text-4xl font-bold">
-            Story Not Found
+            {t.story.notFoundTitle}
           </h1>
 
           <p className="mt-4 text-gray-300">
             {errorMessage ||
-              "This story is not available."}
+              t.story.notAvailable}
           </p>
 
           <div className="mt-8 flex justify-center">
             <Button
               onClick={() => navigate("/")}
             >
-              Back to TaleMine
+              {t.story.backToTaleMine}
             </Button>
           </div>
         </div>
@@ -437,7 +449,7 @@ export default function StoryPage() {
             <div className="max-h-[520px] overflow-hidden border-b border-slate-800">
               <img
                 src={story.cover_image_url}
-                alt={`${story.title} cover`}
+                alt={`${story.title} ${t.story.cover}`}
                 className="h-full w-full object-cover"
               />
             </div>
@@ -454,7 +466,7 @@ export default function StoryPage() {
                 )}
 
                 <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
-                  Published
+                  {t.story.published}
                 </span>
               </div>
 
@@ -470,7 +482,7 @@ export default function StoryPage() {
 
               <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-gray-400">
                 <span>
-                  By{" "}
+                  {t.story.by}{" "}
                   <span className="text-cyan-400">
                     {getAuthorName()}
                   </span>
@@ -481,10 +493,12 @@ export default function StoryPage() {
                     <span>•</span>
 
                     <span>
-                      Published{" "}
+                      {t.story.published}{" "}
                       {new Date(
                         story.published_at
-                      ).toLocaleDateString()}
+                      ).toLocaleDateString(
+                        locale
+                      )}
                     </span>
                   </>
                 )}
@@ -493,7 +507,7 @@ export default function StoryPage() {
               <div className="mt-6 flex flex-wrap gap-6 border-t border-slate-800 pt-5">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-500">
-                    Chapters
+                    {t.story.chapters}
                   </p>
 
                   <p className="mt-1 text-lg font-semibold text-white">
@@ -504,13 +518,15 @@ export default function StoryPage() {
                 {story.published_at && (
                   <div>
                     <p className="text-xs uppercase tracking-wide text-gray-500">
-                      Published
+                      {t.story.published}
                     </p>
 
                     <p className="mt-1 text-lg font-semibold text-white">
                       {new Date(
                         story.published_at
-                      ).toLocaleDateString()}
+                      ).toLocaleDateString(
+                        locale
+                      )}
                     </p>
                   </div>
                 )}
@@ -523,18 +539,18 @@ export default function StoryPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
-                      Continue Reading
+                      {t.story.continueReading}
                     </p>
 
                     <h2 className="mt-1 text-xl font-bold">
                       {readingProgress.chapter_title ||
-                        `Chapter ${readingProgress.chapter_number}`}
+                        `${t.story.chapter} ${readingProgress.chapter_number}`}
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-400">
-                      Chapter{" "}
+                      {t.story.chapter}{" "}
                       {readingProgress.chapter_number}{" "}
-                      of{" "}
+                      {t.story.of}{" "}
                       {chapterCount}
                     </p>
                   </div>
@@ -542,7 +558,7 @@ export default function StoryPage() {
                   <Button
                     onClick={continueReading}
                   >
-                    Continue Reading
+                    {t.story.continueReading}
                   </Button>
                 </div>
 
@@ -558,46 +574,47 @@ export default function StoryPage() {
                     </div>
 
                     <p className="mt-2 text-xs text-gray-500">
-                      {progressPercentage}% through
-                      published chapters
+                      {progressPercentage}%{" "}
+                      {t.story.throughPublishedChapters}
                     </p>
                   </div>
                 )}
               </section>
             )}
 
-            {!readingProgress && chapterCount > 0 && (
-              <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
-                      Ready to Read?
-                    </p>
+            {!readingProgress &&
+              chapterCount > 0 && (
+                <section className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-wide text-cyan-400">
+                        {t.story.readyToRead}
+                      </p>
 
-                    <h2 className="mt-1 text-xl font-bold">
-                      Start with Chapter 1
-                    </h2>
+                      <h2 className="mt-1 text-xl font-bold">
+                        {t.story.startWithChapterOne}
+                      </h2>
 
-                    <p className="mt-1 text-sm text-gray-400">
-                      Begin this story from the beginning.
-                    </p>
+                      <p className="mt-1 text-sm text-gray-400">
+                        {t.story.beginFromBeginning}
+                      </p>
+                    </div>
+
+                    <Button onClick={startReading}>
+                      {t.story.startReading}
+                    </Button>
                   </div>
-
-                  <Button onClick={startReading}>
-                    Start Reading
-                  </Button>
-                </div>
-              </section>
-            )}
+                </section>
+              )}
 
             {/* Chapters */}
             <section className="mt-12 border-t border-slate-800 pt-10">
               <p className="text-sm text-gray-400">
-                Story
+                {t.story.story}
               </p>
 
               <h2 className="mt-2 text-2xl font-bold">
-                Chapters
+                {t.story.chapters}
               </h2>
 
               <PublicChapterList
@@ -610,7 +627,7 @@ export default function StoryPage() {
               <Button
                 onClick={() => navigate("/")}
               >
-                Back to TaleMine
+                {t.story.backToTaleMine}
               </Button>
             </div>
           </div>

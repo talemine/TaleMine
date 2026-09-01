@@ -5,6 +5,7 @@ import Button from "../ui/Button";
 import ChapterCommentEdit from "./ChapterCommentEdit";
 import ChapterCommentModeration from "./ChapterCommentModeration";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterCommentsProps {
   storyId: string;
@@ -34,6 +35,7 @@ export default function ChapterComments({
   chapterId,
 }: ChapterCommentsProps) {
   const { session } = useAuth();
+  const { t } = useLanguage();
 
   const [comments, setComments] = useState<
     CommentWithProfile[]
@@ -135,13 +137,14 @@ export default function ChapterComments({
 
         setComments([]);
         setErrorMessage(
-          "Unable to load comments."
+          t.chapterComments.unableToLoad
         );
         setLoading(false);
         return;
       }
 
-      const loadedComments = commentData ?? [];
+      const loadedComments =
+        commentData ?? [];
 
       if (loadedComments.length === 0) {
         setComments([]);
@@ -207,28 +210,32 @@ export default function ChapterComments({
     return () => {
       cancelled = true;
     };
-  }, [storyId, chapterId]);
+  }, [
+    storyId,
+    chapterId,
+    t.chapterComments.unableToLoad,
+  ]);
 
   async function handleSubmitComment() {
     const content = commentText.trim();
 
     if (!session || !userId) {
       setErrorMessage(
-        "Please log in to leave a comment."
+        t.chapterComments.loginToComment
       );
       return;
     }
 
     if (!content) {
       setErrorMessage(
-        "Please write a comment first."
+        t.chapterComments.writeCommentFirst
       );
       return;
     }
 
     if (content.length > 2000) {
       setErrorMessage(
-        "Comments must be 2000 characters or fewer."
+        t.chapterComments.characterLimit
       );
       return;
     }
@@ -260,7 +267,7 @@ export default function ChapterComments({
       );
 
       setErrorMessage(
-        "Unable to post your comment."
+        t.chapterComments.unableToPost
       );
       setSubmitting(false);
       return;
@@ -293,7 +300,9 @@ export default function ChapterComments({
     ]);
 
     setCommentText("");
-    setMessage("Comment posted.");
+    setMessage(
+      t.chapterComments.commentPosted
+    );
     setSubmitting(false);
   }
 
@@ -321,7 +330,7 @@ export default function ChapterComments({
       );
 
       setErrorMessage(
-        "Unable to delete this comment."
+        t.chapterComments.unableToDelete
       );
       setDeletingId(null);
       return;
@@ -333,7 +342,9 @@ export default function ChapterComments({
       )
     );
 
-    setMessage("Comment deleted.");
+    setMessage(
+      t.chapterComments.commentDeleted
+    );
     setDeletingId(null);
   }
 
@@ -346,7 +357,9 @@ export default function ChapterComments({
       )
     );
 
-    setMessage("Comment removed by story writer.");
+    setMessage(
+      t.chapterComments.commentRemovedByWriter
+    );
   }
 
   function handleCommentSaved(
@@ -365,7 +378,9 @@ export default function ChapterComments({
     );
 
     setEditingId(null);
-    setMessage("Comment updated.");
+    setMessage(
+      t.chapterComments.commentUpdated
+    );
     setErrorMessage("");
   }
 
@@ -378,11 +393,11 @@ export default function ChapterComments({
     <section className="mt-12 border-t border-slate-800 pt-10">
       <div>
         <p className="text-sm text-gray-400">
-          Discussion
+          {t.chapterComments.discussion}
         </p>
 
         <h2 className="mt-2 text-2xl font-bold">
-          Comments
+          {t.chapterComments.comments}
         </h2>
       </div>
 
@@ -392,7 +407,7 @@ export default function ChapterComments({
             htmlFor="chapter-comment"
             className="text-sm text-gray-400"
           >
-            Leave a comment
+            {t.chapterComments.leaveComment}
           </label>
 
           <textarea
@@ -403,7 +418,9 @@ export default function ChapterComments({
             }
             maxLength={2000}
             rows={5}
-            placeholder="Share your thoughts..."
+            placeholder={
+              t.chapterComments.shareThoughts
+            }
             disabled={submitting}
             className="
               mt-3
@@ -432,15 +449,15 @@ export default function ChapterComments({
               disabled={submitting}
             >
               {submitting
-                ? "Posting..."
-                : "Post Comment"}
+                ? t.chapterComments.posting
+                : t.chapterComments.postComment}
             </Button>
           </div>
         </div>
       ) : (
         <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-6 text-center">
           <p className="text-gray-400">
-            Log in to join the discussion.
+            {t.chapterComments.loginToDiscussion}
           </p>
         </div>
       )}
@@ -460,13 +477,13 @@ export default function ChapterComments({
       {loading ? (
         <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-6 text-center">
           <p className="text-gray-400">
-            Loading comments...
+            {t.chapterComments.loadingComments}
           </p>
         </div>
       ) : comments.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-6 text-center">
           <p className="text-gray-400">
-            No comments yet. Be the first to comment.
+            {t.chapterComments.noComments}
           </p>
         </div>
       ) : (
@@ -481,11 +498,13 @@ export default function ChapterComments({
                   <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border border-cyan-500/20 bg-slate-900">
                     {comment.profile?.avatar_url ? (
                       <img
-                        src={comment.profile.avatar_url}
+                        src={
+                          comment.profile.avatar_url
+                        }
                         alt={
                           comment.profile
                             .display_name ||
-                          "Reader avatar"
+                          t.chapterComments.readerAvatar
                         }
                         className="h-full w-full object-cover"
                       />
@@ -510,7 +529,7 @@ export default function ChapterComments({
                         ?.display_name ||
                         comment.profile
                           ?.username ||
-                        "TaleMine Reader"}
+                        t.chapterComments.taleMineReader}
                     </p>
 
                     {comment.profile?.username && (
@@ -535,12 +554,14 @@ export default function ChapterComments({
                           type="button"
                           variant="outline"
                           onClick={() => {
-                            setEditingId(comment.id);
+                            setEditingId(
+                              comment.id
+                            );
                             setErrorMessage("");
                             setMessage("");
                           }}
                         >
-                          Edit
+                          {t.chapterComments.edit}
                         </Button>
 
                         <Button
@@ -552,12 +573,14 @@ export default function ChapterComments({
                             )
                           }
                           disabled={
-                            deletingId === comment.id
+                            deletingId ===
+                            comment.id
                           }
                         >
-                          {deletingId === comment.id
-                            ? "Deleting..."
-                            : "Delete"}
+                          {deletingId ===
+                          comment.id
+                            ? t.chapterComments.deleting
+                            : t.chapterComments.delete}
                         </Button>
                       </>
                     )}
@@ -578,7 +601,9 @@ export default function ChapterComments({
               {editingId === comment.id ? (
                 <ChapterCommentEdit
                   commentId={comment.id}
-                  initialContent={comment.content}
+                  initialContent={
+                    comment.content
+                  }
                   onSaved={handleCommentSaved}
                   onCancel={handleEditCancel}
                 />

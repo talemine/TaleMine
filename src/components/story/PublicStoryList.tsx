@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 import PublicStoryCard from "./PublicStoryCard";
 import StoryCategoryFilter from "./StoryCategoryFilter";
 import StorySearch from "./StorySearch";
@@ -32,6 +33,8 @@ interface Profile {
 }
 
 export default function PublicStoryList() {
+  const { t } = useLanguage();
+
   const [stories, setStories] = useState<PublicStory[]>(
     []
   );
@@ -93,7 +96,7 @@ export default function PublicStoryList() {
           setWriterProfiles([]);
           setProfiles([]);
           setErrorMessage(
-            "Unable to load published stories."
+            t.publicStoryList.loadError
           );
 
           return;
@@ -219,7 +222,7 @@ export default function PublicStoryList() {
         setWriterProfiles([]);
         setProfiles([]);
         setErrorMessage(
-          "Unable to load published stories."
+          t.publicStoryList.loadError
         );
       } finally {
         if (!cancelled) {
@@ -302,7 +305,7 @@ export default function PublicStoryList() {
         <div className="mx-auto max-w-5xl">
           <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
             <p className="text-gray-400">
-              Loading stories...
+              {t.publicStoryList.loading}
             </p>
           </div>
         </div>
@@ -330,16 +333,15 @@ export default function PublicStoryList() {
         {/* Section Header */}
         <div className="text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-cyan-400">
-            Discover
+            {t.publicStoryList.discover}
           </p>
 
           <h2 className="mt-3 text-3xl font-bold text-white md:text-4xl">
-            Published Stories
+            {t.publicStoryList.publishedStories}
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-gray-400">
-            Explore stories currently available to read
-            on TaleMine.
+            {t.publicStoryList.description}
           </p>
         </div>
 
@@ -361,15 +363,15 @@ export default function PublicStoryList() {
             <h3 className="text-xl font-semibold">
               {searchQuery.trim() ||
               selectedCategoryId
-                ? "No matching stories"
-                : "No published stories yet"}
+                ? t.publicStoryList.noMatchingStories
+                : t.publicStoryList.noPublishedStories}
             </h3>
 
             <p className="mt-3 text-gray-400">
               {searchQuery.trim() ||
               selectedCategoryId
-                ? "Try a different search or category."
-                : "Check back soon for new stories."}
+                ? t.publicStoryList.tryDifferent
+                : t.publicStoryList.checkBackSoon}
             </p>
           </div>
         ) : (

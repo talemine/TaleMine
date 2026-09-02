@@ -392,6 +392,52 @@ const en = {
     story: "Story",
   },
 
+  publicStoryList: {
+    loading: "Loading stories...",
+    loadError: "Unable to load published stories.",
+    discover: "Discover",
+    publishedStories: "Published Stories",
+    description:
+      "Explore stories currently available to read on TaleMine.",
+    noMatchingStories: "No matching stories",
+    noPublishedStories: "No published stories yet",
+    tryDifferent:
+      "Try a different search or category.",
+    checkBackSoon:
+      "Check back soon for new stories.",
+  },
+
+  storyForm: {
+    unableToLoadCategories:
+      "Unable to load story categories.",
+    titleRequired:
+      "Story title is required.",
+    slugRequired:
+      "Story slug is required.",
+    slugAlreadyExists:
+      "That story slug is already in use. Please choose another.",
+    unableToCreate:
+      "Unable to create your story.",
+    createdSuccessfully:
+      "Story created successfully.",
+    title: "Title",
+    titlePlaceholder:
+      "Your story title",
+    slug: "Slug",
+    slugPlaceholder:
+      "your-story-title",
+    category: "Category",
+    loadingCategories:
+      "Loading categories...",
+    selectCategory:
+      "Select a category",
+    excerpt: "Excerpt",
+    excerptPlaceholder:
+      "A short description of your story.",
+    creating: "Creating...",
+    createStory: "Create Story",
+  },
+
   publicChapterList: {
     loading: "Loading chapters...",
     unableToLoad: "Unable to load the chapters.",
@@ -529,6 +575,50 @@ const en = {
     deleting: "Deleting...",
     removeComment: "Remove Comment",
   },
+
+  chapterEditForm: {
+    contentRequired: "Chapter content is required.",
+    unableToSave: "Unable to save the chapter.",
+    savedSuccessfully: "Chapter saved successfully.",
+    title: "Chapter Title",
+    titlePlaceholder: "Chapter title (optional)",
+    content: "Chapter Content",
+    saving: "Saving...",
+    saveChapter: "Save Chapter",
+  },
+
+  chapterDeleteButton: {
+    confirmTitle: "Delete",
+    confirmMessage:
+      "This chapter will be permanently deleted.",
+    defaultChapter: "this chapter",
+    unableToDelete:
+      "Unable to delete the chapter.",
+    deleting: "Deleting...",
+    delete: "Delete",
+  },
+
+  chapterForm: {
+    contentRequired: "Chapter content is required.",
+    unableToDetermineNextNumber:
+      "Unable to determine the next chapter number.",
+    chapterNumberExists:
+      "That chapter number already exists. Please try again.",
+    unableToCreate:
+      "Unable to create the chapter.",
+    createdSuccessfully:
+      "Chapter {number} created successfully.",
+    title: "Chapter Title",
+    titlePlaceholder:
+      "Chapter title (optional)",
+    content: "Chapter Content",
+    contentPlaceholder:
+      "Write your chapter here...",
+    creating: "Creating...",
+    createChapter: "Create Chapter",
+  },
+
+
 
 };
 

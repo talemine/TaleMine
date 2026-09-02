@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Category {
   id: string;
@@ -39,13 +40,16 @@ export default function StoryForm({
   writerProfileId,
   onCreated,
 }: StoryFormProps) {
+  const { t } = useLanguage();
+
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] =
+    useState(true);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -67,8 +71,15 @@ export default function StoryForm({
       }
 
       if (error) {
-        console.error("Categories loading error:", error);
-        setErrorMessage("Unable to load story categories.");
+        console.error(
+          "Categories loading error:",
+          error
+        );
+
+        setErrorMessage(
+          t.storyForm.unableToLoadCategories
+        );
+
         setCategories([]);
       } else {
         setCategories(data ?? []);
@@ -82,14 +93,16 @@ export default function StoryForm({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t.storyForm.unableToLoadCategories]);
 
   function handleTitleChange(value: string) {
     setTitle(value);
     setSlug(createSlug(value));
   }
 
-  async function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(
+    event: React.FormEvent
+  ) {
     event.preventDefault();
 
     setLoading(true);
@@ -101,13 +114,17 @@ export default function StoryForm({
     const normalizedExcerpt = excerpt.trim();
 
     if (!normalizedTitle) {
-      setErrorMessage("Story title is required.");
+      setErrorMessage(
+        t.storyForm.titleRequired
+      );
       setLoading(false);
       return;
     }
 
     if (!normalizedSlug) {
-      setErrorMessage("Story slug is required.");
+      setErrorMessage(
+        t.storyForm.slugRequired
+      );
       setLoading(false);
       return;
     }
@@ -130,11 +147,17 @@ export default function StoryForm({
     if (error) {
       if (error.code === "23505") {
         setErrorMessage(
-          "That story slug is already in use. Please choose another."
+          t.storyForm.slugAlreadyExists
         );
       } else {
-        console.error("Story creation error:", error);
-        setErrorMessage("Unable to create your story.");
+        console.error(
+          "Story creation error:",
+          error
+        );
+
+        setErrorMessage(
+          t.storyForm.unableToCreate
+        );
       }
 
       setLoading(false);
@@ -147,7 +170,11 @@ export default function StoryForm({
     setSlug("");
     setExcerpt("");
     setCategoryId("");
-    setMessage("Story created successfully.");
+
+    setMessage(
+      t.storyForm.createdSuccessfully
+    );
+
     setLoading(false);
   }
 
@@ -161,7 +188,7 @@ export default function StoryForm({
           htmlFor="story-title"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Title
+          {t.storyForm.title}
         </label>
 
         <input
@@ -173,7 +200,9 @@ export default function StoryForm({
           }
           required
           disabled={loading}
-          placeholder="Your story title"
+          placeholder={
+            t.storyForm.titlePlaceholder
+          }
           className="
             w-full
             rounded-xl
@@ -197,7 +226,7 @@ export default function StoryForm({
           htmlFor="story-slug"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Slug
+          {t.storyForm.slug}
         </label>
 
         <input
@@ -205,11 +234,15 @@ export default function StoryForm({
           type="text"
           value={slug}
           onChange={(event) =>
-            setSlug(createSlug(event.target.value))
+            setSlug(
+              createSlug(event.target.value)
+            )
           }
           required
           disabled={loading}
-          placeholder="your-story-title"
+          placeholder={
+            t.storyForm.slugPlaceholder
+          }
           className="
             w-full
             rounded-xl
@@ -233,7 +266,7 @@ export default function StoryForm({
           htmlFor="story-category"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Category
+          {t.storyForm.category}
         </label>
 
         <select
@@ -242,7 +275,9 @@ export default function StoryForm({
           onChange={(event) =>
             setCategoryId(event.target.value)
           }
-          disabled={loading || categoriesLoading}
+          disabled={
+            loading || categoriesLoading
+          }
           className="
             w-full
             rounded-xl
@@ -260,8 +295,8 @@ export default function StoryForm({
         >
           <option value="">
             {categoriesLoading
-              ? "Loading categories..."
-              : "Select a category"}
+              ? t.storyForm.loadingCategories
+              : t.storyForm.selectCategory}
           </option>
 
           {categories.map((category) => (
@@ -280,7 +315,7 @@ export default function StoryForm({
           htmlFor="story-excerpt"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Excerpt
+          {t.storyForm.excerpt}
         </label>
 
         <textarea
@@ -291,7 +326,9 @@ export default function StoryForm({
           }
           rows={4}
           disabled={loading}
-          placeholder="A short description of your story."
+          placeholder={
+            t.storyForm.excerptPlaceholder
+          }
           className="
             w-full
             resize-none
@@ -323,8 +360,13 @@ export default function StoryForm({
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create Story"}
+      <Button
+        type="submit"
+        disabled={loading}
+      >
+        {loading
+          ? t.storyForm.creating
+          : t.storyForm.createStory}
       </Button>
     </form>
   );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Chapter {
   id: string;
@@ -22,6 +23,8 @@ export default function ChapterForm({
   storyId,
   onCreated,
 }: ChapterFormProps) {
+  const { t } = useLanguage();
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -40,23 +43,27 @@ export default function ChapterForm({
     setErrorMessage("");
 
     if (!normalizedContent) {
-      setErrorMessage("Chapter content is required.");
+      setErrorMessage(
+        t.chapterForm.contentRequired
+      );
       setLoading(false);
       return;
     }
 
     try {
       // Find the next chapter number for this story.
-      const { data: lastChapter, error: lastChapterError } =
-        await supabase
-          .from("chapters")
-          .select("chapter_number")
-          .eq("story_id", storyId)
-          .order("chapter_number", {
-            ascending: false,
-          })
-          .limit(1)
-          .maybeSingle();
+      const {
+        data: lastChapter,
+        error: lastChapterError,
+      } = await supabase
+        .from("chapters")
+        .select("chapter_number")
+        .eq("story_id", storyId)
+        .order("chapter_number", {
+          ascending: false,
+        })
+        .limit(1)
+        .maybeSingle();
 
       if (lastChapterError) {
         console.error(
@@ -65,7 +72,8 @@ export default function ChapterForm({
         );
 
         setErrorMessage(
-          "Unable to determine the next chapter number."
+          t.chapterForm
+            .unableToDetermineNextNumber
         );
         setLoading(false);
         return;
@@ -90,7 +98,7 @@ export default function ChapterForm({
       if (error) {
         if (error.code === "23505") {
           setErrorMessage(
-            "That chapter number already exists. Please try again."
+            t.chapterForm.chapterNumberExists
           );
         } else {
           console.error(
@@ -99,7 +107,7 @@ export default function ChapterForm({
           );
 
           setErrorMessage(
-            "Unable to create the chapter."
+            t.chapterForm.unableToCreate
           );
         }
 
@@ -111,8 +119,12 @@ export default function ChapterForm({
 
       setTitle("");
       setContent("");
+
       setMessage(
-        `Chapter ${data.chapter_number} created successfully.`
+        t.chapterForm.createdSuccessfully.replace(
+          "{number}",
+          String(data.chapter_number)
+        )
       );
     } catch (error) {
       console.error(
@@ -121,7 +133,7 @@ export default function ChapterForm({
       );
 
       setErrorMessage(
-        "Unable to create the chapter."
+        t.chapterForm.unableToCreate
       );
     } finally {
       setLoading(false);
@@ -138,7 +150,7 @@ export default function ChapterForm({
           htmlFor="chapter-title"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Chapter Title
+          {t.chapterForm.title}
         </label>
 
         <input
@@ -149,7 +161,9 @@ export default function ChapterForm({
             setTitle(event.target.value)
           }
           disabled={loading}
-          placeholder="Chapter title (optional)"
+          placeholder={
+            t.chapterForm.titlePlaceholder
+          }
           className="
             w-full
             rounded-xl
@@ -173,7 +187,7 @@ export default function ChapterForm({
           htmlFor="chapter-content"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Chapter Content
+          {t.chapterForm.content}
         </label>
 
         <textarea
@@ -185,7 +199,9 @@ export default function ChapterForm({
           required
           rows={12}
           disabled={loading}
-          placeholder="Write your chapter here..."
+          placeholder={
+            t.chapterForm.contentPlaceholder
+          }
           className="
             w-full
             resize-y
@@ -218,7 +234,9 @@ export default function ChapterForm({
       )}
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Creating..." : "Create Chapter"}
+        {loading
+          ? t.chapterForm.creating
+          : t.chapterForm.createChapter}
       </Button>
     </form>
   );

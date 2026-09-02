@@ -402,6 +402,23 @@ const hi = {
     story: "कहानी",
   },
 
+  publicStoryList: {
+    loading: "कहानियाँ लोड हो रही हैं...",
+    loadError:
+      "प्रकाशित कहानियाँ लोड नहीं की जा सकीं।",
+    discover: "खोजें",
+    publishedStories: "प्रकाशित कहानियाँ",
+    description:
+      "TaleMine पर वर्तमान में पढ़ने के लिए उपलब्ध कहानियाँ देखें।",
+    noMatchingStories: "कोई मेल खाती कहानी नहीं मिली",
+    noPublishedStories:
+      "अभी तक कोई प्रकाशित कहानी नहीं है",
+    tryDifferent:
+      "कोई अलग खोज या श्रेणी आज़माएँ।",
+    checkBackSoon:
+      "नई कहानियों के लिए जल्द ही फिर से देखें।",
+  },
+
   publicChapterList: {
     loading: "अध्याय लोड हो रहे हैं...",
     unableToLoad:
@@ -463,6 +480,37 @@ const hi = {
 
     exploreMoreStories:
       "और कहानियाँ देखें",
+  },
+
+  storyForm: {
+    unableToLoadCategories:
+      "कहानी की श्रेणियाँ लोड नहीं की जा सकीं।",
+    titleRequired:
+      "कहानी का शीर्षक आवश्यक है।",
+    slugRequired:
+      "कहानी का स्लग आवश्यक है।",
+    slugAlreadyExists:
+      "यह कहानी स्लग पहले से उपयोग में है। कृपया कोई दूसरा चुनें।",
+    unableToCreate:
+      "आपकी कहानी बनाई नहीं जा सकी।",
+    createdSuccessfully:
+      "कहानी सफलतापूर्वक बनाई गई।",
+    title: "शीर्षक",
+    titlePlaceholder:
+      "आपकी कहानी का शीर्षक",
+    slug: "स्लग",
+    slugPlaceholder:
+      "your-story-title",
+    category: "श्रेणी",
+    loadingCategories:
+      "श्रेणियाँ लोड हो रही हैं...",
+    selectCategory:
+      "श्रेणी चुनें",
+    excerpt: "संक्षिप्त विवरण",
+    excerptPlaceholder:
+      "अपनी कहानी का संक्षिप्त विवरण दें।",
+    creating: "बनाया जा रहा है...",
+    createStory: "कहानी बनाएँ",
   },
 
   chapterLikeButton: {
@@ -545,6 +593,48 @@ const hi = {
       "यह टिप्पणी हटाई नहीं जा सकी।",
     deleting: "हटाया जा रहा है...",
     removeComment: "टिप्पणी हटाएँ",
+  },
+
+  chapterEditForm: {
+    contentRequired: "अध्याय की सामग्री आवश्यक है।",
+    unableToSave: "अध्याय सहेजा नहीं जा सका।",
+    savedSuccessfully: "अध्याय सफलतापूर्वक सहेजा गया।",
+    title: "अध्याय का शीर्षक",
+    titlePlaceholder: "अध्याय का शीर्षक (वैकल्पिक)",
+    content: "अध्याय की सामग्री",
+    saving: "सहेजा जा रहा है...",
+    saveChapter: "अध्याय सहेजें",
+  },
+
+  chapterDeleteButton: {
+    confirmTitle: "हटाएँ",
+    confirmMessage:
+      "यह अध्याय स्थायी रूप से हटा दिया जाएगा।",
+    defaultChapter: "यह अध्याय",
+    unableToDelete:
+      "अध्याय हटाया नहीं जा सका।",
+    deleting: "हटाया जा रहा है...",
+    delete: "हटाएँ",
+  },
+
+  chapterForm: {
+    contentRequired: "अध्याय की सामग्री आवश्यक है।",
+    unableToDetermineNextNumber:
+      "अगले अध्याय का नंबर निर्धारित नहीं किया जा सका।",
+    chapterNumberExists:
+      "यह अध्याय नंबर पहले से मौजूद है। कृपया पुनः प्रयास करें।",
+    unableToCreate:
+      "अध्याय बनाया नहीं जा सका।",
+    createdSuccessfully:
+      "अध्याय {number} सफलतापूर्वक बनाया गया।",
+    title: "अध्याय का शीर्षक",
+    titlePlaceholder:
+      "अध्याय का शीर्षक (वैकल्पिक)",
+    content: "अध्याय की सामग्री",
+    contentPlaceholder:
+      "अपना अध्याय यहाँ लिखें...",
+    creating: "बनाया जा रहा है...",
+    createChapter: "अध्याय बनाएँ",
   },
 
 };

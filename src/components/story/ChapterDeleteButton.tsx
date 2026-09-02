@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterDeleteButtonProps {
   chapterId: string;
@@ -13,15 +14,18 @@ export default function ChapterDeleteButton({
   chapterTitle,
   onDeleted,
 }: ChapterDeleteButtonProps) {
+  const { t } = useLanguage();
+
   const [deleting, setDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleDelete() {
     const displayTitle =
-      chapterTitle?.trim() || "this chapter";
+      chapterTitle?.trim() ||
+      t.chapterDeleteButton.defaultChapter;
 
     const confirmed = window.confirm(
-      `Delete "${displayTitle}"?\n\nThis chapter will be permanently deleted.`
+      `${t.chapterDeleteButton.confirmTitle} "${displayTitle}"?\n\n${t.chapterDeleteButton.confirmMessage}`
     );
 
     if (!confirmed) {
@@ -38,7 +42,9 @@ export default function ChapterDeleteButton({
 
     if (error) {
       console.error("Chapter deletion error:", error);
-      setErrorMessage("Unable to delete the chapter.");
+      setErrorMessage(
+        t.chapterDeleteButton.unableToDelete
+      );
       setDeleting(false);
       return;
     }
@@ -53,7 +59,9 @@ export default function ChapterDeleteButton({
         onClick={handleDelete}
         disabled={deleting}
       >
-        {deleting ? "Deleting..." : "Delete"}
+        {deleting
+          ? t.chapterDeleteButton.deleting
+          : t.chapterDeleteButton.delete}
       </Button>
 
       {errorMessage && (

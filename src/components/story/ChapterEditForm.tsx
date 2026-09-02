@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface ChapterEditFormProps {
   chapterId: string;
@@ -18,6 +19,8 @@ export default function ChapterEditForm({
   initialContent,
   onSaved,
 }: ChapterEditFormProps) {
+  const { t } = useLanguage();
+
   const [title, setTitle] = useState(initialTitle ?? "");
   const [content, setContent] = useState(initialContent);
 
@@ -36,7 +39,9 @@ export default function ChapterEditForm({
     setErrorMessage("");
 
     if (!normalizedContent) {
-      setErrorMessage("Chapter content is required.");
+      setErrorMessage(
+        t.chapterEditForm.contentRequired
+      );
       setLoading(false);
       return;
     }
@@ -58,7 +63,7 @@ export default function ChapterEditForm({
       );
 
       setErrorMessage(
-        "Unable to save the chapter."
+        t.chapterEditForm.unableToSave
       );
       setLoading(false);
       return;
@@ -67,7 +72,9 @@ export default function ChapterEditForm({
     onSaved(data);
     setTitle(data.title ?? "");
     setContent(data.content);
-    setMessage("Chapter saved successfully.");
+    setMessage(
+      t.chapterEditForm.savedSuccessfully
+    );
     setLoading(false);
   }
 
@@ -81,7 +88,7 @@ export default function ChapterEditForm({
           htmlFor={`chapter-edit-title-${chapterId}`}
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Chapter Title
+          {t.chapterEditForm.title}
         </label>
 
         <input
@@ -92,7 +99,9 @@ export default function ChapterEditForm({
             setTitle(event.target.value)
           }
           disabled={loading}
-          placeholder="Chapter title (optional)"
+          placeholder={
+            t.chapterEditForm.titlePlaceholder
+          }
           className="
             w-full
             rounded-xl
@@ -116,7 +125,7 @@ export default function ChapterEditForm({
           htmlFor={`chapter-edit-content-${chapterId}`}
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Chapter Content
+          {t.chapterEditForm.content}
         </label>
 
         <textarea
@@ -160,7 +169,9 @@ export default function ChapterEditForm({
       )}
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Save Chapter"}
+        {loading
+          ? t.chapterEditForm.saving
+          : t.chapterEditForm.saveChapter}
       </Button>
     </form>
   );

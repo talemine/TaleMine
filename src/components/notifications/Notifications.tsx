@@ -496,31 +496,16 @@ export default function Notifications() {
   function getNotificationAction(
     notification: NotificationWithDetails
   ): "liked" | "commented" | "replied" | "unknown" {
-    const message =
-      notification.message?.trim() || "";
+    switch (notification.type) {
+      case "like":
+        return "liked";
 
-    const lowerMessage =
-      message.toLowerCase();
+      case "comment":
+        return "commented";
 
-    if (
-      lowerMessage.includes("liked")
-    ) {
-      return "liked";
+      default:
+        return "unknown";
     }
-
-    if (
-      lowerMessage.includes("commented")
-    ) {
-      return "commented";
-    }
-
-    if (
-      lowerMessage.includes("replied")
-    ) {
-      return "replied";
-    }
-
-    return "unknown";
   }
 
   function getNotificationTargetText(

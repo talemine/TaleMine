@@ -69,7 +69,7 @@ export default function Account() {
     if (error) {
       console.error("Logout error:", error);
       setErrorMessage(
-        "Unable to log out. Please try again."
+        t.account.unableToLogout
       );
       return;
     }
@@ -133,7 +133,7 @@ export default function Account() {
           setReadingProgress(null);
           setRecentlyRead([]);
           setErrorMessage(
-            "Unable to load your profile."
+            t.account.unableToLoadProfile
           );
           setLoading(false);
           return;
@@ -316,7 +316,7 @@ export default function Account() {
         setReadingProgress(null);
         setRecentlyRead([]);
         setErrorMessage(
-          "Unable to load your account. Please try again."
+          t.account.unableToLoadAccount
         );
       } finally {
         if (!cancelled) {

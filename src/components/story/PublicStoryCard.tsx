@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
+import { useLanguage } from "../../i18n/LanguageContext";
+
 interface PublicStoryCardProps {
   title: string;
   slug: string;
@@ -20,6 +22,7 @@ export default function PublicStoryCard({
   coverImageUrl,
 }: PublicStoryCardProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <article
@@ -39,7 +42,10 @@ export default function PublicStoryCard({
           type="button"
           onClick={() => navigate(`/story/${slug}`)}
           className="block w-full"
-          aria-label={`Read ${title}`}
+          aria-label={t.stories.readStoryAriaLabel.replace(
+            "{title}",
+            title
+          )}
         >
           <img
             src={coverImageUrl}
@@ -65,7 +71,7 @@ export default function PublicStoryCard({
           )}
 
           <span className="rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
-            Published
+            {t.stories.published}
           </span>
         </div>
 
@@ -82,7 +88,7 @@ export default function PublicStoryCard({
         <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-gray-500">
           {penName && (
             <span>
-              By{" "}
+              {t.stories.by}{" "}
               <span className="text-cyan-400">
                 {penName}
               </span>
@@ -95,7 +101,7 @@ export default function PublicStoryCard({
 
           {publishedAt && (
             <span>
-              Published{" "}
+              {t.stories.published}{" "}
               {new Date(
                 publishedAt
               ).toLocaleDateString()}
@@ -120,7 +126,7 @@ export default function PublicStoryCard({
               hover:bg-cyan-400
             "
           >
-            Read Story
+            {t.stories.startReading}
           </button>
         </div>
       </div>

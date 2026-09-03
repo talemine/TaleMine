@@ -1,43 +1,46 @@
 import { motion } from "framer-motion";
 import Section from "../../../components/ui/Section";
 import Container from "../../../components/ui/Container";
-
-const phases = [
-  {
-    phase: "Phase 01",
-    title: "Foundation",
-    description:
-      "Build the core TaleMine platform, establish the visual identity, and create the foundation for readers and writers.",
-    status: "In Progress",
-    active: true,
-  },
-  {
-    phase: "Phase 02",
-    title: "Early Community",
-    description:
-      "Bring together our first readers and writers and learn what they need from a better storytelling platform.",
-    status: "Coming Next",
-    active: false,
-  },
-  {
-    phase: "Phase 03",
-    title: "Platform Launch",
-    description:
-      "Launch the core TaleMine experience and give readers and writers a place to discover, create, and connect.",
-    status: "Future",
-    active: false,
-  },
-  {
-    phase: "Phase 04",
-    title: "Growing the Community",
-    description:
-      "Expand the TaleMine community and continue improving discovery, writing, and reader experiences.",
-    status: "Future",
-    active: false,
-  },
-];
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export default function Roadmap() {
+  const { t } = useLanguage();
+
+  const phases = [
+    {
+      phase: t.roadmap.phases.phase01,
+      title: t.roadmap.phases.foundation,
+      description:
+        t.roadmap.phases.foundationDescription,
+      status: t.roadmap.phases.inProgress,
+      active: true,
+    },
+    {
+      phase: t.roadmap.phases.phase02,
+      title: t.roadmap.phases.earlyCommunity,
+      description:
+        t.roadmap.phases.earlyCommunityDescription,
+      status: t.roadmap.phases.comingNext,
+      active: false,
+    },
+    {
+      phase: t.roadmap.phases.phase03,
+      title: t.roadmap.phases.platformLaunch,
+      description:
+        t.roadmap.phases.platformLaunchDescription,
+      status: t.roadmap.phases.future,
+      active: false,
+    },
+    {
+      phase: t.roadmap.phases.phase04,
+      title: t.roadmap.phases.growingCommunity,
+      description:
+        t.roadmap.phases.growingCommunityDescription,
+      status: t.roadmap.phases.future,
+      active: false,
+    },
+  ];
+
   return (
     <Section id="roadmap">
       <Container>
@@ -50,11 +53,11 @@ export default function Roadmap() {
           transition={{ duration: 0.7 }}
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white">
-            Roadmap
+            {t.roadmap.title}
           </h2>
 
           <p className="mt-5 md:mt-6 text-base md:text-lg leading-7 md:leading-8 text-gray-300">
-            We're building TaleMine one meaningful step at a time.
+            {t.roadmap.description}
           </p>
         </motion.div>
 

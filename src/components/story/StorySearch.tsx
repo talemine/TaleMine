@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface StorySearchProps {
   value: string;
@@ -9,6 +10,7 @@ export default function StorySearch({
   value,
   onChange,
 }: StorySearchProps) {
+  const { t } = useLanguage();
   const [focused, setFocused] = useState(false);
 
   return (
@@ -17,7 +19,7 @@ export default function StorySearch({
         htmlFor="story-search"
         className="sr-only"
       >
-        Search stories
+        {t.storySearch.searchStories}
       </label>
 
       <div
@@ -46,7 +48,9 @@ export default function StorySearch({
           }
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Search stories..."
+          placeholder={
+            t.storySearch.searchStoriesPlaceholder
+          }
           className="
             w-full
             bg-transparent
@@ -60,10 +64,10 @@ export default function StorySearch({
           <button
             type="button"
             onClick={() => onChange("")}
-            aria-label="Clear story search"
+            aria-label={t.storySearch.clear}
             className="ml-3 text-sm text-gray-400 transition hover:text-white"
           >
-            Clear
+            {t.storySearch.clear}
           </button>
         )}
       </div>

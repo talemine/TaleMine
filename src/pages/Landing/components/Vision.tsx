@@ -1,26 +1,29 @@
 import { motion } from "framer-motion";
 import Section from "../../../components/ui/Section";
 import Container from "../../../components/ui/Container";
-
-const principles = [
-  {
-    title: "Stories Over Algorithms",
-    description:
-      "Discovery should be driven by the quality and relevance of a story—not simply by what an algorithm chooses to promote.",
-  },
-  {
-    title: "Writers Over Metrics",
-    description:
-      "Writers deserve the opportunity to build genuine relationships with readers and grow their audience over time.",
-  },
-  {
-    title: "Readers Over Noise",
-    description:
-      "Readers should spend less time fighting through noise and more time discovering stories worth remembering.",
-  },
-];
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export default function Vision() {
+  const { t } = useLanguage();
+
+  const principles = [
+    {
+      title: t.vision.principles.storiesOverAlgorithms,
+      description:
+        t.vision.principles.storiesOverAlgorithmsDescription,
+    },
+    {
+      title: t.vision.principles.writersOverMetrics,
+      description:
+        t.vision.principles.writersOverMetricsDescription,
+    },
+    {
+      title: t.vision.principles.readersOverNoise,
+      description:
+        t.vision.principles.readersOverNoiseDescription,
+    },
+  ];
+
   return (
     <Section id="vision">
       <Container>
@@ -33,19 +36,17 @@ export default function Vision() {
           transition={{ duration: 0.7 }}
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white">
-            Our Vision
+            {t.vision.title}
           </h2>
 
           {/* Introduction */}
           <p className="mt-6 md:mt-8 text-xl md:text-2xl text-gray-200 leading-relaxed">
-            We believe the best stories should have a chance to be discovered.
+            {t.vision.introduction}
           </p>
 
           {/* Main Vision */}
           <p className="mt-5 md:mt-6 text-base md:text-lg text-gray-300 leading-7 md:leading-8">
-            TaleMine is building a place where readers can explore beyond the
-            obvious, writers can build meaningful audiences, and great stories
-            can find the people who are waiting for them.
+            {t.vision.description}
           </p>
         </motion.div>
 
@@ -93,7 +94,7 @@ export default function Vision() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.7, delay: 0.45 }}
         >
-          Dig deeper. Discover better stories. Build a community that lasts.
+          {t.vision.closing}
         </motion.p>
       </Container>
     </Section>

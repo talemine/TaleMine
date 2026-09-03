@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import StoryForm from "../../components/story/StoryForm";
 import { useAuth } from "../../components/auth/AuthProvider";
 import Button from "../../components/ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 import { supabase } from "../../services/supabase";
 
 interface WriterProfile {
@@ -29,6 +30,7 @@ interface Story {
 
 export default function WriterDashboard() {
   const { session, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const userId = session?.user.id;
@@ -60,26 +62,25 @@ export default function WriterDashboard() {
       setMessage("");
 
       try {
-        const [writerResult, storiesResult] =
-          await Promise.all([
-            supabase
-              .from("writer_profiles")
-              .select(
-                "profile_id, pen_name, author_bio, website_url"
-              )
-              .eq("profile_id", userId)
-              .maybeSingle(),
+        const [writerResult, storiesResult] = await Promise.all([
+          supabase
+            .from("writer_profiles")
+            .select(
+              "profile_id, pen_name, author_bio, website_url"
+            )
+            .eq("profile_id", userId)
+            .maybeSingle(),
 
-            supabase
-              .from("stories")
-              .select(
-                "id, writer_profile_id, category_id, title, slug, excerpt, cover_image_url, status, published_at, created_at, updated_at"
-              )
-              .eq("writer_profile_id", userId)
-              .order("created_at", {
-                ascending: false,
-              }),
-          ]);
+          supabase
+            .from("stories")
+            .select(
+              "id, writer_profile_id, category_id, title, slug, excerpt, cover_image_url, status, published_at, created_at, updated_at"
+            )
+            .eq("writer_profile_id", userId)
+            .order("created_at", {
+              ascending: false,
+            }),
+        ]);
 
         if (cancelled) {
           return;
@@ -93,7 +94,7 @@ export default function WriterDashboard() {
 
           setWriterProfile(null);
           setErrorMessage(
-            "Unable to load your writer profile."
+            t.writerDashboard.unableToLoadWriterProfile
           );
         } else {
           setWriterProfile(writerResult.data ?? null);
@@ -107,7 +108,7 @@ export default function WriterDashboard() {
 
           setStories([]);
           setErrorMessage(
-            "Unable to load your stories."
+            t.writerDashboard.unableToLoadStories
           );
         } else {
           setStories(storiesResult.data ?? []);
@@ -125,7 +126,7 @@ export default function WriterDashboard() {
         setWriterProfile(null);
         setStories([]);
         setErrorMessage(
-          "Unable to load your writer dashboard."
+          t.writerDashboard.unableToLoadDashboard
         );
       } finally {
         if (!cancelled) {
@@ -139,11 +140,19 @@ export default function WriterDashboard() {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, [
+    userId,
+    t.writerDashboard.unableToLoadWriterProfile,
+    t.writerDashboard.unableToLoadStories,
+    t.writerDashboard.unableToLoadDashboard,
+  ]);
 
   async function handleDeleteStory(story: Story) {
     const confirmed = window.confirm(
-      `Delete "${story.title}"?\n\nThis will also permanently delete all chapters belonging to this story.`
+      t.storyEditor.deleteConfirm.replace(
+        "{title}",
+        story.title
+      )
     );
 
     if (!confirmed) {
@@ -160,14 +169,9 @@ export default function WriterDashboard() {
       .eq("id", story.id);
 
     if (error) {
-      console.error(
-        "Story deletion error:",
-        error
-      );
+      console.error("Story deletion error:", error);
 
-      setErrorMessage(
-        "Unable to delete the story."
-      );
+      setErrorMessage(t.storyEditor.unableToDelete);
       setDeletingStoryId(null);
       return;
     }
@@ -180,7 +184,10 @@ export default function WriterDashboard() {
     );
 
     setMessage(
-      `"${story.title}" was deleted successfully.`
+      t.writerDashboard.deletedSuccessfully.replace(
+        "{title}",
+        story.title
+      )
     );
 
     setDeletingStoryId(null);
@@ -190,7 +197,7 @@ export default function WriterDashboard() {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
-          Loading your writer dashboard...
+          {t.writerDashboard.loadingDashboard}
         </p>
       </main>
     );
@@ -201,16 +208,16 @@ export default function WriterDashboard() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
-            Please Log In
+            {t.account.pleaseLogIn}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            You need to be signed in to access the writer dashboard.
+            {t.writerDashboard.accessRequired}
           </p>
 
           <div className="mt-8 flex justify-center">
             <Button onClick={() => navigate("/login")}>
-              Go to Login
+              {t.account.goToLogin}
             </Button>
           </div>
         </div>
@@ -223,16 +230,16 @@ export default function WriterDashboard() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
-            Become a Writer
+            {t.account.writerProfileForm.becomeWriter}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            You need a writer profile before you can access the writer dashboard.
+            {t.writerDashboard.writerProfileRequired}
           </p>
 
           <div className="mt-8 flex justify-center">
             <Button onClick={() => navigate("/account")}>
-              Go to Account
+              {t.writerDashboard.goToAccount}
             </Button>
           </div>
         </div>
@@ -249,17 +256,17 @@ export default function WriterDashboard() {
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm text-gray-400">
-                Writer Dashboard
+                {t.writerDashboard.title}
               </p>
 
               <h1 className="mt-2 text-4xl font-bold">
                 {writerProfile.pen_name ||
-                  "Your Writer Profile"}
+                  t.account.writerProfile}
               </h1>
 
               <p className="mt-3 max-w-2xl text-gray-300">
                 {writerProfile.author_bio ||
-                  "Your stories will appear here."}
+                  t.writerDashboard.storiesWillAppearHere}
               </p>
 
               {writerProfile.website_url && (
@@ -269,13 +276,13 @@ export default function WriterDashboard() {
                   rel="noreferrer"
                   className="mt-3 inline-block text-cyan-400 transition hover:text-cyan-300"
                 >
-                  Visit Website
+                  {t.account.visitWebsite}
                 </a>
               )}
             </div>
 
             <Button onClick={() => navigate("/account")}>
-              Account
+              {t.nav.account}
             </Button>
           </div>
 
@@ -301,8 +308,8 @@ export default function WriterDashboard() {
               }
             >
               {showStoryForm
-                ? "Cancel"
-                : "Create Story"}
+                ? t.storyEditor.cancel
+                : t.storyForm.createStory}
             </Button>
 
             {showStoryForm && (
@@ -327,30 +334,30 @@ export default function WriterDashboard() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-400">
-                  Stories
+                  {t.stories.title}
                 </p>
 
                 <h2 className="mt-1 text-2xl font-bold">
-                  My Stories
+                  {t.writerDashboard.myStories}
                 </h2>
               </div>
 
               <span className="w-fit rounded-full border border-cyan-500/20 px-4 py-2 text-sm text-cyan-300">
                 {stories.length}{" "}
                 {stories.length === 1
-                  ? "story"
-                  : "stories"}
+                  ? t.stories.story
+                  : t.stories.stories}
               </span>
             </div>
 
             {stories.length === 0 ? (
               <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
                 <h3 className="text-xl font-semibold">
-                  No stories yet
+                  {t.writerDashboard.noStories}
                 </h3>
 
                 <p className="mt-3 text-gray-400">
-                  Your first story will appear here once you create it.
+                  {t.writerDashboard.firstStoryWillAppearHere}
                 </p>
               </div>
             ) : (
@@ -407,8 +414,8 @@ export default function WriterDashboard() {
                           }
                         >
                           {deletingStoryId === story.id
-                            ? "Deleting..."
-                            : "Delete"}
+                            ? t.storyEditor.deleting
+                            : t.chapterDeleteButton.delete}
                         </Button>
                       </div>
                     </div>

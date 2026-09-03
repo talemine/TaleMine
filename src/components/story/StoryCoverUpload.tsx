@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface StoryCoverUploadProps {
   storyId: string;
@@ -24,6 +25,8 @@ export default function StoryCoverUpload({
   currentCoverUrl,
   onUploaded,
 }: StoryCoverUploadProps) {
+  const { t } = useLanguage();
+
   const [selectedFile, setSelectedFile] =
     useState<File | null>(null);
 
@@ -47,14 +50,14 @@ export default function StoryCoverUpload({
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       setErrorMessage(
-        "Please choose a JPG, PNG, or WebP image."
+        t.storyCoverUpload.invalidFileType
       );
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
       setErrorMessage(
-        "Story cover image must be 5 MB or smaller."
+        t.storyCoverUpload.fileTooLarge
       );
       return;
     }
@@ -65,7 +68,7 @@ export default function StoryCoverUpload({
   async function handleUpload() {
     if (!selectedFile) {
       setErrorMessage(
-        "Please choose an image first."
+        t.storyCoverUpload.selectImage
       );
       return;
     }
@@ -101,7 +104,7 @@ export default function StoryCoverUpload({
       );
 
       setErrorMessage(
-        "Unable to upload the story cover."
+        t.storyCoverUpload.uploadFailed
       );
       setLoading(false);
       return;
@@ -132,7 +135,7 @@ export default function StoryCoverUpload({
       );
 
       setErrorMessage(
-        "Cover uploaded, but the story could not be updated."
+        t.storyCoverUpload.storyUpdateFailed
       );
       setLoading(false);
       return;
@@ -141,7 +144,7 @@ export default function StoryCoverUpload({
     onUploaded(publicUrl);
     setSelectedFile(null);
     setMessage(
-      "Story cover updated successfully."
+      t.storyCoverUpload.updatedSuccessfully
     );
     setLoading(false);
   }
@@ -149,7 +152,7 @@ export default function StoryCoverUpload({
   return (
     <div className="mt-8 border-t border-slate-800 pt-8">
       <p className="text-sm text-gray-400">
-        Story Cover
+        {t.storyCoverUpload.title}
       </p>
 
       <div className="mt-4 flex flex-col gap-5">
@@ -157,12 +160,12 @@ export default function StoryCoverUpload({
           {currentCoverUrl ? (
             <img
               src={currentCoverUrl}
-              alt="Story cover"
+              alt={t.storyCoverUpload.alt}
               className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
-              No Cover Image
+              {t.storyCoverUpload.noCover}
             </div>
           )}
         </div>
@@ -193,7 +196,8 @@ export default function StoryCoverUpload({
 
           {selectedFile && (
             <p className="text-sm text-gray-400">
-              Selected: {selectedFile.name}
+              {t.storyCoverUpload.selected}{" "}
+              {selectedFile.name}
             </p>
           )}
 
@@ -205,8 +209,8 @@ export default function StoryCoverUpload({
             }
           >
             {loading
-              ? "Uploading..."
-              : "Upload Cover"}
+              ? t.storyCoverUpload.uploading
+              : t.storyCoverUpload.uploadCover}
           </Button>
         </div>
       </div>

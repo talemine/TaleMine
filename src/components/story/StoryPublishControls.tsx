@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 type StoryStatus =
   | "draft"
@@ -24,6 +25,8 @@ export default function StoryPublishControls({
   publishedAt,
   onStatusChanged,
 }: StoryPublishControlsProps) {
+  const { t } = useLanguage();
+
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [message, setMessage] = useState("");
@@ -53,7 +56,7 @@ export default function StoryPublishControls({
       );
 
       setErrorMessage(
-        "Unable to update the story status."
+        t.storyPublishControls.unableToUpdate
       );
       setLoading(false);
       return;
@@ -64,13 +67,15 @@ export default function StoryPublishControls({
       published_at: data.published_at,
     });
 
-    setMessage("Story status updated successfully.");
+    setMessage(
+      t.storyPublishControls.updatedSuccessfully
+    );
     setLoading(false);
   }
 
   async function handleSubmitForReview() {
     const confirmed = window.confirm(
-      "Submit this story for review?"
+      t.storyPublishControls.submitForReviewConfirm
     );
 
     if (!confirmed) {
@@ -82,7 +87,7 @@ export default function StoryPublishControls({
 
   async function handlePublish() {
     const confirmed = window.confirm(
-      "Publish this story?"
+      t.storyPublishControls.publishConfirm
     );
 
     if (!confirmed) {
@@ -97,7 +102,7 @@ export default function StoryPublishControls({
 
   async function handleUnpublish() {
     const confirmed = window.confirm(
-      "Unpublish this story?\n\nIt will return to draft status."
+      t.storyPublishControls.unpublishConfirm
     );
 
     if (!confirmed) {
@@ -110,7 +115,7 @@ export default function StoryPublishControls({
   return (
     <div className="mt-8 border-t border-slate-800 pt-6">
       <p className="text-sm text-gray-400">
-        Publishing
+        {t.storyPublishControls.publishingLabel}
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -120,8 +125,8 @@ export default function StoryPublishControls({
             disabled={loading}
           >
             {loading
-              ? "Updating..."
-              : "Submit for Review"}
+              ? t.storyPublishControls.updating
+              : t.storyPublishControls.submitForReview}
           </Button>
         )}
 
@@ -131,8 +136,8 @@ export default function StoryPublishControls({
             disabled={loading}
           >
             {loading
-              ? "Publishing..."
-              : "Publish Story"}
+              ? t.storyPublishControls.publishing
+              : t.storyPublishControls.publishStory}
           </Button>
         )}
 
@@ -143,22 +148,24 @@ export default function StoryPublishControls({
             disabled={loading}
           >
             {loading
-              ? "Updating..."
-              : "Unpublish Story"}
+              ? t.storyPublishControls.unpublishing
+              : t.storyPublishControls.unpublishStory}
           </Button>
         )}
 
         {status === "archived" && (
           <p className="text-sm text-gray-400">
-            This story is archived.
+            {t.storyPublishControls.archived}
           </p>
         )}
       </div>
 
       {status === "published" && publishedAt && (
         <p className="mt-3 text-sm text-gray-400">
-          Published on{" "}
-          {new Date(publishedAt).toLocaleString()}
+          {t.storyPublishControls.publishedOn}{" "}
+          {new Date(
+            publishedAt
+          ).toLocaleString()}
         </p>
       )}
 

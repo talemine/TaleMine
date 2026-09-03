@@ -3,8 +3,11 @@ import Section from "../../../components/ui/Section";
 import Button from "../../../components/ui/Button";
 import { motion } from "framer-motion";
 import heroVideo from "../../../assets/hero/talemine-hero.mp4";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export default function Hero() {
+  const { t } = useLanguage();
+
   return (
     <Section>
       <Container>
@@ -16,7 +19,7 @@ export default function Hero() {
           transition={{ duration: 0.6 }}
         >
           <p className="uppercase tracking-[8px] text-cyan-400 text-sm font-semibold">
-            Discover • Read • Belong
+            {t.hero.badge}
           </p>
         </motion.div>
 
@@ -28,9 +31,9 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.15 }}
         >
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white leading-tight">
-            Discover Stories
+            {t.hero.title}
             <br />
-            Worth Digging For.
+            {t.hero.titleLine2}
           </h1>
         </motion.div>
 
@@ -42,9 +45,7 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.3 }}
         >
           <p className="text-lg text-gray-300 leading-8">
-            TaleMine is a new storytelling platform where readers discover
-            unforgettable stories and writers build lasting audiences—without
-            algorithms burying great work.
+            {t.hero.description}
           </p>
         </motion.div>
 
@@ -56,11 +57,11 @@ export default function Hero() {
           transition={{ duration: 0.7, delay: 0.45 }}
         >
           <Button href="#waitlist">
-            Join Waitlist
+            {t.nav.joinWaitlist}
           </Button>
 
           <Button variant="outline" href="#vision">
-            Explore Our Vision
+            {t.hero.exploreVision}
           </Button>
         </motion.div>
 
@@ -97,7 +98,7 @@ export default function Hero() {
         {/* Scroll Indicator */}
         <div className="mt-16 text-center">
           <p className="text-gray-400 text-sm animate-bounce">
-            ↓ Scroll to Explore
+            {t.hero.scrollToExplore}
           </p>
         </div>
       </Container>

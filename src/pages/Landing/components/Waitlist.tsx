@@ -4,8 +4,11 @@ import Section from "../../../components/ui/Section";
 import Container from "../../../components/ui/Container";
 import Button from "../../../components/ui/Button";
 import { supabase } from "../../../services/supabase";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 export default function Waitlist() {
+  const { t } = useLanguage();
+
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,10 +32,18 @@ export default function Waitlist() {
 
     if (error) {
       if (error.code === "23505") {
-        setErrorMessage("You're already on the list.");
+        setErrorMessage(
+          t.waitlist.alreadyOnList
+        );
       } else {
-        console.error("Waitlist signup error:", error);
-        setErrorMessage("Something went wrong. Please try again.");
+        console.error(
+          "Waitlist signup error:",
+          error
+        );
+
+        setErrorMessage(
+          t.waitlist.somethingWentWrong
+        );
       }
 
       setLoading(false);
@@ -54,12 +65,11 @@ export default function Waitlist() {
           transition={{ duration: 0.7 }}
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white">
-            Join the Waitlist
+            {t.waitlist.title}
           </h2>
 
           <p className="mt-5 md:mt-6 text-base md:text-lg text-gray-300 leading-7 md:leading-8">
-            Be among the first to discover TaleMine and help shape the future
-            of storytelling.
+            {t.waitlist.description}
           </p>
         </motion.div>
 
@@ -86,11 +96,13 @@ export default function Waitlist() {
               <input
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="Enter your email address"
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                placeholder={t.waitlist.emailPlaceholder}
                 required
                 pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
-                title="Please enter a valid email address, such as you@example.com"
+                title={t.waitlist.emailValidation}
                 disabled={loading}
                 className="
                   flex-1
@@ -109,23 +121,34 @@ export default function Waitlist() {
                 "
               />
 
-              <Button type="submit" disabled={loading}>
-                {loading ? "Joining..." : "Join Waitlist"}
+              <Button
+                type="submit"
+                disabled={loading}
+              >
+                {loading
+                  ? t.waitlist.joining
+                  : t.nav.joinWaitlist}
               </Button>
             </form>
           ) : (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{
+                opacity: 0,
+                scale: 0.95,
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+              }}
               transition={{ duration: 0.4 }}
               className="text-center"
             >
               <p className="text-xl md:text-2xl font-semibold text-white">
-                You're on the list! 🎉
+                {t.waitlist.successTitle}
               </p>
 
               <p className="mt-3 text-gray-300">
-                We'll let you know when TaleMine is ready.
+                {t.waitlist.successMessage}
               </p>
             </motion.div>
           )}
@@ -142,9 +165,12 @@ export default function Waitlist() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.3 }}
+          transition={{
+            duration: 0.7,
+            delay: 0.3,
+          }}
         >
-          Great stories are waiting to be discovered.
+          {t.waitlist.closing}
         </motion.p>
       </Container>
     </Section>

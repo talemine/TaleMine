@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Category {
   id: string;
@@ -15,6 +16,8 @@ export default function StoryCategoryFilter({
   selectedCategoryId,
   onCategoryChange,
 }: StoryCategoryFilterProps) {
+  const { t } = useLanguage();
+
   const [categories, setCategories] = useState<Category[]>(
     []
   );
@@ -47,7 +50,7 @@ export default function StoryCategoryFilter({
 
         setCategories([]);
         setErrorMessage(
-          "Unable to load story categories."
+          t.storyCategoryFilter.unableToLoad
         );
       } else {
         setCategories(data ?? []);
@@ -61,13 +64,13 @@ export default function StoryCategoryFilter({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t.storyCategoryFilter.unableToLoad]);
 
   if (loading) {
     return (
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <span className="text-sm text-gray-400">
-          Loading categories...
+          {t.storyCategoryFilter.loading}
         </span>
       </div>
     );
@@ -102,7 +105,7 @@ export default function StoryCategoryFilter({
           }
         `}
       >
-        All
+        {t.storyCategoryFilter.all}
       </button>
 
       {categories.map((category) => {

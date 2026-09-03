@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import Section from "../../../components/ui/Section";
 import Container from "../../../components/ui/Container";
+import { useLanguage } from "../../../i18n/LanguageContext";
 
 const statCard =
   "text-center rounded-2xl bg-slate-900/60 border border-cyan-500/20 p-4 md:p-6 transition-all hover:border-cyan-400 hover:-translate-y-2 hover:shadow-[0_0_25px_rgba(34,211,238,0.15)]";
 
 export default function About() {
+  const { t } = useLanguage();
+
   return (
     <Section id="about">
       <Container>
@@ -18,26 +21,23 @@ export default function About() {
           transition={{ duration: 0.7 }}
         >
           <h2 className="text-4xl md:text-6xl font-bold text-white">
-            About TaleMine
+            {t.about.title}
           </h2>
 
           <p className="mt-6 md:mt-8 text-base md:text-lg leading-7 md:leading-8 text-gray-300">
-            Stories have shaped civilizations for thousands of years.
-            Yet today, incredible writers disappear beneath algorithms,
-            while readers struggle to discover meaningful stories.
+            {t.about.paragraph1}
           </p>
 
           <p className="mt-4 md:mt-5 text-base md:text-lg leading-7 md:leading-8 text-gray-300">
-            TaleMine exists to change that.
+            {t.about.paragraph2}
           </p>
 
           <p className="mt-4 md:mt-5 text-base md:text-lg leading-7 md:leading-8 text-gray-300">
-            "We're building a platform where stories are discovered
-            because they deserve to be."
+            {t.about.quote}
           </p>
 
           <p className="mt-3 text-base md:text-lg leading-7 md:leading-8 text-cyan-300">
-            — Not because an algorithm decided so.
+            {t.about.quoteAttribution}
           </p>
         </motion.div>
 
@@ -54,11 +54,11 @@ export default function About() {
             <div className="text-4xl md:text-6xl">📖</div>
 
             <h3 className="mt-2 md:mt-4 text-sm md:text-xl font-bold text-white">
-              Stories
+              {t.about.stories}
             </h3>
 
             <p className="mt-1 text-xs md:text-base text-cyan-400">
-              ∞ Unlimited Stories
+              {t.about.unlimitedStories}
             </p>
           </div>
 
@@ -67,11 +67,11 @@ export default function About() {
             <div className="text-4xl md:text-6xl">✍️</div>
 
             <h3 className="mt-2 md:mt-4 text-sm md:text-xl font-bold text-white">
-              Writers
+              {t.about.writers}
             </h3>
 
             <p className="mt-1 text-xs md:text-base text-cyan-400">
-              Growing Every Day
+              {t.about.growingEveryDay}
             </p>
           </div>
 
@@ -80,11 +80,11 @@ export default function About() {
             <div className="text-4xl md:text-6xl">🌍</div>
 
             <h3 className="mt-2 md:mt-4 text-sm md:text-xl font-bold text-white">
-              Readers
+              {t.about.readers}
             </h3>
 
             <p className="mt-1 text-xs md:text-base text-cyan-400">
-              Built for Everyone
+              {t.about.builtForEveryone}
             </p>
           </div>
         </motion.div>

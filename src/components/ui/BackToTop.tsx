@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { HiOutlineArrowUp } from "react-icons/hi2";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 export default function BackToTop() {
+  const { t } = useLanguage();
+
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -31,7 +34,7 @@ export default function BackToTop() {
     <button
       type="button"
       onClick={scrollToTop}
-      aria-label="Back to top"
+      aria-label={t.common.backToTop}
       className="
         fixed
         bottom-6

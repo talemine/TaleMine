@@ -11,6 +11,7 @@ import StoryCoverUpload from "../../components/story/StoryCoverUpload";
 import StoryEditForm from "../../components/story/StoryEditForm";
 import StoryPublishControls from "../../components/story/StoryPublishControls";
 import { supabase } from "../../services/supabase";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Story {
   id: string;
@@ -48,14 +49,17 @@ export default function StoryEditor() {
   const { storyId } = useParams<{
     storyId: string;
   }>();
+  const { t } = useLanguage();
 
   const userId = session?.user.id;
 
   const [story, setStory] = useState<Story | null>(
     null
   );
+
   const [category, setCategory] =
     useState<Category | null>(null);
+
   const [chapters, setChapters] = useState<Chapter[]>(
     []
   );
@@ -117,7 +121,7 @@ export default function StoryEditor() {
           setCategory(null);
           setChapters([]);
           setErrorMessage(
-            "Unable to load this story."
+            t.storyEditor.unableToLoadStory
           );
           setLoading(false);
           return;
@@ -166,7 +170,7 @@ export default function StoryEditor() {
 
           setCategory(null);
           setErrorMessage(
-            "Story loaded, but the category could not be loaded."
+            t.storyEditor.categoryLoadFailed
           );
         } else {
           setCategory(
@@ -182,7 +186,7 @@ export default function StoryEditor() {
 
           setChapters([]);
           setErrorMessage(
-            "Story loaded, but the chapters could not be loaded."
+            t.storyEditor.chaptersLoadFailed
           );
         } else {
           setChapters(
@@ -203,7 +207,7 @@ export default function StoryEditor() {
         setCategory(null);
         setChapters([]);
         setErrorMessage(
-          "Unable to load the story editor."
+          t.storyEditor.unableToLoadEditor
         );
       } finally {
         if (!cancelled) {
@@ -217,7 +221,14 @@ export default function StoryEditor() {
     return () => {
       cancelled = true;
     };
-  }, [userId, storyId]);
+  }, [
+    userId,
+    storyId,
+    t.storyEditor.unableToLoadStory,
+    t.storyEditor.categoryLoadFailed,
+    t.storyEditor.chaptersLoadFailed,
+    t.storyEditor.unableToLoadEditor,
+  ]);
 
   async function handleDeleteStory() {
     if (!story) {
@@ -225,7 +236,10 @@ export default function StoryEditor() {
     }
 
     const confirmed = window.confirm(
-      `Delete "${story.title}"?\n\nThis will also permanently delete all chapters belonging to this story.`
+      t.storyEditor.deleteConfirm.replace(
+        "{title}",
+        story.title
+      )
     );
 
     if (!confirmed) {
@@ -247,7 +261,7 @@ export default function StoryEditor() {
       );
 
       setErrorMessage(
-        "Unable to delete this story."
+        t.storyEditor.unableToDelete
       );
       setDeleting(false);
       return;
@@ -262,7 +276,7 @@ export default function StoryEditor() {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p className="text-gray-300">
-          Loading story...
+          {t.storyEditor.loadingStory}
         </p>
       </main>
     );
@@ -273,18 +287,18 @@ export default function StoryEditor() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
-            Please Log In
+            {t.storyEditor.pleaseLogIn}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            You need to be signed in to edit a story.
+            {t.storyEditor.signInToEdit}
           </p>
 
           <div className="mt-8 flex justify-center">
             <Button
               onClick={() => navigate("/login")}
             >
-              Go to Login
+              {t.storyEditor.goToLogin}
             </Button>
           </div>
         </div>
@@ -297,19 +311,18 @@ export default function StoryEditor() {
       <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-md text-center">
           <h1 className="text-4xl font-bold">
-            Story Not Found
+            {t.storyEditor.storyNotFound}
           </h1>
 
           <p className="mt-4 text-gray-300">
-            This story does not exist or does not belong
-            to your writer account.
+            {t.storyEditor.storyNotFoundDescription}
           </p>
 
           <div className="mt-8 flex justify-center">
             <Button
               onClick={() => navigate("/writer")}
             >
-              Back to Writer Dashboard
+              {t.storyEditor.backToWriterDashboard}
             </Button>
           </div>
         </div>
@@ -325,7 +338,7 @@ export default function StoryEditor() {
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm text-gray-400">
-                Story Editor
+                {t.storyEditor.editor}
               </p>
 
               <h1 className="mt-2 text-4xl font-bold">
@@ -343,7 +356,7 @@ export default function StoryEditor() {
                 onClick={() => navigate("/writer")}
                 disabled={deleting}
               >
-                Back to Writer Dashboard
+                {t.storyEditor.backToWriterDashboard}
               </Button>
 
               <Button
@@ -352,8 +365,8 @@ export default function StoryEditor() {
                 disabled={deleting}
               >
                 {deleting
-                  ? "Deleting..."
-                  : "Delete Story"}
+                  ? t.storyEditor.deleting
+                  : t.storyEditor.deleteStory}
               </Button>
             </div>
           </div>
@@ -380,12 +393,12 @@ export default function StoryEditor() {
 
             <div className="mt-8">
               <p className="text-sm text-gray-400">
-                Excerpt
+                {t.storyEditor.excerpt}
               </p>
 
               <p className="mt-2 text-lg leading-8 text-gray-200">
                 {story.excerpt ||
-                  "No excerpt has been added yet."}
+                  t.storyEditor.noExcerpt}
               </p>
             </div>
 
@@ -421,8 +434,8 @@ export default function StoryEditor() {
                 }
               >
                 {showStoryEditForm
-                  ? "Cancel"
-                  : "Edit Story"}
+                  ? t.storyEditor.cancel
+                  : t.storyEditor.editStory}
               </Button>
 
               {showStoryEditForm && (
@@ -480,19 +493,19 @@ export default function StoryEditor() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-400">
-                  Chapters
+                  {t.storyEditor.chapters}
                 </p>
 
                 <h2 className="mt-1 text-2xl font-bold">
-                  Story Chapters
+                  {t.storyEditor.storyChapters}
                 </h2>
               </div>
 
               <span className="w-fit rounded-full border border-cyan-500/20 px-4 py-2 text-sm text-cyan-300">
                 {chapters.length}{" "}
                 {chapters.length === 1
-                  ? "chapter"
-                  : "chapters"}
+                  ? t.storyEditor.chapter
+                  : t.storyEditor.chaptersPlural}
               </span>
             </div>
 
@@ -506,8 +519,8 @@ export default function StoryEditor() {
                 }
               >
                 {showChapterForm
-                  ? "Cancel"
-                  : "Create Chapter"}
+                  ? t.storyEditor.cancel
+                  : t.storyEditor.createChapter}
               </Button>
 
               {showChapterForm && (
@@ -531,12 +544,11 @@ export default function StoryEditor() {
             {chapters.length === 0 ? (
               <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/50 p-8 text-center">
                 <h3 className="text-xl font-semibold">
-                  No chapters yet
+                  {t.storyEditor.noChapters}
                 </h3>
 
                 <p className="mt-3 text-gray-400">
-                  Create the first chapter for this
-                  story.
+                  {t.storyEditor.createFirstChapter}
                 </p>
               </div>
             ) : (
@@ -550,7 +562,7 @@ export default function StoryEditor() {
                       <div className="flex-1">
                         <div className="flex flex-wrap items-center gap-3">
                           <span className="text-sm text-cyan-400">
-                            Chapter{" "}
+                            {t.storyEditor.chapterLabel}{" "}
                             {chapter.chapter_number}
                           </span>
 
@@ -561,7 +573,7 @@ export default function StoryEditor() {
 
                         <h3 className="mt-2 text-xl font-semibold">
                           {chapter.title ||
-                            `Chapter ${chapter.chapter_number}`}
+                            `${t.storyEditor.chapterLabel} ${chapter.chapter_number}`}
                         </h3>
 
                         <p className="mt-3 whitespace-pre-wrap text-gray-400">
@@ -583,8 +595,8 @@ export default function StoryEditor() {
                         >
                           {editingChapterId ===
                           chapter.id
-                            ? "Cancel"
-                            : "Edit"}
+                            ? t.storyEditor.cancel
+                            : t.storyEditor.edit}
                         </Button>
 
                         <ChapterDeleteButton

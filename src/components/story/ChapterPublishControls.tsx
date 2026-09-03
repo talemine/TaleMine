@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 type ChapterStatus = "draft" | "published";
 
@@ -15,6 +16,8 @@ export default function ChapterPublishControls({
   status,
   onStatusChanged,
 }: ChapterPublishControlsProps) {
+  const { t } = useLanguage();
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -40,7 +43,7 @@ export default function ChapterPublishControls({
       );
 
       setErrorMessage(
-        "Unable to update the chapter status."
+        t.chapterPublishControls.unableToUpdate
       );
       setLoading(false);
       return;
@@ -50,13 +53,15 @@ export default function ChapterPublishControls({
 
     onStatusChanged(updatedStatus);
 
-    setMessage("Chapter status updated successfully.");
+    setMessage(
+      t.chapterPublishControls.updatedSuccessfully
+    );
     setLoading(false);
   }
 
   async function handlePublish() {
     const confirmed = window.confirm(
-      "Publish this chapter?"
+      t.chapterPublishControls.publishConfirm
     );
 
     if (!confirmed) {
@@ -68,7 +73,7 @@ export default function ChapterPublishControls({
 
   async function handleUnpublish() {
     const confirmed = window.confirm(
-      "Unpublish this chapter?\n\nIt will return to draft status."
+      t.chapterPublishControls.unpublishConfirm
     );
 
     if (!confirmed) {
@@ -81,7 +86,7 @@ export default function ChapterPublishControls({
   return (
     <div className="mt-4 border-t border-slate-800 pt-4">
       <p className="text-sm text-gray-400">
-        Publishing
+        {t.chapterPublishControls.publishingLabel}
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -90,7 +95,9 @@ export default function ChapterPublishControls({
             onClick={handlePublish}
             disabled={loading}
           >
-            {loading ? "Publishing..." : "Publish Chapter"}
+            {loading
+              ? t.chapterPublishControls.publishing
+              : t.chapterPublishControls.publishChapter}
           </Button>
         )}
 
@@ -101,8 +108,8 @@ export default function ChapterPublishControls({
             disabled={loading}
           >
             {loading
-              ? "Updating..."
-              : "Unpublish Chapter"}
+              ? t.chapterPublishControls.updating
+              : t.chapterPublishControls.unpublishChapter}
           </Button>
         )}
       </div>

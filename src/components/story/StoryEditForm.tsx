@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface Category {
   id: string;
@@ -38,6 +39,8 @@ export default function StoryEditForm({
   initialExcerpt,
   onSaved,
 }: StoryEditFormProps) {
+  const { t } = useLanguage();
+
   const [title, setTitle] = useState(initialTitle);
   const [slug, setSlug] = useState(initialSlug);
   const [categoryId, setCategoryId] =
@@ -76,7 +79,7 @@ export default function StoryEditForm({
         );
 
         setErrorMessage(
-          "Unable to load story categories."
+          t.storyEditForm.unableToLoadCategories
         );
       } else {
         setCategories(data ?? []);
@@ -90,7 +93,7 @@ export default function StoryEditForm({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t.storyEditForm.unableToLoadCategories]);
 
   function handleTitleChange(value: string) {
     setTitle(value);
@@ -114,13 +117,17 @@ export default function StoryEditForm({
     setErrorMessage("");
 
     if (!normalizedTitle) {
-      setErrorMessage("Story title is required.");
+      setErrorMessage(
+        t.storyEditForm.titleRequired
+      );
       setLoading(false);
       return;
     }
 
     if (!normalizedSlug) {
-      setErrorMessage("Story slug is required.");
+      setErrorMessage(
+        t.storyEditForm.slugRequired
+      );
       setLoading(false);
       return;
     }
@@ -142,7 +149,7 @@ export default function StoryEditForm({
     if (error) {
       if (error.code === "23505") {
         setErrorMessage(
-          "That story slug is already in use."
+          t.storyEditForm.slugAlreadyInUse
         );
       } else {
         console.error(
@@ -151,7 +158,7 @@ export default function StoryEditForm({
         );
 
         setErrorMessage(
-          "Unable to save your story."
+          t.storyEditForm.unableToSave
         );
       }
 
@@ -160,7 +167,9 @@ export default function StoryEditForm({
     }
 
     onSaved(data);
-    setMessage("Story saved successfully.");
+    setMessage(
+      t.storyEditForm.savedSuccessfully
+    );
     setLoading(false);
   }
 
@@ -174,7 +183,7 @@ export default function StoryEditForm({
           htmlFor="story-edit-title"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Title
+          {t.storyEditForm.title}
         </label>
 
         <input
@@ -208,7 +217,7 @@ export default function StoryEditForm({
           htmlFor="story-edit-slug"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Slug
+          {t.storyEditForm.slug}
         </label>
 
         <input
@@ -242,7 +251,7 @@ export default function StoryEditForm({
           htmlFor="story-edit-category"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Category
+          {t.storyEditForm.category}
         </label>
 
         <select
@@ -269,8 +278,8 @@ export default function StoryEditForm({
         >
           <option value="">
             {categoriesLoading
-              ? "Loading categories..."
-              : "No category"}
+              ? t.storyEditForm.loadingCategories
+              : t.storyEditForm.noCategory}
           </option>
 
           {categories.map((category) => (
@@ -289,7 +298,7 @@ export default function StoryEditForm({
           htmlFor="story-edit-excerpt"
           className="mb-2 block text-sm font-medium text-gray-200"
         >
-          Excerpt
+          {t.storyEditForm.excerpt}
         </label>
 
         <textarea
@@ -331,7 +340,9 @@ export default function StoryEditForm({
       )}
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Saving..." : "Save Story"}
+        {loading
+          ? t.storyEditForm.saving
+          : t.storyEditForm.saveStory}
       </Button>
     </form>
   );

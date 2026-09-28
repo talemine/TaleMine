@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LandingPage from "../pages/Landing/LandingPage";
 import SignUp from "../pages/Auth/SignUp";
 import Login from "../pages/Auth/Login";
+import ForgotPassword from "../pages/Auth/ForgotPassword";
+import ResetPassword from "../pages/Auth/ResetPassword";
 import Account from "../pages/Account/Account";
 import WriterDashboard from "../pages/Writer/WriterDashboard";
 import StoryEditor from "../pages/Writer/StoryEditor";
@@ -46,9 +48,12 @@ export default function AppRouter() {
           <Route element={<PublicOnlyRoute />}>
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
 
-          {/* Authenticated user routes */}
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Authenticated user routes */
           <Route element={<ProtectedRoute />}>
             <Route path="/account" element={<Account />} />
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
 import { useLanguage } from "../../i18n/LanguageContext";
@@ -202,6 +203,17 @@ export default function AuthForm({ mode }: AuthFormProps) {
           "
         />
       </div>
+
+      {!isSignUp && (
+        <div className="-mt-2 text-right">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-cyan-400 transition hover:text-cyan-300"
+          >
+            {t.auth.form.forgotPassword}
+          </Link>
+        </div>
+      )}
 
       {errorMessage && (
         <p className="text-sm text-red-400">

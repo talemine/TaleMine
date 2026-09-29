@@ -239,6 +239,7 @@ const en = {
       pleaseWait: "Please wait...",
       createAccount: "Create Account",
       logIn: "Log In",
+      forgotPassword: "Forgot password?",
       accountCreatedVerify:
         "Account created. Please check your email to verify your account.",
       accountCreated:

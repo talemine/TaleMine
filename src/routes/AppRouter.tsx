@@ -53,7 +53,7 @@ export default function AppRouter() {
 
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Authenticated user routes */
+          {/* Authenticated user routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/account" element={<Account />} />
 

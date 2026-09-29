@@ -215,6 +215,26 @@ const hi = {
     createOne: "अकाउंट बनाएँ",
     login: "लॉग इन करें",
     backToTaleMine: "← TaleMine पर वापस जाएँ",
+    forgotPasswordTitle: "पासवर्ड रीसेट करें",
+    forgotPasswordDescription:
+      "अपना ईमेल दर्ज करें और हम आपको पासवर्ड रीसेट करने का लिंक भेजेंगे।",
+    sendResetLink: "रीसेट लिंक भेजें",
+    resetLinkSent:
+      "यदि इस ईमेल से कोई अकाउंट मौजूद है, तो हमने पासवर्ड रीसेट लिंक भेज दिया है। कृपया अपना इनबॉक्स देखें।",
+    backToLogin: "लॉग इन पर वापस जाएँ",
+    resetPasswordTitle: "नया पासवर्ड बनाएँ",
+    resetPasswordDescription:
+      "नीचे अपना नया पासवर्ड दर्ज करें।",
+    newPassword: "नया पासवर्ड",
+    confirmPassword: "पासवर्ड की पुष्टि करें",
+    updatePassword: "पासवर्ड अपडेट करें",
+    passwordUpdated: "आपका पासवर्ड सफलतापूर्वक अपडेट हो गया है।",
+    passwordMismatch: "पासवर्ड मेल नहीं खाते।",
+    passwordTooShort: "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।",
+    invalidResetLink:
+      "यह पासवर्ड रीसेट लिंक अमान्य है या समाप्त हो गया है। कृपया नया लिंक माँगें।",
+    unableToResetPassword:
+      "पासवर्ड रीसेट नहीं हो सका। कृपया नया रीसेट लिंक माँगें।",
 
     form: {
       username: "यूज़रनेम",
@@ -224,6 +244,7 @@ const hi = {
       pleaseWait: "कृपया प्रतीक्षा करें...",
       createAccount: "अकाउंट बनाएँ",
       logIn: "लॉग इन करें",
+      forgotPassword: "पासवर्ड भूल गए?",
       accountCreatedVerify:
         "अकाउंट बन गया है। कृपया अपने अकाउंट को सत्यापित करने के लिए अपना ईमेल देखें।",
       accountCreated:
@@ -231,7 +252,6 @@ const hi = {
       signedIn: "आप सफलतापूर्वक लॉग इन हैं।",
     },
   },
-
   account: {
     loading: "आपका अकाउंट लोड हो रहा है...",
     pleaseLogIn: "कृपया लॉग इन करें",

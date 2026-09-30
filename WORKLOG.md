@@ -94,6 +94,17 @@ first**, at the start of every session, before starting new work.
 
 ## Log
 
+### 2026-09-30 17:40 — User confirmed: all 3 eye icons working correctly in production
+- Branch: `develop`
+- Status: Confirmed working on live site (talemine.com) by user.
+- Confirms: Login/Signup password field (commit `07d7bb2`), Reset Password
+  "New Password" field, and Reset Password "Confirm Password" field
+  (commit `f5ca260`) — all three show/hide toggles are visible and
+  functional in production.
+- Resolves the "unconfirmed" follow-up from the 17:15 entry below — the
+  earlier report was indeed a stale browser cache, not a real deployment
+  bug. No further action needed on this task.
+
 ### 2026-09-30 17:30 — Add show/hide password eye icon to Login/Signup form
 - Branch: `develop`
 - Status: Done & pushed (commit `07d7bb2`)

@@ -1,6 +1,12 @@
+import { Link } from "react-router-dom";
+
 export default function Logo() {
   return (
-    <h1 className="text-3xl font-extrabold">
+    <Link
+      to="/"
+      aria-label="TaleMine home"
+      className="text-3xl font-extrabold"
+    >
       <span className="text-white">
         Tale
       </span>
@@ -8,6 +14,6 @@ export default function Logo() {
       <span className="text-cyan-400">
         Mine
       </span>
-    </h1>
+    </Link>
   );
 }

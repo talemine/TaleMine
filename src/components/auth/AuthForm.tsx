@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { HiOutlineEye, HiOutlineEyeSlash } from "react-icons/hi2";
 import { supabase } from "../../services/supabase";
 import Button from "../ui/Button";
 import { useLanguage } from "../../i18n/LanguageContext";
@@ -22,6 +23,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -180,28 +182,57 @@ export default function AuthForm({ mode }: AuthFormProps) {
           {t.auth.form.password}
         </label>
 
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          minLength={8}
-          autoComplete={isSignUp ? "new-password" : "current-password"}
-          className="
-            w-full
-            rounded-xl
-            bg-slate-950/70
-            border border-cyan-500/20
-            px-5 py-4
-            text-white
-            outline-none
-            transition
-            focus:border-cyan-400
-            focus:ring-1
-            focus:ring-cyan-400
-          "
-        />
+        <div className="relative">
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            minLength={8}
+            autoComplete={isSignUp ? "new-password" : "current-password"}
+            className="
+              w-full
+              rounded-xl
+              bg-slate-950/70
+              border border-cyan-500/20
+              px-5 py-4 pr-14
+              text-white
+              outline-none
+              transition
+              focus:border-cyan-400
+              focus:ring-1
+              focus:ring-cyan-400
+            "
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            aria-label={
+              showPassword
+                ? t.auth.hidePassword
+                : t.auth.showPassword
+            }
+            className="
+              absolute
+              inset-y-0
+              right-0
+              flex
+              items-center
+              px-4
+              text-gray-400
+              transition
+              hover:text-cyan-400
+            "
+          >
+            {showPassword ? (
+              <HiOutlineEyeSlash className="h-5 w-5" />
+            ) : (
+              <HiOutlineEye className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
 
       {!isSignUp && (

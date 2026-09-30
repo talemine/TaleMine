@@ -230,6 +230,9 @@ const en = {
     passwordTooShort: "Password must be at least 8 characters.",
     invalidResetLink: "This password reset link is invalid or has expired. Please request a new one.",
     unableToResetPassword: "Unable to reset your password. Please request a new reset link.",
+    passwordsMatch: "Passwords match.",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
 
     form: {
       username: "Username",

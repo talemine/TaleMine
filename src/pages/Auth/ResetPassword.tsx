@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { HiOutlineEye, HiOutlineEyeSlash } from "react-icons/hi2";
 import Button from "../../components/ui/Button";
 import { supabase } from "../../services/supabase";
 import { useLanguage } from "../../i18n/LanguageContext";
@@ -11,9 +12,17 @@ export default function ResetPassword() {
   const [recoverySession, setRecoverySession] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const passwordsMatch =
+    confirmPassword.length > 0 && password === confirmPassword;
+
+  const passwordsMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
 
   useEffect(() => {
     let mounted = true;
@@ -128,16 +137,34 @@ export default function ResetPassword() {
               >
                 {t.auth.newPassword}
               </label>
-              <input
-                id="new-password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                minLength={8}
-                autoComplete="new-password"
-                className="w-full rounded-xl bg-slate-950/70 border border-cyan-500/20 px-5 py-4 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-              />
+              <div className="relative">
+                <input
+                  id="new-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  className="w-full rounded-xl bg-slate-950/70 border border-cyan-500/20 px-5 py-4 pr-14 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword
+                      ? t.auth.hidePassword
+                      : t.auth.showPassword
+                  }
+                  className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 transition hover:text-cyan-400"
+                >
+                  {showPassword ? (
+                    <HiOutlineEyeSlash className="h-5 w-5" />
+                  ) : (
+                    <HiOutlineEye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -147,17 +174,48 @@ export default function ResetPassword() {
               >
                 {t.auth.confirmPassword}
               </label>
-              <input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                required
-                minLength={8}
-                autoComplete="new-password"
-                className="w-full rounded-xl bg-slate-950/70 border border-cyan-500/20 px-5 py-4 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
-              />
+              <div className="relative">
+                <input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  className="w-full rounded-xl bg-slate-950/70 border border-cyan-500/20 px-5 py-4 pr-14 text-white outline-none transition focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={
+                    showConfirmPassword
+                      ? t.auth.hidePassword
+                      : t.auth.showPassword
+                  }
+                  className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 transition hover:text-cyan-400"
+                >
+                  {showConfirmPassword ? (
+                    <HiOutlineEyeSlash className="h-5 w-5" />
+                  ) : (
+                    <HiOutlineEye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+
+              {passwordsMatch && (
+                <p className="mt-2 text-sm text-emerald-400">
+                  ✓ {t.auth.passwordsMatch}
+                </p>
+              )}
+
+              {passwordsMismatch && (
+                <p className="mt-2 text-sm text-red-400">
+                  {t.auth.passwordMismatch}
+                </p>
+              )}
             </div>
+
 
             {errorMessage && (
               <p className="text-sm text-red-400">{errorMessage}</p>

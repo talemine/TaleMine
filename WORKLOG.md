@@ -94,6 +94,22 @@ first**, at the start of every session, before starting new work.
 
 ## Log
 
+### 2026-09-30 17:50 — Make TaleMine logo clickable to homepage
+- Branch: `develop`
+- Status: Done & pushed (commit `d991ce6`)
+- What changed:
+  - `src/components/ui/Logo.tsx` — changed from a plain `<h1>` to a
+    `react-router-dom` `<Link to="/">` wrapping the "TaleMine" text, with
+    `aria-label="TaleMine home"`. Used in `Navbar.tsx`, so this applies
+    site-wide (every page that renders `AppLayout`/`Navbar`).
+- Why: User asked for clicking the logo to redirect to the homepage.
+- Bonus fix: This also resolves a latent SEO issue — `Hero.tsx` (rendered
+  on the Landing page) already has its own `<h1>`, so the Navbar's Logo
+  also being an `<h1>` meant **two `<h1>` elements on the homepage**, which
+  hurts SEO/heading hierarchy. Logo is now a `<Link>`, not a heading
+  element, so this is fixed too.
+- Verified with `npm run build` (no errors).
+
 ### 2026-09-30 17:40 — User confirmed: all 3 eye icons working correctly in production
 - Branch: `develop`
 - Status: Confirmed working on live site (talemine.com) by user.

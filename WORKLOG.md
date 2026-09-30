@@ -94,6 +94,48 @@ first**, at the start of every session, before starting new work.
 
 ## Log
 
+### 2026-09-30 17:30 — Add show/hide password eye icon to Login/Signup form
+- Branch: `develop`
+- Status: Done & pushed (commit `07d7bb2`)
+- What changed:
+  - `src/components/auth/AuthForm.tsx` — added eye icon toggle
+    (`HiOutlineEye` / `HiOutlineEyeSlash`) to the password field, shared by
+    both Login and SignUp pages (since they both render `<AuthForm>`).
+    Reused existing `t.auth.showPassword` / `t.auth.hidePassword` i18n keys
+    (already added earlier for the reset-password page) — no new i18n
+    strings needed.
+  - Wrapped input + toggle button in a `relative` div (input's outer `<div>`
+    didn't have `relative` positioning, which the absolutely-positioned eye
+    button needs — same pattern as ResetPassword.tsx).
+- Why: User asked for the same show-password eye icon on the login page.
+- Verified with `npm run build` (no errors).
+
+### 2026-09-30 17:15 — Investigated "eye icon not working" report on reset-password (from email link)
+- Branch: `develop`
+- Status: Investigated — code confirmed correctly deployed; likely a
+  browser-cache issue on the user's end, not a real bug.
+- What I did: Since the user can only trigger the Supabase password-reset
+  email twice per hour (rate limit), I avoided burning a test attempt and
+  instead fetched the **actual live production JS bundle** from
+  `https://www.talemine.com/reset-password` and searched the minified
+  source directly for the eye-toggle logic and icon SVGs.
+- Findings: Confirmed the eye-toggle `<button>` elements, `onClick` state
+  toggles, `aria-label`s, and the Heroicons eye/eye-slash SVG path data are
+  **all present and correctly wired** in the deployed bundle (verified via
+  `en.ts`/`hi.ts` translated strings `showPassword`/`hidePassword` and the
+  React component render calls around them). So the code that's live is
+  correct.
+- Conclusion given to user: most likely a stale browser cache showing the
+  previous JS bundle; asked them to hard-refresh (Ctrl+Shift+R) or use an
+  incognito window before spending another rate-limited test email.
+- Follow-ups / TODO: **Unconfirmed** — waiting on user to retest with a
+  cache-busted browser and report back whether the icon is now visible. If
+  it's still not visible after a hard refresh, the issue may be something
+  only reproducible from a real email client webview (e.g. Gmail's in-app
+  browser) rather than a normal browser — would need more detail from user
+  (which device/browser/email client they're viewing it in) to diagnose
+  further.
+
 ### 2026-09-30 17:02 — Add show/hide password + match indicator to Reset Password page
 - Branch: `develop`
 - Status: Done & pushed (commit `f5ca260`)

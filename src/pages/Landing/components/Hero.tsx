@@ -1,12 +1,50 @@
+import { useEffect, useRef, useState } from "react";
 import Container from "../../../components/ui/Container";
 import Section from "../../../components/ui/Section";
 import Button from "../../../components/ui/Button";
 import { motion } from "framer-motion";
 import heroVideo from "../../../assets/hero/talemine-hero.mp4";
+import heroPoster from "../../../assets/hero.png";
 import { useLanguage } from "../../../i18n/LanguageContext";
 
 export default function Hero() {
   const { t } = useLanguage();
+
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+
+  /*
+   * Defer loading the (1.1MB) hero video until it's about to scroll into
+   * view, instead of downloading it unconditionally on first paint. This
+   * keeps the initial page load fast — the poster image renders instantly
+   * in its place until then.
+   */
+  useEffect(() => {
+    const node = videoContainerRef.current;
+
+    if (!node || shouldLoadVideo) {
+      return;
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      setShouldLoadVideo(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadVideo(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [shouldLoadVideo]);
 
   return (
     <Section>
@@ -73,6 +111,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.6 }}
         >
           <div
+            ref={videoContainerRef}
             className="
               relative
               w-full
@@ -84,14 +123,24 @@ export default function Hero() {
               [-webkit-mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_100%)]
             "
           >
-            <video
-              className="w-full h-full object-cover"
-              src={heroVideo}
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
+            {shouldLoadVideo ? (
+              <video
+                className="w-full h-full object-cover"
+                src={heroVideo}
+                poster={heroPoster}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="none"
+              />
+            ) : (
+              <img
+                src={heroPoster}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
         </motion.div>
 

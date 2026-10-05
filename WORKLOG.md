@@ -59,11 +59,13 @@ first**, at the start of every session, before starting new work.
   `public/sitemap.xml` fresh on every build (file is gitignored — it's
   build output, not source). Always run `npm run build` before pushing to
   confirm no type errors AND that the sitemap generates correctly.
-  ⚠️ **Unconfirmed:** we don't have a `wrangler.toml`/`wrangler.jsonc` in
-  this repo — Cloudframe's build command is configured only in their
-  dashboard (Workers & Pages → talemine → Settings → Build). Need to
-  confirm it actually runs `npm run build` (not just `vite build` directly)
-  so the sitemap step isn't skipped on deploy.
+- **Cloudflare build config (confirmed with user, 2026-09-30):**
+  Build command: `npm run build` · Deploy command: `npx wrangler deploy` ·
+  Version command: `npx wrangler deploy`. Confirmed the sitemap generation
+  step runs on every deploy, since Cloudflare uses `npm run build` (not
+  bare `vite build`).
+- **Contact email for legal pages / support:** `info.talemine@gmail.com`
+  (used in Privacy Policy and Terms of Service "Contact Us" sections).
 - **Decisions made:**
   - Phone/SMS OTP login — **rejected** for now. Requires a paid SMS provider
     (Twilio/etc.) with per-message cost, plus India TRAI DLT template
@@ -102,6 +104,31 @@ first**, at the start of every session, before starting new work.
 ---
 
 ## Log
+
+### 2026-09-30 19:00 — Closed follow-ups from SEO foundations: email, Cloudflare build, OG image
+- Branch: `develop`
+- Status: Done & pushed (commit `cb1b819`), one item still needs user action
+- What changed:
+  - `src/pages/Legal/PrivacyPolicy.tsx`, `src/pages/Legal/Terms.tsx` —
+    replaced placeholder `contact@talemine.com` with real
+    `info.talemine@gmail.com` in both the "Contact Us" `mailto:` links and
+    display text.
+  - **Confirmed with user:** Cloudflare build command is `npm run build`,
+    deploy/version commands are `npx wrangler deploy` — so the sitemap
+    generation step (added in the previous entry) **does** run on every
+    production deploy. No code change needed, just confirmation — resolved
+    the "unconfirmed" flag from the previous entry. See updated Project
+    Facts section above.
+  - Explained to user what an OG (Open Graph) image is and the required
+    spec: 1200×630 px, PNG/JPG, under ~1MB, should include TaleMine
+    branding/tagline in site colors. **Still outstanding** — no OG image
+    has been created yet. Code already references
+    `https://talemine.com/og-image.png` (in `index.html` and `SEO.tsx`'s
+    `DEFAULT_IMAGE`), so social shares will show a broken/missing image
+    until the user creates this file and places it at
+    `public/og-image.png`. This is a design/content task, not something I
+    can generate — flagged as the one remaining follow-up.
+- Verified with `npm run build` (no errors).
 
 ### 2026-09-30 18:30 — SEO foundations: meta tags, sitemap, robots.txt, privacy/terms pages
 - Branch: `develop`

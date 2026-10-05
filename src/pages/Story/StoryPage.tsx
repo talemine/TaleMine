@@ -460,7 +460,7 @@ export default function StoryPage() {
             story.excerpt ??
             `Read "${story.title}" on TaleMine.`,
           image: story.cover_image_url ?? undefined,
-          url: `https://talemine.com/story/${story.slug}`,
+          url: `https://www.talemine.com/story/${story.slug}`,
           datePublished: story.published_at ?? undefined,
           author: profile
             ? {

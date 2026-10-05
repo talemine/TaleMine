@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://talemine.com/sitemap.xml
+Sitemap: https://www.talemine.com/sitemap.xml
+

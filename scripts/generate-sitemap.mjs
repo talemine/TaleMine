@@ -49,7 +49,7 @@ const env = { ...loadEnvLocal(), ...process.env };
 const SUPABASE_URL = env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const SITE_URL = "https://talemine.com";
+const SITE_URL = "https://www.talemine.com";
 
 const STATIC_ROUTES = [
   { path: "/", changefreq: "daily", priority: "1.0" },

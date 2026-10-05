@@ -11,7 +11,7 @@ interface SEOProps {
 }
 
 const SITE_NAME = "TaleMine";
-const SITE_URL = "https://talemine.com";
+const SITE_URL = "https://www.talemine.com";
 const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 export default function SEO({

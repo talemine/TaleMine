@@ -70,10 +70,21 @@ export default function PrivacyPolicy() {
             </ul>
 
             <p className="mt-3">
-              If we enable <strong>Google Analytics</strong> on this site,
-              it may use cookies to collect anonymized usage statistics
-              (such as pages visited and time spent on the site) to help us
-              understand and improve the Service.
+              We use <strong>Google Analytics</strong> on this site, which
+              uses cookies to collect anonymized usage statistics (such as
+              pages visited and time spent on the site) to help us
+              understand and improve the Service. You can opt out of
+              Google Analytics tracking across all websites by installing
+              the{" "}
+              <a
+                href="https://tools.google.com/dlpage/gaoptout"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-cyan-400 hover:text-cyan-300"
+              >
+                Google Analytics Opt-out Browser Add-on
+              </a>
+              .
             </p>
 
             <p className="mt-3">

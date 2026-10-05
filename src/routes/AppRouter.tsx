@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import LandingPage from "../pages/Landing/LandingPage";
 import ScrollManager from "../components/layout/ScrollManager";
+import Analytics from "../components/analytics/Analytics";
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
@@ -112,6 +113,7 @@ export default function AppRouter() {
       </Suspense>
 
       <ScrollManager />
+      <Analytics />
     </BrowserRouter>
   );
 }

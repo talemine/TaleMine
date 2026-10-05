@@ -105,6 +105,62 @@ first**, at the start of every session, before starting new work.
 
 ## Log
 
+### 2026-09-30 20:00 — Performance fixes: code splitting, vendor chunking, lazy video, lazy images
+- Branch: `develop`
+- Status: Done & pushed (commits `d091543`, `54d932c`, `1caaac6`)
+- Context: Continuing the site review from earlier today — moved from
+  SEO/AdSense blockers to performance (Core Web Vitals affect both SEO
+  ranking and bounce rate, which matters for ad revenue).
+- What changed:
+  - **`src/routes/AppRouter.tsx`** — converted every route except
+    `LandingPage` (kept eager, since it's the entry point most visitors/
+    shared links land on) to `React.lazy()` + a single `<Suspense>`
+    boundary wrapping all routes, with a simple "Loading..." fallback.
+    Also removed a leftover dead/duplicate empty `<Routes>` block at the
+    bottom of the file from earlier work.
+  - **`vite.config.ts`** — added `build.rollupOptions.output.manualChunks`
+    to split `react`/`react-dom`/`react-router-dom` → `vendor-react`,
+    `@supabase/supabase-js` → `vendor-supabase`, `framer-motion` →
+    `vendor-motion` into their own cacheable chunks, separate from app
+    code. Note: Vite 8 (Rolldown-based) only accepts the **function** form
+    of `manualChunks` (`(id: string) => ...`), not the plain object-map
+    form that older Vite/Rollup docs show — object form threw a TS error.
+  - **Result:** main JS bundle dropped from 837 KB → 176 KB (gzip
+    221 KB → 47 KB) for the initial load. Vendor libs (~517 KB combined)
+    now cache independently across deploys — a future app-code-only commit
+    won't force visitors to re-download React/Supabase/Framer Motion.
+    Route chunks (Login, SignUp, Account, StoryEditor, etc.) are now
+    13 separate small files (1–25 KB each) fetched only when visited.
+  - **`src/pages/Landing/components/Hero.tsx`** — hero video no longer
+    loads eagerly on first paint. Added an `IntersectionObserver` that
+    only sets `shouldLoadVideo=true` (mounting the actual `<video>` with
+    `preload="none"`) once the hero section scrolls within 200px of the
+    viewport; renders the existing (previously-unused) `src/assets/hero.png`
+    as a static poster/fallback image until then.
+    ⚠️ Note: `hero.png` is 343×361 (not a true 16:9 match for the video's
+    aspect ratio) — it's the only still image available for this purpose.
+    Could not compress/re-encode the actual `talemine-hero.mp4` (still
+    1.19 MB) or extract a proper poster frame from it — no `ffmpeg`
+    available in this environment, and the `ffmpeg-static` npm package's
+    downloaded binary would not execute here (`ResourceUnavailable`, likely
+    sandbox/AV restriction). **Follow-up:** if possible, compress
+    `talemine-hero.mp4` externally (e.g. HandBrake, or
+    `ffmpeg -vf scale=-2:720 -crf 28` locally on your machine) and/or
+    export a proper 16:9 poster frame from the video to replace
+    `hero.png`.
+  - **`src/components/story/PublicStoryCard.tsx`**,
+    **`src/pages/Stories/Stories.tsx`** (story grid + continue-reading
+    list images) — added `loading="lazy"`, `decoding="async"`, and
+    explicit `width`/`height` attributes to prevent layout shift (CLS) and
+    defer offscreen image downloads.
+  - **`src/pages/Story/StoryPage.tsx`** — added explicit `width`/`height`
+    to the main story cover image (kept eager/no lazy-load here
+    deliberately, since it's the primary above-the-fold content image on
+    that page, not a list thumbnail).
+- Verified with `npm run build` after each change (no errors; final build
+  shows no more "chunk larger than 500 kB" warning, which was present
+  before this work).
+
 ### 2026-09-30 19:00 — Closed follow-ups from SEO foundations: email, Cloudflare build, OG image
 - Branch: `develop`
 - Status: Done & pushed (commit `cb1b819`), one item still needs user action

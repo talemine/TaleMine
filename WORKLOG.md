@@ -39,17 +39,18 @@ first**, at the start of every session, before starting new work.
 - **Repo:** `https://github.com/talemine/TaleMine.git`
 - **Production branch:** `develop` (⚠️ NOT `main` — GitHub shows `main` as
   default branch, but Cloudflare deploys from `develop`)
-- **Live site:** https://www.talemine.com is the **canonical** host (as of
-  2026-09-30 — see Log entry). https://talemine.com (non-www) still also
-  resolves with identical content as of this writing; a Cloudflare
-  Redirect Rule to 301 non-www → www is pending (user action, not yet
-  done). All new code should use `www.talemine.com` in any hardcoded URLs.
+- **Live site:** https://www.talemine.com is the **canonical** host.
+  `https://talemine.com` (non-www) now 301-redirects to `www` via a
+  Cloudflare Redirect Rule ("Redirect apex to www", deployed 2026-10-05,
+  dashboard-only — not in this repo). All new code should use
+  `www.talemine.com` in any hardcoded URLs.
 - **Google Analytics 4:** Measurement ID `G-JEVGH041Z0`, wired via
   `src/components/analytics/Analytics.tsx`. Manually tracks page views on
   route change (required for SPA — gtag's automatic page_view doesn't
   fire on client-side navigation).
-- **Google Search Console:** not yet verified (as of 2026-09-30) — waiting
-  on verification meta tag from user.
+- **Google Search Console:** verification meta tag added to `index.html`
+  (2026-10-05) — user still needs to click "Verify" in the Search Console
+  UI, then we need to submit the sitemap once verified.
 - **Hosting:** Cloudflare (Workers Static Assets flow — Cloudflare merged
   Pages into Workers; deploys are configured, not built manually here)
 - **Stack:** React 19 + TypeScript + Vite 8 + Tailwind CSS v4 +
@@ -113,6 +114,40 @@ first**, at the start of every session, before starting new work.
 ---
 
 ## Log
+
+### 2026-10-05 — Closed: Cloudflare apex→www redirect, Search Console verification
+- Branch: `develop`
+- Status: Done & pushed (commit `5359bd0`); Cloudflare redirect rule also
+  deployed and confirmed working.
+- What changed:
+  - **`index.html`** — added
+    `<meta name="google-site-verification" content="urq5o3LT6EW1rm1kLwaV51wxfK9Q-qE2tXPkqWydLkw" />`
+    for the Search Console property on `https://www.talemine.com`.
+    **User still needs to click "Verify" in Search Console** after this
+    deployed (not something I can do — needs the user's Google account).
+  - **Cloudflare Redirect Rule deployed** (dashboard-only change, not in
+    this repo): "Redirect apex to www" — `talemine.com/*` → 301 →
+    `www.talemine.com/*`, with "Preserve query string" enabled.
+    ⚠️ **Gotcha hit during setup:** the UI's "Redirect from root to WWW"
+    template, when using **Wildcard pattern** matching, pre-filled the
+    Target URL as `https://www.talemine.com/*` (bare asterisk) — this
+    does NOT substitute the captured path; Cloudflare sent back a literal
+    `Location: https://www.talemine.com/*` on every request (confirmed via
+    curl). **Fix:** Target URL must use the explicit capture-group syntax
+    `https://www.talemine.com/${1}` instead of a bare `*`. After this
+    fix, verified via curl that `/`, `/stories`, and
+    `/stories?category=moral-tales` all redirect correctly with path and
+    query string preserved, and that `www.talemine.com` itself still
+    returns 200 (no redirect loop).
+  - **If this rule ever needs re-creating** (e.g. zone migration): don't
+    trust the auto-filled Target URL from Cloudflare's "Redirect from root
+    to WWW" template as-is when using Wildcard pattern matching — always
+    verify/replace the target's `*` with `${1}`, and curl-test with a
+    non-root path before considering it done.
+- Resolves the two outstanding items from the 2026-09-30 21:00 entry
+  below (Cloudflare redirect + Search Console verification tag). Sitemap
+  submission to Search Console still pending — do this after the user
+  confirms verification succeeded.
 
 ### 2026-09-30 21:00 — Canonical host decision + Google Analytics 4
 - Branch: `develop`

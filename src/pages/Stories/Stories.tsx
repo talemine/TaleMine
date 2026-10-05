@@ -786,6 +786,10 @@ export default function Stories() {
                               <img
                                 src={story.cover_image_url}
                                 alt={`${story.title} cover`}
+                                loading="lazy"
+                                decoding="async"
+                                width={200}
+                                height={144}
                                 className="
                                   h-full
                                   w-full
@@ -895,6 +899,10 @@ export default function Stories() {
                             story.cover_image_url
                           }
                           alt={`${story.title} cover`}
+                          loading="lazy"
+                          decoding="async"
+                          width={400}
+                          height={250}
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         />
                       </div>

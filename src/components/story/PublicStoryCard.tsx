@@ -50,6 +50,10 @@ export default function PublicStoryCard({
           <img
             src={coverImageUrl}
             alt={title}
+            loading="lazy"
+            decoding="async"
+            width={400}
+            height={224}
             className="
               h-56
               w-full

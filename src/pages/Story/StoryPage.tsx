@@ -481,6 +481,8 @@ export default function StoryPage() {
               <img
                 src={story.cover_image_url}
                 alt={`${story.title} ${t.story.cover}`}
+                width={800}
+                height={520}
                 className="h-full w-full object-cover"
               />
             </div>

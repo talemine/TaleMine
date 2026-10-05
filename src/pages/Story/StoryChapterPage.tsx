@@ -8,6 +8,7 @@ import Button from "../../components/ui/Button";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 import { useLanguage } from "../../i18n/LanguageContext";
+import SEO from "../../components/seo/SEO";
 
 interface Story {
   id: string;
@@ -565,6 +566,17 @@ export default function StoryChapterPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
+      <SEO
+        title={
+          chapter.title
+            ? `${chapter.title} — ${story.title}`
+            : `${t.storyChapter.chapter} ${chapter.chapter_number} — ${story.title}`
+        }
+        path={`/story/${story.slug}/chapter/${chapter.chapter_number}`}
+        description={`Read Chapter ${chapter.chapter_number} of "${story.title}" on TaleMine.`}
+        type="article"
+      />
+
       <article className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-8 md:p-12">
           {/* Chapter Header */}

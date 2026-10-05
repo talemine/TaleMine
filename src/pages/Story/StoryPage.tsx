@@ -6,6 +6,7 @@ import PublicChapterList from "../../components/story/PublicChapterList";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 import { useLanguage } from "../../i18n/LanguageContext";
+import SEO from "../../components/seo/SEO";
 
 interface Story {
   id: string;
@@ -442,6 +443,36 @@ export default function StoryPage() {
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
+      <SEO
+        title={story.title}
+        path={`/story/${story.slug}`}
+        description={
+          story.excerpt ??
+          `Read "${story.title}" on TaleMine.`
+        }
+        image={story.cover_image_url ?? undefined}
+        type="article"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CreativeWork",
+          name: story.title,
+          description:
+            story.excerpt ??
+            `Read "${story.title}" on TaleMine.`,
+          image: story.cover_image_url ?? undefined,
+          url: `https://talemine.com/story/${story.slug}`,
+          datePublished: story.published_at ?? undefined,
+          author: profile
+            ? {
+                "@type": "Person",
+                name:
+                  writerProfile?.pen_name ??
+                  profile.display_name,
+              }
+            : undefined,
+        }}
+      />
+
       <article className="mx-auto max-w-4xl">
         <div className="overflow-hidden rounded-2xl border border-cyan-500/20 bg-slate-900/60">
           {/* Cover */}

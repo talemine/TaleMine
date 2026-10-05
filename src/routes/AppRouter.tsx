@@ -12,6 +12,8 @@ import StoryPage from "../pages/Story/StoryPage";
 import StoryChapterPage from "../pages/Story/StoryChapterPage";
 import Library from "../pages/Library/Library";
 import Stories from "../pages/Stories/Stories";
+import PrivacyPolicy from "../pages/Legal/PrivacyPolicy";
+import Terms from "../pages/Legal/Terms";
 import ScrollManager from "../components/layout/ScrollManager";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -43,6 +45,9 @@ export default function AppRouter() {
             path="/story/:slug/chapter/:chapterNumber"
             element={<StoryChapterPage />}
           />
+
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<Terms />} />
 
           {/* Public-only routes */}
           <Route element={<PublicOnlyRoute />}>

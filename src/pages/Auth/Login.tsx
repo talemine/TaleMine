@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
 import AuthForm from "../../components/auth/AuthForm";
 import { useLanguage } from "../../i18n/LanguageContext";
+import SEO from "../../components/seo/SEO";
 
 export default function Login() {
   const { t } = useLanguage();
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
+      <SEO
+        title="Log In"
+        path="/login"
+        description="Log in to your TaleMine account."
+        noIndex
+      />
+
       <div className="mx-auto max-w-md">
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-bold">

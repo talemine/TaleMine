@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
 import AuthForm from "../../components/auth/AuthForm";
 import { useLanguage } from "../../i18n/LanguageContext";
+import SEO from "../../components/seo/SEO";
 
 export default function SignUp() {
   const { t } = useLanguage();
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
+      <SEO
+        title="Sign Up"
+        path="/signup"
+        description="Create your free TaleMine account to read and write stories."
+        noIndex
+      />
+
       <div className="mx-auto max-w-md">
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-bold">

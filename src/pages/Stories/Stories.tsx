@@ -9,6 +9,7 @@ import Button from "../../components/ui/Button";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { supabase } from "../../services/supabase";
 import { useLanguage } from "../../i18n/LanguageContext";
+import SEO from "../../components/seo/SEO";
 
 interface Story {
   id: string;
@@ -576,6 +577,12 @@ export default function Stories() {
 
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-20 text-white">
+      <SEO
+        title="Stories"
+        path="/stories"
+        description="Browse all published stories on TaleMine — moral tales, folklore, myths, and original fiction from a growing community of writers."
+      />
+
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center">

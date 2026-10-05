@@ -53,8 +53,17 @@ first**, at the start of every session, before starting new work.
 - **i18n:** `src/i18n/en.ts` + `src/i18n/hi.ts`, accessed via
   `useLanguage()` → `t.<section>.<key>`. Language preference is stored per
   user in the `profiles` table (`preferred_language` column) when logged in.
-- **Build/verify command:** `npm run build` (runs `tsc -b && vite build`) —
-  always run this before pushing to confirm no type errors.
+- **Build/verify command:** `npm run build` — now runs
+  `node scripts/generate-sitemap.mjs && tsc -b && vite build`. The sitemap
+  script fetches published stories from Supabase and regenerates
+  `public/sitemap.xml` fresh on every build (file is gitignored — it's
+  build output, not source). Always run `npm run build` before pushing to
+  confirm no type errors AND that the sitemap generates correctly.
+  ⚠️ **Unconfirmed:** we don't have a `wrangler.toml`/`wrangler.jsonc` in
+  this repo — Cloudframe's build command is configured only in their
+  dashboard (Workers & Pages → talemine → Settings → Build). Need to
+  confirm it actually runs `npm run build` (not just `vite build` directly)
+  so the sitemap step isn't skipped on deploy.
 - **Decisions made:**
   - Phone/SMS OTP login — **rejected** for now. Requires a paid SMS provider
     (Twilio/etc.) with per-message cost, plus India TRAI DLT template
@@ -93,6 +102,76 @@ first**, at the start of every session, before starting new work.
 ---
 
 ## Log
+
+### 2026-09-30 18:30 — SEO foundations: meta tags, sitemap, robots.txt, privacy/terms pages
+- Branch: `develop`
+- Status: Done & pushed (commit `9ae1657`)
+- Context: User asked for a full site review to make it "most demanding"
+  (i.e. maximize growth/SEO/AdSense-readiness). Full findings written up in
+  chat — see that conversation for the complete prioritized list (critical/
+  high/medium). This entry covers the first batch of fixes: SEO + AdSense
+  blockers.
+- What changed:
+  - **`index.html`** — replaced generic `<title>talemine</title>` with real
+    title, meta description, canonical tag, Open Graph tags, Twitter card
+    tags (static fallback for crawlers that don't run JS, e.g. before React
+    hydrates, or if JS fails).
+  - **`src/components/seo/SEO.tsx`** (new) — reusable component using
+    `react-helmet-async` for per-page `<title>`, meta description,
+    canonical URL, OG/Twitter tags, and optional JSON-LD structured data.
+    Added `react-helmet-async` dependency.
+  - **`src/main.tsx`** — wrapped app in `<HelmetProvider>`.
+  - Added `<SEO>` to: `LandingPage.tsx`, `Stories.tsx`, `StoryPage.tsx`
+    (dynamic title/description from story data + JSON-LD `CreativeWork`
+    schema with author), `StoryChapterPage.tsx` (dynamic chapter title),
+    `Login.tsx` and `SignUp.tsx` (both set `noIndex` — no SEO value in
+    indexing auth pages).
+  - **`scripts/generate-sitemap.mjs`** (new) — Node script that fetches all
+    `status=published` stories from Supabase (via public anon key, same as
+    client — respects RLS) and writes `public/sitemap.xml` with static
+    routes (`/`, `/stories`) + one `<url>` per published story. Runs via
+    `package.json` `build` script: `node scripts/generate-sitemap.mjs &&
+    tsc -b && vite build`. `public/sitemap.xml` added to `.gitignore` since
+    it's build output, not source — same as `dist/`.
+  - **`public/robots.txt`** (new) — `Allow: /` + `Sitemap:` directive
+    pointing to `https://talemine.com/sitemap.xml`.
+  - **`src/pages/Legal/PrivacyPolicy.tsx`** and **`Terms.tsx`** (new) —
+    routes `/privacy-policy` and `/terms`. AdSense requires a Privacy
+    Policy to approve a site at all, so this was a hard blocker, not just
+    nice-to-have. Content covers: what data we collect (confirmed from
+    actual code — Supabase auth/profile fields, reading progress, etc.),
+    cookies, planned Google Analytics + Google AdSense cookie usage,
+    children's privacy note (relevant since TaleMine publishes children's
+    content), data sharing (Supabase/Cloudflare/Google), user rights,
+    contact. **English only for now** — legal text wasn't translated to
+    Hindi to avoid translation-accuracy risk; flagged as a follow-up if the
+    user wants bilingual legal pages later.
+  - **`src/components/layout/Footer.tsx`** — added Privacy Policy / Terms
+    links (site-wide, since Footer renders in `AppLayout`).
+  - **`src/routes/AppRouter.tsx`** — registered `/privacy-policy` and
+    `/terms` routes (public, not inside any auth guard).
+- Known placeholders / follow-ups needed from user:
+  - **Contact email** in Privacy Policy / Terms is a placeholder
+    (`contact@talemine.com`) — user said to use a placeholder for now and
+    update later. **Needs real inbox before going live with this.**
+  - **OG image** (`https://talemine.com/og-image.png`) referenced in
+    `index.html` and `SEO.tsx`'s default — **this file does not exist
+    yet**. No ready-made 1200×630 social preview image was found in
+    `Media/` or `src/assets/`. Social shares (Facebook/WhatsApp/Twitter)
+    will currently show a broken image until this is created and placed at
+    `public/og-image.png`.
+  - **Cloudflare build command unconfirmed** — see Project Facts note
+    above. If Cloudflare's dashboard build command is just `vite build`
+    (not `npm run build`), the sitemap generation step will be skipped on
+    deploy and `sitemap.xml` won't exist in production. **User should
+    check Cloudflare dashboard → Workers & Pages → talemine → Settings →
+    Build & deployments** and confirm/update the build command to
+    `npm run build`.
+  - User confirmed: TaleMine is operated as an individual (not yet a
+    registered business entity) — Terms/Privacy Policy don't name a
+    specific company for this reason.
+- Verified with `npm run build` (sitemap generated successfully: "Wrote 5
+  URLs to public/sitemap.xml (3 stories)", no TS/build errors).
 
 ### 2026-09-30 17:50 — Make TaleMine logo clickable to homepage
 - Branch: `develop`

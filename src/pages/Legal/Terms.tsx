@@ -157,10 +157,10 @@ export default function Terms() {
             <p className="mt-3">
               Questions about these Terms? Contact us at{" "}
               <a
-                href="mailto:contact@talemine.com"
-                className="text-cyan-400 hover:text-cyan-300"
-              >
-                contact@talemine.com
+              href="mailto:info.talemine@gmail.com"
+              className="text-cyan-400 hover:text-cyan-300"
+            >
+              info.talemine@gmail.com
               </a>
               .
             </p>

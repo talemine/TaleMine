@@ -192,10 +192,10 @@ export default function PrivacyPolicy() {
               If you have questions about this Privacy Policy or your data,
               contact us at{" "}
               <a
-                href="mailto:contact@talemine.com"
+                href="mailto:info.talemine@gmail.com"
                 className="text-cyan-400 hover:text-cyan-300"
               >
-                contact@talemine.com
+                info.talemine@gmail.com
               </a>
               .
             </p>

@@ -39,8 +39,17 @@ first**, at the start of every session, before starting new work.
 - **Repo:** `https://github.com/talemine/TaleMine.git`
 - **Production branch:** `develop` (⚠️ NOT `main` — GitHub shows `main` as
   default branch, but Cloudflare deploys from `develop`)
-- **Live site:** https://www.talemine.com (Site URL / canonical) and
-  https://talemine.com (also works, both serve the same app)
+- **Live site:** https://www.talemine.com is the **canonical** host (as of
+  2026-09-30 — see Log entry). https://talemine.com (non-www) still also
+  resolves with identical content as of this writing; a Cloudflare
+  Redirect Rule to 301 non-www → www is pending (user action, not yet
+  done). All new code should use `www.talemine.com` in any hardcoded URLs.
+- **Google Analytics 4:** Measurement ID `G-JEVGH041Z0`, wired via
+  `src/components/analytics/Analytics.tsx`. Manually tracks page views on
+  route change (required for SPA — gtag's automatic page_view doesn't
+  fire on client-side navigation).
+- **Google Search Console:** not yet verified (as of 2026-09-30) — waiting
+  on verification meta tag from user.
 - **Hosting:** Cloudflare (Workers Static Assets flow — Cloudflare merged
   Pages into Workers; deploys are configured, not built manually here)
 - **Stack:** React 19 + TypeScript + Vite 8 + Tailwind CSS v4 +
@@ -104,6 +113,67 @@ first**, at the start of every session, before starting new work.
 ---
 
 ## Log
+
+### 2026-09-30 21:00 — Canonical host decision + Google Analytics 4
+- Branch: `develop`
+- Status: Done & pushed (commits `b3a8678`, `50918b4`); one manual
+  Cloudflare step still outstanding (see below)
+- Context: Continuing the site review — moved to canonical URL cleanup and
+  analytics setup. User said "your choice, although we need to complete
+  all one by one" re: remaining items (canonical host, GA/Search Console,
+  SSR/SSG discussion).
+- **Canonical host → `www.talemine.com`** (user chose this, matches
+  existing Supabase Site URL config):
+  - Updated `SITE_URL` in `src/components/seo/SEO.tsx` and
+    `scripts/generate-sitemap.mjs` from `https://talemine.com` to
+    `https://www.talemine.com`.
+  - Updated static fallback tags in `index.html` (canonical, OG, Twitter)
+    to use `www`.
+  - Updated `public/robots.txt` sitemap directive to `www`.
+  - Updated the JSON-LD `url` field in `src/pages/Story/StoryPage.tsx` to
+    `www` (was still hardcoded to non-www, missed in the earlier SEO pass).
+  - ⚠️ **USER ACTION STILL NEEDED:** Code now assumes `www` is canonical,
+    but **both `talemine.com` and `www.talemine.com` still resolve
+    independently** (confirmed via curl — both return 200 with identical
+    content). This is a Cloudflare DNS/zone-level setting, not something
+    fixable from the codebase. User needs to add a **Cloudflare Redirect
+    Rule** (Cloudflare Dashboard → talemine.com zone → Rules → Redirect
+    Rules): if `http.host eq "talemine.com"` → redirect (301) to
+    `concat("https://www.talemine.com", http.request.uri.path)`. Until
+    this is done, Google may still see both hosts as separately
+    crawlable/indexable despite the canonical tags.
+- **Google Analytics 4** — user created a GA4 property, provided
+  Measurement ID `G-JEVGH041Z0`.
+  - **`src/components/analytics/Analytics.tsx`** (new) — loads gtag.js
+    once (via plain `<script>` injection, not react-helmet, since it needs
+    imperative control over `window.dataLayer`/`window.gtag`), then sends
+    a manual `page_view` event on every `useLocation()` change. This is
+    necessary because gtag's own automatic page_view only fires once on
+    initial script load — without manual tracking, GA would see every
+    visitor as a single-page view no matter how many story
+    pages/chapters they actually read. `send_page_view: false` is set in
+    the initial `gtag("config", ...)` call to disable the automatic one
+    and avoid double-counting the first page view.
+  - **`src/routes/AppRouter.tsx`** — mounted `<Analytics />` inside
+    `<BrowserRouter>` (alongside the existing `<ScrollManager />`), so it
+    can use `useLocation()`.
+  - **`src/pages/Legal/PrivacyPolicy.tsx`** — updated the Analytics section
+    from conditional language ("if we enable Google Analytics...") to
+    factual ("We use Google Analytics..."), since it's now actually live.
+    Added a link to Google's official opt-out browser add-on.
+  - Measurement ID `G-JEVGH041Z0` is hardcoded as a constant in
+    `Analytics.tsx` (not an env var) — GA measurement IDs are not secret
+    (they're visible in every page's network requests/HTML anyway), so no
+    need to treat it as sensitive config.
+- **Search Console — in progress, waiting on user.** Asked user to create
+  a Search Console property for `https://www.talemine.com` (URL prefix
+  method) and provide the HTML verification tag's `content="..."` value.
+  Not yet received as of this entry — next session/continuation should
+  pick this up: add the `<meta name="google-site-verification" ...>` tag
+  to `index.html` once the code is provided, then after deploy, user
+  clicks "Verify" in Search Console, then submit
+  `https://www.talemine.com/sitemap.xml` as a sitemap in Search Console.
+- Verified with `npm run build` after each change (no errors).
 
 ### 2026-09-30 20:00 — Performance fixes: code splitting, vendor chunking, lazy video, lazy images
 - Branch: `develop`

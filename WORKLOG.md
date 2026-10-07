@@ -48,9 +48,18 @@ first**, at the start of every session, before starting new work.
   `src/components/analytics/Analytics.tsx`. Manually tracks page views on
   route change (required for SPA — gtag's automatic page_view doesn't
   fire on client-side navigation).
-- **Google Search Console:** verification meta tag added to `index.html`
-  (2026-10-05) — user still needs to click "Verify" in the Search Console
-  UI, then we need to submit the sitemap once verified.
+- **Google Search Console:** verified (as of 2026-10-07) for
+  `https://www.talemine.com`. Sitemap (`sitemap.xml`) submitted same day;
+  currently shows "Couldn't fetch" — diagnosed as likely just Google's
+  normal crawl-queue delay for a new site, not a real blocking issue (see
+  2026-10-07 Log entry for full diagnostic trail). Re-check status after
+  24-48 hours before investigating further.
+- **Cloudflare → AI Crawl Control:** Googlebot is explicitly set to
+  **Allowed**. `Google-CloudVertexBot` is set to **Blocked** (unrelated —
+  that's for Vertex AI, not search indexing). Cloudflare Bot Management
+  also blocks some AI scrapers (e.g. ClaudeBot) via a managed rule "Block
+  AI bots on ad pages" — unrelated to Googlebot/sitemap issue, just noting
+  it exists since it showed up in Security Events during diagnosis.
 - **Hosting:** Cloudflare (Workers Static Assets flow — Cloudflare merged
   Pages into Workers; deploys are configured, not built manually here)
 - **Stack:** React 19 + TypeScript + Vite 8 + Tailwind CSS v4 +
@@ -114,6 +123,60 @@ first**, at the start of every session, before starting new work.
 ---
 
 ## Log
+
+### 2026-10-07 — Sitemap submitted to Search Console; "Couldn't fetch" diagnosed as likely crawl-delay, not a real bug
+- Branch: `develop` (no code changes this session — pure diagnostics)
+- Status: Search Console verification succeeded (user confirmed). Sitemap
+  submitted (`sitemap.xml` under `https://www.talemine.com`), but Search
+  Console's Sitemaps report shows status **"Couldn't fetch"**, Type
+  "Unknown", 0 discovered pages.
+- Diagnostic steps taken (ruling out real bugs before concluding it's just
+  a crawl-queue delay):
+  1. Confirmed `https://www.talemine.com/sitemap.xml` returns `200` with
+     correct `Content-Type: application/xml` via curl, both with a normal
+     UA and a spoofed Googlebot UA. Content is valid, well-formed XML (5
+     `<url>` entries, matches what `scripts/generate-sitemap.mjs`
+     generates).
+  2. Confirmed `robots.txt` is live and correctly points to the sitemap.
+  3. Used Search Console's **URL Inspection** tool directly on the sitemap
+     URL — this was a dead end: that tool is for checking if a *page* is
+     indexed as a search result, not for diagnosing sitemap fetch issues.
+     Returned "URL is unknown to Google" / "not indexed", which is
+     expected and unrelated to the sitemap problem (sitemaps are never
+     meant to be indexed themselves).
+  4. Checked **Cloudflare Security Events** (Security → Analytics/Events)
+     for blocks on `/sitemap.xml` — found unrelated blocks from
+     **ClaudeBot** (Anthropic's crawler) via a Cloudflare-managed rule
+     "Block AI bots on ad pages" (part of Cloudflare's Bot Management
+     ruleset), but **zero** logged events for Googlebot at all (neither
+     blocked nor challenged) when filtered specifically for
+     User-Agent containing "Googlebot" over the last 7 days.
+  5. Checked **Cloudflare → AI Crawl Control** (newer product, separate
+     from classic WAF, is where the AI-bot-blocking policy actually lives)
+     — confirmed **Googlebot is explicitly set to "Allowed"**. (Note:
+     `Google-CloudVertexBot` is set to **Blocked** there, but that's a
+     different, unrelated Google crawler for Vertex AI, not the search
+     indexing crawler — not relevant to this issue.)
+  6. Checked Security Level (not "I'm Under Attack") and Bot Fight Mode
+     (disabled) — both ruled out as causes.
+- **Conclusion:** No evidence of Cloudflare actively blocking or
+  challenging Googlebot. Most likely explanation is simply that Google
+  hasn't attempted to crawl the sitemap yet — "Couldn't fetch"/"Pending"
+  immediately after first submission is a well-known, common Search
+  Console quirk for brand-new/low-authority sites, and can take anywhere
+  from a few hours to 1-2 days to resolve on its own once Google's crawler
+  gets to it.
+- **Follow-up (next session):** Check Search Console → Sitemaps again
+  after 24-48 hours. If it *still* shows "Couldn't fetch" after that
+  window, the next diagnostic step would be to check **Cloudflare →
+  AI Crawl Control**'s overall policy mode (e.g. is it set to a strict
+  default that only allowlists specific bots, which could affect
+  Googlebot variants not explicitly listed?) and consider temporarily
+  disabling AI Crawl Control's enforcement to isolate whether it's
+  involved at all.
+- Reference for future diagnosis: Cloudflare zone ID is
+  `89a47925a521c8a58dd647019a7edf02` (visible in the Security Level API
+  endpoint shown in Cloudflare's UI during this session).
 
 ### 2026-10-05 — Closed: Cloudflare apex→www redirect, Search Console verification
 - Branch: `develop`

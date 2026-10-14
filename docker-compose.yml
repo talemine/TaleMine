@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    env_file:
+      # Reuses the same .env.local you already use for `npm run dev`
+      # outside Docker (VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY).
+      # This file is gitignored — see .gitignore — so it's never
+      # committed; each machine keeps its own copy.
+      - .env.local
+    volumes:
+      # Bind-mount the project so edits on the host (in your editor) are
+      # picked up immediately by Vite's dev server running inside the
+      # container — no rebuild needed for source changes.
+      - .:/app
+      # Anonymous volume for node_modules: this "shadows" the bind mount
+      # above for just this one directory, so the container keeps using
+      # the node_modules installed *inside* the Linux container (from the
+      # Dockerfile's `npm install`) instead of whatever node_modules
+      # exists on the host. This matters because some packages compile
+      # native bindings specific to the OS/architecture — a node_modules
+      # installed on Windows would not work inside the Linux container,
+      # and vice versa.
+      - /app/node_modules
+    stdin_open: true
+    tty: true

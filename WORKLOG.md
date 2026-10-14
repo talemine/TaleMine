@@ -124,6 +124,63 @@ first**, at the start of every session, before starting new work.
 
 ## Log
 
+### 2026-10-14 — Added Docker setup for local development (NOT production)
+- Branch: `develop`
+- Status: Done & pushed (commit `54508fd`)
+- Context: User asked how to use Docker/Kubernetes in this project. Short
+  answer given in chat: **don't** — there's no server component here to
+  containerize (frontend is a static SPA served by Cloudflare; backend is
+  fully managed Supabase), and Kubernetes would add real cost/complexity
+  for zero functional benefit over what Cloudflare+Supabase already give
+  for free. User's actual motivation was general curiosity + portfolio/
+  learning, not a real infra need. Agreed path: containerize **local dev
+  only** (useful for switching between the user's two laptops with a
+  consistent environment), not production.
+- What changed:
+  - **`Dockerfile`** (new) — `node:24-alpine` based, installs deps, runs
+    `npm run dev -- --host 0.0.0.0`. Clearly commented as dev-only, not
+    used by Cloudflare's production build/deploy.
+  - **`docker-compose.yml`** (new) — bind-mounts the project directory
+    for instant hot-reload on source edits; uses an anonymous volume for
+    `/app/node_modules` so the container's own Linux-native
+    `node_modules` (installed at image build time) isn't shadowed by
+    whatever `node_modules` exists on the host (important: avoids
+    Windows-vs-Linux native-binary mismatches, e.g. Vite 8's Rolldown
+    bundler or Tailwind's Oxide engine). Reads Supabase env vars from
+    `.env_file: .env.local` (same file already used for non-Docker
+    `npm run dev`).
+  - **`.dockerignore`** (new) — excludes `node_modules`, `.git`, `Media/`,
+    `Docs/`, etc. from the build context.
+  - **`.nvmrc`** (new) — pins Node 24, matching the Dockerfile's base
+    image and this machine's installed Node version (v24.14.0 at time of
+    writing).
+  - **`.env.local.example`** (new) — placeholder template for the two
+    required env vars (`VITE_SUPABASE_URL`,
+    `VITE_SUPABASE_PUBLISHABLE_KEY`), since the real `.env.local` is
+    gitignored and anyone cloning fresh (or using Docker) needs to know
+    what to fill in.
+  - **`README.md`** — was still the unmodified generic Vite scaffold
+    template; replaced with a real TaleMine README including a "Local
+    Development" section covering both the Docker and non-Docker paths,
+    and a pointer to read `WORKLOG.md` first when picking up the project
+    on a new machine.
+- **Verified native-binary compatibility before committing:** checked
+  that Rolldown (`@rolldown/binding-linux-x64-musl`) and Tailwind's Oxide
+  engine (`@tailwindcss/oxide-linux-x64-musl`) both publish musl builds,
+  so Alpine's musl libc (vs. Debian's glibc) works for `npm run dev` /
+  `npm run build`. **Did not verify** `oxlint` (used only by
+  `npm run lint`, not `dev`/`build`) against musl — flagged in a Dockerfile
+  comment: if `npm run lint` fails inside the container, switch the base
+  image to `node:24-slim` (Debian/glibc) instead of `node:24-alpine`.
+- **Could not test `docker compose up` directly** — Docker is not
+  installed in this execution environment (`docker: command not found`).
+  Verified `npm run build` still succeeds with the new files present
+  (unrelated sanity check, not a Docker test). **User should run
+  `docker compose up` themselves to confirm it actually works** before
+  relying on it — if there's an issue, it's most likely either a native
+  binary mismatch (see above) or a Windows-path bind-mount quirk with
+  Docker Desktop.
+
 ### 2026-10-07 — Sitemap submitted to Search Console; "Couldn't fetch" diagnosed as likely crawl-delay, not a real bug
 - Branch: `develop` (no code changes this session — pure diagnostics)
 - Status: Search Console verification succeeded (user confirmed). Sitemap
